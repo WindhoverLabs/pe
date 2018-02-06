@@ -59,11 +59,57 @@ extern "C" {
 #define PE_CONFIG_TABLENAME ("CONFIG_TBL")
 
 
-/** \brief Definition for a single config table entry */
+/** \brief Params table */
 typedef struct
 {
-    /* TODO:  Define the configuration table. */
-	uint32  temp;
+	int32  fusion;
+
+	float  vxy_pub_thresh;
+
+	float  z_pub_thresh;
+
+	float  accel_xy_stddev;
+
+	float  accel_z_stddev;
+
+	float  baro_stddev;
+
+	float  gps_delay;
+
+	float  gps_xy_stddev;
+
+	float  gps_z_stddev;
+
+	float  gps_vxy_stddev;
+
+	float  gps_vz_stddev;
+
+	float  gps_eph_max;
+
+	float  gps_epv_max;
+
+	float  land_z_stddev;
+
+	float  land_vxy_stddev;
+
+	float  pn_p_noise_density;
+
+	float  pn_v_noise_density;
+
+	float  pn_b_noise_density;
+
+	float  pn_t_noise_density;
+
+	float  t_max_grade;
+
+	int32  fake_origin;
+
+	float  init_origin_lat;
+
+	float  init_origin_lon;
+
+
+
 } PE_ConfigTbl_t;
 
 

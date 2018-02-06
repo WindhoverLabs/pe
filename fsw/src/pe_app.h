@@ -45,6 +45,7 @@ extern "C" {
 /************************************************************************
  ** Includes
  *************************************************************************/
+
 #include "cfe.h"
 
 #include "pe_platform_cfg.h"
@@ -55,14 +56,65 @@ extern "C" {
 #include "pe_events.h"
 #include "pe_tbldefs.h"
 #include "px4_msgs.h"
+#include "lib/px4lib.h"
+
+#include <poll.h>
 
 /************************************************************************
  ** Local Defines
  *************************************************************************/
 
+#define PE_BETA_TABLE_SIZE	(7)
+
 /************************************************************************
  ** Local Structure Definitions
  *************************************************************************/
+
+enum {
+	X_x = 0,
+	X_y,
+	X_z,
+	X_vx,
+	X_vy,
+	X_vz,
+	X_bx,
+	X_by,
+	X_bz,
+	X_tz,
+	n_x
+};
+
+enum {
+	U_ax = 0,
+	U_ay,
+	U_az,
+	n_u
+};
+
+enum {
+	Y_baro_z = 0,
+	n_y_baro
+};
+
+enum {
+	Y_gps_x = 0,
+	Y_gps_y,
+	Y_gps_z,
+	Y_gps_vx,
+	Y_gps_vy,
+	Y_gps_vz,
+	n_y_gps
+};
+
+enum {
+	Y_land_vx = 0,
+	Y_land_vy,
+	Y_land_agl,
+	n_y_land
+};
+
+/* Enums for other sensors would go here */
+
 
 /**
  **  \brief PE Application Class
@@ -72,6 +124,19 @@ class PE
 public:
     PE();
     ~PE();
+
+    /** \brief Constants */
+    float 	DELAY_MAX;
+    float 	HIST_STEP;
+    float 	BIAS_MAX;
+    size_t 	HIST_LEN;
+    size_t 	N_DIST_SUBS;
+    float  	BETA_TABLE[PE_BETA_TABLE_SIZE];
+    uint32 	EST_STDDEV_XY_VALID; // 2.0 m
+    uint32 	EST_STDDEV_Z_VALID; // 2.0 m
+    uint32 	EST_STDDEV_TZ_VALID; // 2.0 m
+    float 	P_MAX; // max allowed value in state covariance
+    float 	LAND_RATE; // rate of land detector correction
 
     /**\brief Scheduling Pipe ID */
     CFE_SB_PipeId_t SchPipeId;
@@ -93,22 +158,73 @@ public:
     PE_ConfigTbl_t* ConfigTblPtr;
 
     /** \brief Ingest Data */
-    PX4_VehicleGpsPositionMsg_t VehicleGpsPositionMsg;
-    PX4_VehicleStatusMsg_t VehicleStatusMsg;
-    PX4_VehicleLandDetectedMsg_t VehicleLandDetectedMsg;
-    PX4_ActuatorArmedMsg_t ActuatorArmedMsg;
-    PX4_VehicleAttitudeMsg_t VehicleAttitudeMsg;
-    PX4_VehicleControlModeMsg_t VehicleControlModeMsg;
-    PX4_SensorCombinedMsg_t SensorCombinedMsg;
-    PX4_VehicleAttitudeSetpointMsg_t VehicleAttitudeSetpointMsg;
-    PX4_ManualControlSetpointMsg_t ManualControlSetpointMsg;
-    PX4_DistanceSensorMsg_t DistanceSensorMsg;
+    PX4_VehicleGpsPositionMsg_t mVehicleGpsPositionMsg;
+    PX4_VehicleStatusMsg_t mVehicleStatusMsg;
+    PX4_VehicleLandDetectedMsg_t mVehicleLandDetectedMsg;
+    PX4_ActuatorArmedMsg_t mActuatorArmedMsg;
+    PX4_VehicleAttitudeMsg_t mVehicleAttitudeMsg;
+    PX4_VehicleControlModeMsg_t mVehicleControlModeMsg;
+    PX4_SensorCombinedMsg_t mSensorCombinedMsg;
+    PX4_VehicleAttitudeSetpointMsg_t mVehicleAttitudeSetpointMsg;
+    PX4_ManualControlSetpointMsg_t mManualControlSetpointMsg;
+    PX4_DistanceSensorMsg_t mDistanceSensorMsg;
 
     /** \brief Output Data published at the end of cycle */
-    PX4_VehicleLocalPositionMsg_t VehicleLocalPositionMsg;
-    PX4_EstimatorStatusMsg_t EstimatorStatusMsg;
-    PX4_VehicleGlobalPositionMsg_t VehicleGlobalPositionMsg;
-    PX4_Ekf2InnovationsMsg_t Ekf2InnovationsMsg;
+    PX4_VehicleLocalPositionMsg_t mVehicleLocalPositionMsg;
+    PX4_EstimatorStatusMsg_t mEstimatorStatusMsg;
+    PX4_VehicleGlobalPositionMsg_t mVehicleGlobalPositionMsg;
+    PX4_Ekf2InnovationsMsg_t mEkf2InnovationsMsg;
+
+    // TODO: implement
+    //BlockStats n_y_baro mBaroStats;
+    //BlockStats n_y_gps mGpsStats;
+    uint16 mLandCount;
+
+	// low pass
+	//BlockLowPassVector<float, n_x> mXLowPass;
+	//BlockLowPass mAglLowPass;
+
+	// delay blocks
+	//BlockDelay<float, n_x, 1, HIST_LEN> mXDelay;
+	//BlockDelay<uint64_t, 1, 1, HIST_LEN> mTDelay;
+
+	// misc
+    pollfd mPolls[3];
+	uint64 mTimeStamp;
+	uint64 mTimeStampLastBaro;
+	uint64 mTimeLastBaro;
+	uint64 mTimeLastGps;
+	uint64 mTimeLastLand;
+
+	// reference altitudes
+	float mAltOrigin;
+	bool  mAltOriginInitialized;
+	float mBaroAltOrigin;
+	float mGpsAltOrigin;
+
+	// status
+	bool mReceivedGps;
+	bool mLastArmedState;
+
+	// masks
+	uint8 mSensorTimeout;
+	uint8 mSensorFault;
+	uint8 mEstimatorInitialized;
+
+	// state space
+	//Vector<float, n_x>  mStateVec; // state vector
+	//Vector<float, n_u>  mInputVec; // input vector
+	//Matrix<float, n_x, n_x>  mStateCov; // state covariance matrix
+
+	//matrix::Dcm<float> _R_att;
+	//Vector3f mEuler;
+
+	//Matrix<float, n_x, n_x>  mDynamicsMat; // dynamics matrix
+	//Matrix<float, n_x, n_u>  mInputMat; // input matrix
+	//Matrix<float, n_u, n_u>  mInputCov; // input covariance
+	//Matrix<float, n_x, n_x>  mNoiseCov; // process noise covariance
+
+
 
     /** \brief Housekeeping Telemetry for downlink */
     PE_HkTlm_t HkTlm;
@@ -337,6 +453,24 @@ public:
      *************************************************************************/
     boolean VerifyCmdLength(CFE_SB_Msg_t* MsgPtr, uint16 usExpectedLen);
 
+    /************************************************************************/
+    /** \brief Validate PE configuration table
+    **
+    **  \par Description
+    **       This function validates PE's configuration table
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \param [in]   ConfigTblPtr    A pointer to the table to validate.
+    **
+    **  \returns
+    **  \retcode #CFE_SUCCESS  \retdesc \copydoc CFE_SUCCESS  \endcode
+    **  \endreturns
+    **
+    *************************************************************************/
+    static int32  ValidateConfigTbl(void*);
+
 private:
     /************************************************************************/
     /** \brief Initialize the PE configuration tables.
@@ -375,24 +509,44 @@ private:
     *************************************************************************/
     int32  AcquireConfigPointers(void);
 
-public:
-    /************************************************************************/
-    /** \brief Validate PE configuration table
-    **
-    **  \par Description
-    **       This function validates PE's configuration table
-    **
-    **  \par Assumptions, External Events, and Notes:
-    **       None
-    **
-    **  \param [in]   ConfigTblPtr    A pointer to the table to validate.
-    **
-    **  \returns
-    **  \retcode #CFE_SUCCESS  \retdesc \copydoc CFE_SUCCESS  \endcode
-    **  \endreturns
-    **
-    *************************************************************************/
-    static int32  ValidateConfigTbl(void*);
+
+
+
+private:
+    //Vector<n_x> dynamics(const Vector<float, n_x> &x,const Vector<float, n_u> &u);
+	void initStateCov();
+	void InitStateSpace();
+	void updateStateSpace();
+	void updateStateSpaceParams();
+
+	// predict the next state
+	void predict();
+
+	// baro
+	//int  baroMeasure(Vector<float, n_y_baro> &y);
+	void baroCorrect();
+	void baroInit();
+	void baroCheckTimeout();
+
+	// gps
+	//int  gpsMeasure(Vector<double, n_y_gps> &y);
+	void gpsCorrect();
+	void gpsInit();
+	void gpsCheckTimeout();
+
+	// land
+	//int  landMeasure(Vector<float, n_y_land> &y);
+	void landCorrect();
+	void landInit();
+	void landCheckTimeout();
+
+	// timeouts
+	void checkTimeouts();
+
+	// misc
+	//inline float agl() { return _x(X_tz) - _x(X_z); }
+	bool landed();
+	int getDelayPeriods(float delay, uint8 *periods);
 
 
 
