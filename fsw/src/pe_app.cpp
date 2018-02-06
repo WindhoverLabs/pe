@@ -9,15 +9,12 @@
 #include "pe_msg.h"
 #include "pe_version.h"
 
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*                                                                 */
 /* Instantiate the application object.                             */
 /*                                                                 */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 PE oPE;
-
-
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*                                                                 */
@@ -28,7 +25,6 @@ PE::PE()
 {
 
 }
-
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*                                                                 */
@@ -221,18 +217,19 @@ void PE::InitData()
     /* Init housekeeping message. */
     CFE_SB_InitMsg(&HkTlm,
     		PE_HK_TLM_MID, sizeof(HkTlm), TRUE);
-      /* Init output messages */
-      CFE_SB_InitMsg(&VehicleLocalPositionMsg,
-      		PX4_VEHICLE_LOCAL_POSITION_MID, sizeof(PX4_VehicleLocalPositionMsg_t), TRUE);
-      /* Init output messages */
-      CFE_SB_InitMsg(&EstimatorStatusMsg,
-      		PX4_ESTIMATOR_STATUS_MID, sizeof(PX4_EstimatorStatusMsg_t), TRUE);
-      /* Init output messages */
-      CFE_SB_InitMsg(&VehicleGlobalPositionMsg,
-      		PX4_VEHICLE_GLOBAL_POSITION_MID, sizeof(PX4_VehicleGlobalPositionMsg_t), TRUE);
-      /* Init output messages */
-      CFE_SB_InitMsg(&Ekf2InnovationsMsg,
-      		PX4_EKF2_INNOVATIONS_MID, sizeof(PX4_Ekf2InnovationsMsg_t), TRUE);
+
+    /* Init output messages */
+	CFE_SB_InitMsg(&VehicleLocalPositionMsg,
+			PX4_VEHICLE_LOCAL_POSITION_MID, sizeof(PX4_VehicleLocalPositionMsg_t), TRUE);
+	CFE_SB_InitMsg(&EstimatorStatusMsg,
+			PX4_ESTIMATOR_STATUS_MID, sizeof(PX4_EstimatorStatusMsg_t), TRUE);
+	CFE_SB_InitMsg(&VehicleGlobalPositionMsg,
+			PX4_VEHICLE_GLOBAL_POSITION_MID, sizeof(PX4_VehicleGlobalPositionMsg_t), TRUE);
+	CFE_SB_InitMsg(&Ekf2InnovationsMsg,
+			PX4_EKF2_INNOVATIONS_MID, sizeof(PX4_Ekf2InnovationsMsg_t), TRUE);
+
+
+
 }
 
 
@@ -327,35 +324,45 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 ProcessCmdPipe();
                 ReportHousekeeping();
                 break;
+
             case PX4_VEHICLE_GPS_POSITION_MID:
                 memcpy(&VehicleGpsPositionMsg, MsgPtr, sizeof(VehicleGpsPositionMsg));
                 break;
+
             case PX4_VEHICLE_STATUS_MID:
                 memcpy(&VehicleStatusMsg, MsgPtr, sizeof(VehicleStatusMsg));
                 break;
+
             case PX4_VEHICLE_LAND_DETECTED_MID:
                 memcpy(&VehicleLandDetectedMsg, MsgPtr, sizeof(VehicleLandDetectedMsg));
                 break;
+
             case PX4_ACTUATOR_ARMED_MID:
                 memcpy(&ActuatorArmedMsg, MsgPtr, sizeof(ActuatorArmedMsg));
                 break;
+
             case PX4_VEHICLE_ATTITUDE_MID:
                 memcpy(&VehicleAttitudeMsg, MsgPtr, sizeof(VehicleAttitudeMsg));
                 break;
+
             case PX4_VEHICLE_CONTROL_MODE_MID:
                 memcpy(&VehicleControlModeMsg, MsgPtr, sizeof(VehicleControlModeMsg));
                 break;
+
             case PX4_SENSOR_COMBINED_MID:
                 memcpy(&SensorCombinedMsg, MsgPtr, sizeof(SensorCombinedMsg));
                 break;
+
             case PX4_VEHICLE_ATTITUDE_SETPOINT_MID:
                 memcpy(&VehicleAttitudeSetpointMsg, MsgPtr, sizeof(VehicleAttitudeSetpointMsg));
                 break;
+
             case PX4_MANUAL_CONTROL_SETPOINT_MID:
                 memcpy(&ManualControlSetpointMsg, MsgPtr, sizeof(ManualControlSetpointMsg));
                 break;
+
             case PX4_DISTANCE_SENSOR_MID:
-                memcpy(&DistanceSensorMsg, MsgPtr, sizeof(PX4_DistanceSensorMsg_t));
+                memcpy(&DistanceSensorMsg, MsgPtr, sizeof(DistanceSensorMsg));
                 break;
 
             default:
@@ -616,6 +623,13 @@ void PE::AppMain()
     /* Exit the application */
     CFE_ES_ExitApp(uiRunStatus);
 }
+
+
+
+
+
+
+
 
 
 /************************/

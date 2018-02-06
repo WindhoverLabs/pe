@@ -55,19 +55,7 @@ extern "C" {
 #include "pe_events.h"
 #include "pe_tbldefs.h"
 #include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
-#include "px4_msgs.h"
+
 /************************************************************************
  ** Local Defines
  *************************************************************************/
@@ -124,6 +112,7 @@ public:
 
     /** \brief Housekeeping Telemetry for downlink */
     PE_HkTlm_t HkTlm;
+
     /************************************************************************/
     /** \brief Position Estimator (PE) application entry point
      **
@@ -404,6 +393,11 @@ public:
     **
     *************************************************************************/
     static int32  ValidateConfigTbl(void*);
+
+
+
+
+
 };
 
 #ifdef __cplusplus
