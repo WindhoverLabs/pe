@@ -2,15 +2,15 @@
 #define MATRIX3F3_HPP
 
 #include "cfe.h"
-#include "Matrix3F3.hpp"
-#include "Vector3F.hpp"
+#include "Matrix10F10.hpp"
+#include "Vector10F.hpp"
 
 #define M_DEG_TO_RAD_F		0.0174532925f
 
 namespace math
 {
 
-class Matrix3F3
+class Matrix10F10
 {
 public:
 	typedef enum {
@@ -57,28 +57,28 @@ public:
 	} RotLookup_t;
 
 private:
-	static const int SIZE = 3;
-	Vector3F data[SIZE];
-	Vector3F nan;
+	static const int SIZE = 10;
+	Vector10F data[SIZE];
+	Vector10F nan;
 
 	static const RotLookup_t RotLookup[];
 
 public:
-	Matrix3F3(Vector3F m0, Vector3F m1, Vector3F m2);
-	~Matrix3F3();
-	Vector3F& operator [] (uint32 i);
-	Vector3F operator [] (uint32 i) const;
-	Matrix3F3();
-	Matrix3F3 Transpose(void);
-	static Matrix3F3 Identity(void);
-	Vector3F operator*(const Vector3F &vecIn);
-	Matrix3F3 operator*(const Matrix3F3 &matIn);
-	Matrix3F3 operator*(const float &scalar);
+	Matrix10F10(Vector10F m0, Vector10F m1, Vector10F m2, Vector10F m3, Vector10F m4, Vector10F m5, Vector10F m6, Vector10F m7, Vector10F m8, Vector10F m9);
+	~Matrix10F10();
+	Vector10F& operator [] (uint32 i);
+	Vector10F operator [] (uint32 i) const;
+	Matrix10F10();
+	Matrix10F10 Transpose(void);
+	static Matrix10F10 Identity(void);
+	Vector10F operator*(const Vector10F &vecIn);
+	Matrix10F10 operator*(const Matrix10F10 &matIn);
+	Matrix10F10 operator*(const float &scalar);
 	void Zero(void);
-    Matrix3F3 operator+(const Matrix3F3 &matIn) const;
-	static Matrix3F3 RotationMatrix(Matrix3F3::Rotation_t boardRotation);
-	static Matrix3F3 FromEuler(float roll, float pitch, float yaw);
-	Vector3F ToEuler(void) const;
+    Matrix10F10 operator+(const Matrix10F10 &matIn) const;
+	static Matrix10F10 RotationMatrix(Matrix10F10::Rotation_t boardRotation);
+	static Matrix10F10 FromEuler(float roll, float pitch, float yaw);
+	Vector10F ToEuler(void) const;
 
 protected:
 

@@ -2,6 +2,7 @@
 #define MATRIX10F3_HPP
 
 #include "cfe.h"
+#include "Matrix10F3.hpp"
 #include "Vector3F.hpp"
 
 #define M_DEG_TO_RAD_F		0.0174532925f
@@ -63,7 +64,7 @@ private:
 	static const RotLookup_t RotLookup[];
 
 public:
-	Matrix10F3(Vector3F m0, Vector3F m1, Vector3F m2);
+	Matrix10F3(Vector3F m0, Vector3F m1, Vector3F m2, Vector3F m3, Vector3F m4, Vector3F m5, Vector3F m6, Vector3F m7, Vector3F m8, Vector3F m9);
 	~Matrix10F3();
 	Vector3F& operator [] (uint32 i);
 	Vector3F operator [] (uint32 i) const;
@@ -75,9 +76,6 @@ public:
 	Matrix10F3 operator*(const float &scalar);
 	void Zero(void);
     Matrix10F3 operator+(const Matrix10F3 &matIn) const;
-	static Matrix10F3 RotationMatrix(Matrix10F3::Rotation_t boardRotation);
-	static Matrix10F3 FromEuler(float roll, float pitch, float yaw);
-	Vector3F ToEuler(void) const;
 
 protected:
 
