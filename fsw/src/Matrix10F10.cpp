@@ -100,36 +100,13 @@ Matrix10F10 Matrix10F10::Transpose(void)
 {
 	Matrix10F10 res;
 
-	res[0][0] = data[0][0];
-	res[0][1] = data[1][0];
-	res[0][2] = data[2][0];
-	res[1][0] = data[0][1];
-	res[1][1] = data[1][1];
-	res[1][2] = data[2][1];
-	res[2][0] = data[0][2];
-	res[2][1] = data[1][2];
-	res[2][2] = data[2][2];
-	res[3][0] = data[0][3];
-	res[3][1] = data[1][3];
-	res[3][2] = data[2][3];
-	res[4][0] = data[0][4];
-	res[4][1] = data[1][4];
-	res[4][2] = data[2][4];
-	res[5][0] = data[0][5];
-	res[5][1] = data[1][5];
-	res[5][2] = data[2][5];
-	res[6][0] = data[0][6];
-	res[6][1] = data[1][6];
-	res[6][2] = data[2][6];
-	res[7][0] = data[0][7];
-	res[7][1] = data[1][7];
-	res[7][2] = data[2][7];
-	res[8][0] = data[0][8];
-	res[8][1] = data[1][8];
-	res[8][2] = data[2][8];
-	res[9][0] = data[0][9];
-	res[9][1] = data[1][9];
-	res[9][2] = data[2][9];
+	for(int i = 0; i < SIZE; i++)
+	{
+		for(int j = 0; j < SIZE; j++)
+		{
+			res[i][j] = data[j][i];
+		}
+	}
 
 	return res;
 }
@@ -154,36 +131,13 @@ Matrix10F10 Matrix10F10::Identity() {
 
 void Matrix10F10::Zero(void)
 {
-	data[0][0] = 0.0f;
-	data[0][1] = 0.0f;
-	data[0][2] = 0.0f;
-	data[1][0] = 0.0f;
-	data[1][1] = 0.0f;
-	data[1][2] = 0.0f;
-	data[2][0] = 0.0f;
-	data[2][1] = 0.0f;
-	data[2][2] = 0.0f;
-	data[3][0] = 0.0f;
-	data[3][1] = 0.0f;
-	data[3][2] = 0.0f;
-	data[4][0] = 0.0f;
-	data[4][1] = 0.0f;
-	data[4][2] = 0.0f;
-	data[5][0] = 0.0f;
-	data[5][1] = 0.0f;
-	data[5][2] = 0.0f;
-	data[6][0] = 0.0f;
-	data[6][1] = 0.0f;
-	data[6][2] = 0.0f;
-	data[7][0] = 0.0f;
-	data[7][1] = 0.0f;
-	data[7][2] = 0.0f;
-	data[8][0] = 0.0f;
-	data[8][1] = 0.0f;
-	data[8][2] = 0.0f;
-	data[9][0] = 0.0f;
-	data[9][1] = 0.0f;
-	data[9][2] = 0.0f;
+	for(int i = 0; i < SIZE; i++)
+	{
+		for(int j = 0; j < SIZE; j++)
+		{
+			data[i][j] = 0.0f;
+		}
+	}
 }
 
 
@@ -191,46 +145,23 @@ void Matrix10F10::Zero(void)
 Matrix10F10 Matrix10F10::operator*(const Matrix10F10 &matIn)
 {
     Matrix10F10 matOut;
+    float value = 0.0f;
 
-    matOut[0][0] = data[0][0]*matIn[0][0] + data[0][1]*matIn[1][0] + data[0][2]*matIn[2][0];
-    matOut[0][1] = data[0][0]*matIn[0][1] + data[0][1]*matIn[1][1] + data[0][2]*matIn[2][1];
-    matOut[0][2] = data[0][0]*matIn[0][2] + data[0][1]*matIn[1][2] + data[0][2]*matIn[2][2];
+    // TODO: verify correct
+    for(int i = 0; i < SIZE; i++)
+    {
+    	for(int j = 0; j < SIZE; j++)
+		{
 
-    matOut[1][0] = data[1][0]*matIn[0][0] + data[1][1]*matIn[1][0] + data[1][2]*matIn[2][0];
-    matOut[1][1] = data[1][0]*matIn[0][1] + data[1][1]*matIn[1][1] + data[1][2]*matIn[2][1];
-    matOut[1][2] = data[1][0]*matIn[0][2] + data[1][1]*matIn[1][2] + data[1][2]*matIn[2][2];
+    		for(int k = 0; k < SIZE; k++)
+			{
+    			value += data[i][j] * matIn[j][k];
+			}
 
-    matOut[2][0] = data[2][0]*matIn[0][0] + data[2][1]*matIn[1][0] + data[2][2]*matIn[2][0];
-    matOut[2][1] = data[2][0]*matIn[0][1] + data[2][1]*matIn[1][1] + data[2][2]*matIn[2][1];
-    matOut[2][2] = data[2][0]*matIn[0][2] + data[2][1]*matIn[1][2] + data[2][2]*matIn[2][2];
-
-    matOut[3][0] = data[3][0]*matIn[0][0] + data[3][1]*matIn[1][0] + data[3][2]*matIn[2][0];
-    matOut[3][1] = data[3][0]*matIn[0][1] + data[3][1]*matIn[1][1] + data[3][2]*matIn[2][1];
-    matOut[3][2] = data[3][0]*matIn[0][2] + data[3][1]*matIn[1][2] + data[3][2]*matIn[2][2];
-
-    matOut[4][0] = data[4][0]*matIn[0][0] + data[4][1]*matIn[1][0] + data[4][2]*matIn[2][0];
-    matOut[4][1] = data[4][0]*matIn[0][1] + data[4][1]*matIn[1][1] + data[4][2]*matIn[2][1];
-    matOut[4][2] = data[4][0]*matIn[0][2] + data[4][1]*matIn[1][2] + data[4][2]*matIn[2][2];
-
-    matOut[5][0] = data[5][0]*matIn[0][0] + data[5][1]*matIn[1][0] + data[5][2]*matIn[2][0];
-    matOut[5][1] = data[5][0]*matIn[0][1] + data[5][1]*matIn[1][1] + data[5][2]*matIn[2][1];
-    matOut[5][2] = data[5][0]*matIn[0][2] + data[5][1]*matIn[1][2] + data[5][2]*matIn[2][2];
-
-    matOut[6][0] = data[6][0]*matIn[0][0] + data[6][1]*matIn[1][0] + data[6][2]*matIn[2][0];
-    matOut[6][1] = data[6][0]*matIn[0][1] + data[6][1]*matIn[1][1] + data[6][2]*matIn[2][1];
-    matOut[6][2] = data[6][0]*matIn[0][2] + data[6][1]*matIn[1][2] + data[6][2]*matIn[2][2];
-
-    matOut[7][0] = data[7][0]*matIn[0][0] + data[7][1]*matIn[1][0] + data[7][2]*matIn[2][0];
-    matOut[7][1] = data[7][0]*matIn[0][1] + data[7][1]*matIn[1][1] + data[7][2]*matIn[2][1];
-    matOut[7][2] = data[7][0]*matIn[0][2] + data[7][1]*matIn[1][2] + data[7][2]*matIn[2][2];
-
-    matOut[8][0] = data[8][0]*matIn[0][0] + data[8][1]*matIn[1][0] + data[8][2]*matIn[2][0];
-    matOut[8][1] = data[8][0]*matIn[0][1] + data[8][1]*matIn[1][1] + data[8][2]*matIn[2][1];
-    matOut[8][2] = data[8][0]*matIn[0][2] + data[8][1]*matIn[1][2] + data[8][2]*matIn[2][2];
-
-    matOut[9][0] = data[9][0]*matIn[0][0] + data[9][1]*matIn[1][0] + data[9][2]*matIn[2][0];
-    matOut[9][1] = data[9][0]*matIn[0][1] + data[9][1]*matIn[1][1] + data[9][2]*matIn[2][1];
-    matOut[9][2] = data[9][0]*matIn[0][2] + data[9][1]*matIn[1][2] + data[9][2]*matIn[2][2];
+    		matOut[i][j] = value;
+    		value = 0.0f;
+		}
+    }
 
     return matOut;
 }
@@ -240,16 +171,39 @@ Matrix10F10 Matrix10F10::operator*(const Matrix10F10 &matIn)
 Vector10F Matrix10F10::operator*(const Vector10F &vecIn)
 {
     Vector10F vecOut;
-    vecOut[0] = data[0][0]*vecIn[0] + data[0][1]*vecIn[1] + data[0][2]*vecIn[2];
-    vecOut[1] = data[1][0]*vecIn[0] + data[1][1]*vecIn[1] + data[1][2]*vecIn[2];
-    vecOut[2] = data[2][0]*vecIn[0] + data[2][1]*vecIn[1] + data[2][2]*vecIn[2];
-    vecOut[3] = data[3][0]*vecIn[0] + data[3][1]*vecIn[1] + data[3][2]*vecIn[2];
-    vecOut[4] = data[4][0]*vecIn[0] + data[4][1]*vecIn[1] + data[4][2]*vecIn[2];
-    vecOut[5] = data[5][0]*vecIn[0] + data[5][1]*vecIn[1] + data[5][2]*vecIn[2];
-    vecOut[6] = data[6][0]*vecIn[0] + data[6][1]*vecIn[1] + data[6][2]*vecIn[2];
-    vecOut[7] = data[7][0]*vecIn[0] + data[7][1]*vecIn[1] + data[7][2]*vecIn[2];
-    vecOut[8] = data[8][0]*vecIn[0] + data[8][1]*vecIn[1] + data[8][2]*vecIn[2];
-    vecOut[9] = data[9][0]*vecIn[0] + data[9][1]*vecIn[1] + data[9][2]*vecIn[2];
+    float value = 0.0f;
+
+    // TODO: verify correct
+    for(int i = 0; i < SIZE; i++)
+    {
+    	for(int j = 0; j < SIZE; j++)
+		{
+    		value += data[i][j]*vecIn[j];
+
+    		vecOut[i] = value;
+    		value = 0.0f;
+		}
+    }
+
+    return vecOut;
+}
+
+Vector10F Matrix10F10::operator+(const Vector10F &vecIn)
+{
+    Vector10F vecOut;
+    float value = 0.0f;
+
+    // TODO: verify correct
+    for(int i = 0; i < SIZE; i++)
+    {
+    	for(int j = 0; j < SIZE; j++)
+		{
+    		value += data[i][j]+vecIn[j];
+
+    		vecOut[i] = value;
+    		value = 0.0f;
+		}
+    }
 
     return vecOut;
 }
@@ -259,38 +213,14 @@ Matrix10F10 Matrix10F10::operator*(const float &scalar)
 {
     Matrix10F10 matOut;
 
-    matOut[0][0] = scalar*data[0][0];
-    matOut[1][0] = scalar*data[1][0];
-    matOut[2][0] = scalar*data[2][0];
-    matOut[3][0] = scalar*data[3][0];
-    matOut[4][0] = scalar*data[4][0];
-    matOut[5][0] = scalar*data[5][0];
-    matOut[6][0] = scalar*data[6][0];
-    matOut[7][0] = scalar*data[7][0];
-    matOut[8][0] = scalar*data[8][0];
-    matOut[9][0] = scalar*data[9][0];
-
-    matOut[0][1] = scalar*data[0][1];
-    matOut[1][1] = scalar*data[1][1];
-    matOut[2][1] = scalar*data[2][1];
-    matOut[3][1] = scalar*data[3][1];
-    matOut[4][1] = scalar*data[4][1];
-    matOut[5][1] = scalar*data[5][1];
-    matOut[6][1] = scalar*data[6][1];
-    matOut[7][1] = scalar*data[7][1];
-    matOut[8][1] = scalar*data[8][1];
-    matOut[9][1] = scalar*data[9][1];
-
-    matOut[0][2] = scalar*data[0][2];
-    matOut[1][2] = scalar*data[1][2];
-    matOut[2][2] = scalar*data[2][2];
-    matOut[3][2] = scalar*data[3][2];
-    matOut[4][2] = scalar*data[4][2];
-    matOut[5][2] = scalar*data[5][2];
-    matOut[6][2] = scalar*data[6][2];
-    matOut[7][2] = scalar*data[7][2];
-    matOut[8][2] = scalar*data[8][2];
-    matOut[9][2] = scalar*data[9][2];
+    // TODO: verify correct
+    for(int i = 0; i < SIZE; i++)
+    {
+    	for(int j = 0; j < SIZE; j++)
+		{
+    		matOut[j][i] = scalar*data[j][i];
+		}
+    }
 
     return matOut;
 }
@@ -300,38 +230,14 @@ Matrix10F10 Matrix10F10::operator+(const Matrix10F10 &matIn) const
 {
     Matrix10F10 matOut;
 
-    matOut[0][0] = data[0][0] + matIn[0][0];
-    matOut[1][0] = data[1][0] + matIn[1][0];
-    matOut[2][0] = data[2][0] + matIn[2][0];
-    matOut[3][0] = data[3][0] + matIn[3][0];
-    matOut[4][0] = data[4][0] + matIn[4][0];
-    matOut[5][0] = data[5][0] + matIn[5][0];
-    matOut[6][0] = data[6][0] + matIn[6][0];
-    matOut[7][0] = data[7][0] + matIn[7][0];
-    matOut[8][0] = data[8][0] + matIn[8][0];
-    matOut[9][0] = data[9][0] + matIn[9][0];
-
-    matOut[0][1] = data[0][1] + matIn[0][1];
-    matOut[1][1] = data[1][1] + matIn[1][1];
-    matOut[2][1] = data[2][1] + matIn[2][1];
-    matOut[3][1] = data[3][1] + matIn[3][1];
-    matOut[4][1] = data[4][1] + matIn[4][1];
-    matOut[5][1] = data[5][1] + matIn[5][1];
-    matOut[6][1] = data[6][1] + matIn[6][1];
-    matOut[7][1] = data[7][1] + matIn[7][1];
-    matOut[8][1] = data[8][1] + matIn[8][1];
-    matOut[9][1] = data[9][1] + matIn[9][1];
-
-    matOut[0][2] = data[0][2] + matIn[0][2];
-    matOut[1][2] = data[1][2] + matIn[1][2];
-    matOut[2][2] = data[2][2] + matIn[2][2];
-    matOut[3][2] = data[3][2] + matIn[3][2];
-    matOut[4][2] = data[4][2] + matIn[4][2];
-    matOut[5][2] = data[5][2] + matIn[5][2];
-    matOut[6][2] = data[6][2] + matIn[6][2];
-    matOut[7][2] = data[7][2] + matIn[7][2];
-    matOut[8][2] = data[8][2] + matIn[8][2];
-    matOut[9][2] = data[9][2] + matIn[9][2];
+    // TODO: verify correct
+	for(int i = 0; i < SIZE; i++)
+	{
+		for(int j = 0; j < SIZE; j++)
+		{
+			matOut[j][i] = data[j][i] + matIn[j][i];
+		}
+	}
 
     return matOut;
 }

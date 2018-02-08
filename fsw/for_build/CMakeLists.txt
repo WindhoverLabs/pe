@@ -24,6 +24,12 @@ add_airliner_app_def(pe
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/Vector3F.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/Vector10F.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/Vector10F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/LowPass.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/LowPass.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/LowPassVector10F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/LowPassVector10F.hpp
+#        ${CMAKE_CURRENT_SOURCE_DIR}/../src/DcmF.cpp
+#        ${CMAKE_CURRENT_SOURCE_DIR}/../src/DcmF.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/geo/geo.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/geo/geo.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/geo_lookup/geo_mag_declination.c

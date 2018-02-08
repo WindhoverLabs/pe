@@ -58,6 +58,12 @@ extern "C" {
 #include "px4_msgs.h"
 #include "lib/px4lib.h"
 
+#include "Vector10F.hpp"
+#include "Vector3F.hpp"
+#include "Matrix10F10.hpp"
+#include "Matrix10F3.hpp"
+#include "Matrix3F3.hpp"
+
 #include <poll.h>
 
 /************************************************************************
@@ -212,19 +218,17 @@ public:
 	uint8 mEstimatorInitialized;
 
 	// state space
-	//Vector<float, n_x>  mStateVec; // state vector
-	//Vector<float, n_u>  mInputVec; // input vector
-	//Matrix<float, n_x, n_x>  mStateCov; // state covariance matrix
+	math::Vector10F  mStateVec; // state vector
+	math::Vector3F  mInputVec; // input vector
+	math::Matrix10F10  mStateCov; // state covariance matrix
 
 	//matrix::Dcm<float> _R_att;
-	//Vector3f mEuler;
+	math::Vector3F mEuler;
 
-	//Matrix<float, n_x, n_x>  mDynamicsMat; // dynamics matrix
-	//Matrix<float, n_x, n_u>  mInputMat; // input matrix
-	//Matrix<float, n_u, n_u>  mInputCov; // input covariance
-	//Matrix<float, n_x, n_x>  mNoiseCov; // process noise covariance
-
-
+	math::Matrix10F10 mDynamicsMat; // dynamics matrix
+	math::Matrix10F3 mInputMat; // input matrix
+	//math::Matrix3F3 mInputCov; // input covariance
+	math::Matrix10F10 mNoiseCov; // process noise covariance
 
     /** \brief Housekeeping Telemetry for downlink */
     PE_HkTlm_t HkTlm;
