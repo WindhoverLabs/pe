@@ -63,6 +63,8 @@ extern "C" {
 #include "math/Matrix10F10.hpp"
 #include "math/Matrix10F3.hpp"
 #include "math/Matrix3F3.hpp"
+#include "math/LowPass.hpp"
+#include "math/LowPassVector10F.hpp"
 
 #include <poll.h>
 
@@ -187,8 +189,8 @@ public:
     uint16 mLandCount;
 
 	// low pass
-	//BlockLowPassVector<float, n_x> mXLowPass;
-	//BlockLowPass mAglLowPass;
+	LowPassVector10F mXLowPass;
+	LowPass mAglLowPass;
 
 	// delay blocks
 	//BlockDelay<float, n_x, 1, HIST_LEN> mXDelay;
