@@ -56,13 +56,13 @@ extern "C" {
 #include "pe_events.h"
 #include "pe_tbldefs.h"
 #include "px4_msgs.h"
-#include "lib/px4lib.h"
+#include "px4lib.h"
 
-#include "Vector10F.hpp"
-#include "Vector3F.hpp"
-#include "Matrix10F10.hpp"
-#include "Matrix10F3.hpp"
-#include "Matrix3F3.hpp"
+#include "math/Vector10F.hpp"
+#include "math/Vector3F.hpp"
+#include "math/Matrix10F10.hpp"
+#include "math/Matrix10F3.hpp"
+#include "math/Matrix3F3.hpp"
 
 #include <poll.h>
 
