@@ -62,53 +62,51 @@ extern "C" {
 /** \brief Params table */
 typedef struct
 {
-	int32  fusion;
+	int32  FUSION;
 
-	float  vxy_pub_thresh;
+	float  VXY_PUB_THRESH;
 
-	float  z_pub_thresh;
+	float  Z_PUB_THRESH;
 
-	float  accel_xy_stddev;
+	float  ACCEL_XY_STDDEV;
 
-	float  accel_z_stddev;
+	float  ACCEL_Z_STDDEV;
 
-	float  baro_stddev;
+	float  BARO_STDDEV;
 
-	float  gps_delay;
+	float  GPS_DELAY;
 
-	float  gps_xy_stddev;
+	float  GPS_XY_STDDEV;
 
-	float  gps_z_stddev;
+	float  GPS_Z_STDDEV;
 
-	float  gps_vxy_stddev;
+	float  GPS_VXY_STDDEV;
 
-	float  gps_vz_stddev;
+	float  GPS_VZ_STDDEV;
 
-	float  gps_eph_max;
+	float  GPS_EPH_MAX;
 
-	float  gps_epv_max;
+	float  GPS_EPV_MAX;
 
-	float  land_z_stddev;
+	float  LAND_Z_STDDEV;
 
-	float  land_vxy_stddev;
+	float  LAND_VXY_STDDEV;
 
-	float  pn_p_noise_density;
+	float  PN_P_NOISE_DENSITY;
 
-	float  pn_v_noise_density;
+	float  PN_V_NOISE_DENSITY;
 
-	float  pn_b_noise_density;
+	float  PN_B_NOISE_DENSITY;
 
-	float  pn_t_noise_density;
+	float  PN_T_NOISE_DENSITY;
 
-	float  t_max_grade;
+	float  T_MAX_GRADE;
 
-	int32  fake_origin;
+	int32  FAKE_ORIGIN;
 
-	float  init_origin_lat;
+	float  INIT_ORIGIN_LAT;
 
-	float  init_origin_lon;
-
-
+	float  INIT_ORIGIN_LON;
 
 } PE_ConfigTbl_t;
 

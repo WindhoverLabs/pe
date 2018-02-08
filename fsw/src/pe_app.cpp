@@ -219,13 +219,13 @@ void PE::InitData()
     		PE_HK_TLM_MID, sizeof(HkTlm), TRUE);
 
     /* Init output messages */
-	CFE_SB_InitMsg(&mVehicleLocalPositionMsg,
+	CFE_SB_InitMsg(&m_VehicleLocalPositionMsg,
 			PX4_VEHICLE_LOCAL_POSITION_MID, sizeof(PX4_VehicleLocalPositionMsg_t), TRUE);
-	CFE_SB_InitMsg(&mEstimatorStatusMsg,
+	CFE_SB_InitMsg(&m_EstimatorStatusMsg,
 			PX4_ESTIMATOR_STATUS_MID, sizeof(PX4_EstimatorStatusMsg_t), TRUE);
-	CFE_SB_InitMsg(&mVehicleGlobalPositionMsg,
+	CFE_SB_InitMsg(&m_VehicleGlobalPositionMsg,
 			PX4_VEHICLE_GLOBAL_POSITION_MID, sizeof(PX4_VehicleGlobalPositionMsg_t), TRUE);
-	CFE_SB_InitMsg(&mEkf2InnovationsMsg,
+	CFE_SB_InitMsg(&m_Ekf2InnovationsMsg,
 			PX4_EKF2_INNOVATIONS_MID, sizeof(PX4_Ekf2InnovationsMsg_t), TRUE);
 
 	/* Set constants */
@@ -251,91 +251,81 @@ void PE::InitData()
 	// todo
 
 	/* Block stats? todo */
-	//mBaroStats(this, "");
-	//mGpsStats(this, "");
+//	m_BaroStats();
+//	m_GpsStats();
 
 	/* Block delays? todo */
 	//mXDelay(this, "");
 	//mTDelay(this, "");
 
 	/*  */
-	memset(&mPolls, 0, sizeof(mPolls));
-	mTimeStamp = PX4LIB_GetPX4TimeUs();
-	mTimeStampLastBaro = PX4LIB_GetPX4TimeUs();
-	mTimeLastBaro = 0;
-	mTimeLastGps = 0;
-	mTimeLastLand = 0;
+	memset(&m_Polls, 0, sizeof(m_Polls));
+	m_TimeStamp = PX4LIB_GetPX4TimeUs();
+	m_TimeStampLastBaro = PX4LIB_GetPX4TimeUs();
+	m_TimeLastBaro = 0;
+	m_TimeLastGps = 0;
+	m_TimeLastLand = 0;
 
 	// reference altitudes
-	mAltOrigin = 0.0;
-	mAltOriginInitialized = FALSE;
-	mBaroAltOrigin = 0.0;
-	mGpsAltOrigin = 0.0;
+	m_AltOrigin = 0.0;
+	m_AltOriginInitialized = FALSE;
+	m_BaroAltOrigin = 0.0;
+	m_GpsAltOrigin = 0.0;
 
 	// status
-	mReceivedGps = FALSE;
-	mLastArmedState = FALSE;
+	m_ReceivedGps = FALSE;
+	m_LastArmedState = FALSE;
 
 	// masks todo
-	mSensorTimeout = 255;
-	mSensorFault = 0;
-	mEstimatorInitialized = 0;
+	m_SensorTimeout = 255;
+	m_SensorFault = 0;
+	m_EstimatorInitialized = 0;
 
 	// state space
-	//mStateVec.Zero();
-	//mInputVec.Zero();
-	//Matrix<float, n_x, n_x>  mStateCov; // state covariance matrix
+	m_StateVec.Zero();
+	m_InputVec.Zero();
 
-	//matrix::Dcm<float> _R_att;
-	//Vector3f mEuler;
-
-	//Matrix<float, n_x, n_x>  mDynamicsMat; // dynamics matrix
-	//Matrix<float, n_x, n_u>  mInputMat; // input matrix
-	//Matrix<float, n_u, n_u>  mInputCov; // input covariance
-	//Matrix<float, n_x, n_x>  mNoiseCov; // process noise covariance
+	InitStateSpace();
 
 	/* Map */
 	//mMap_ref.init_done = false;
-
-	/*  */
-
 
 }
 
 void PE::initStateCov()
 {
-//	mStateCov.setZero();
-//	// initialize to twice valid condition
-//	mStateCov(X_x, X_x) = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
-//	mStateCov(X_y, X_y) = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
-//	mStateCov(X_z, X_z) = 2 * EST_STDDEV_Z_VALID * EST_STDDEV_Z_VALID;
-//	mStateCov(X_vx, X_vx) = 2 * tbl->vxy_pub_thresh * tbl->vxy_pub_thresh;
-//	mStateCov(X_vy, X_vy) = 2 * tbl->vxy_pub_thresh * tbl->vxy_pub_thresh;
-//	// use vxy thresh for vz init as well
-//	mStateCov(X_vz, X_vz) = 2 * tbl->vxy_pub_thresh * tbl->vxy_pub_thresh;
-//	// initialize bias uncertainty to small values to keep them stable
-//	mStateCov(X_bx, X_bx) = 1e-6;
-//	mStateCov(X_by, X_by) = 1e-6;
-//	mStateCov(X_bz, X_bz) = 1e-6;
-//	mStateCov(X_tz, X_tz) = 2 * EST_STDDEV_TZ_VALID * EST_STDDEV_TZ_VALID;
+	m_StateCov.Zero();
+	// initialize to twice valid condition
+	m_StateCov[X_x][X_x] = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
+	m_StateCov[X_y][X_y] = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
+	m_StateCov[X_z][X_z] = 2 * EST_STDDEV_Z_VALID * EST_STDDEV_Z_VALID;
+	m_StateCov[X_vx][X_vx] = 2 * ConfigTblPtr->VXY_PUB_THRESH * ConfigTblPtr->VXY_PUB_THRESH;
+	m_StateCov[X_vy][X_vy] = 2 * ConfigTblPtr->VXY_PUB_THRESH * ConfigTblPtr->VXY_PUB_THRESH;
+	// use vxy thresh for vz init as well
+	m_StateCov[X_vz][X_vz] = 2 * ConfigTblPtr->VXY_PUB_THRESH * ConfigTblPtr->VXY_PUB_THRESH;
+	// initialize bias uncertainty to small values to keep them stable
+	m_StateCov[X_bx][X_bx] = 1e-6;
+	m_StateCov[X_by][X_by] = 1e-6;
+	m_StateCov[X_bz][X_bz] = 1e-6;
+	m_StateCov[X_tz][X_tz] = 2 * EST_STDDEV_TZ_VALID * EST_STDDEV_TZ_VALID;
 }
 
 void PE::InitStateSpace()
 {
 	initStateCov();
 
-//	// dynamics matrix
-//	mDynamicsMat.Zero();
-//	// derivative of position is velocity
-//	mDynamicsMat(X_x, X_vx) = 1;
-//	mDynamicsMat(X_y, X_vy) = 1;
-//	mDynamicsMat(X_z, X_vz) = 1;
-//
-//	// input matrix
-//	mInputMat.Zero();
-//	mInputMat(X_vx, U_ax) = 1;
-//	mInputMat(X_vy, U_ay) = 1;
-//	mInputMat(X_vz, U_az) = 1;
+	// dynamics matrix
+	m_DynamicsMat.Zero();
+	// derivative of position is velocity
+	m_DynamicsMat[X_x][X_vx] = 1;
+	m_DynamicsMat[X_y][X_vy] = 1;
+	m_DynamicsMat[X_z][X_vz] = 1;
+
+	// input matrix
+	m_InputMat.Zero();
+	m_InputMat[X_vx][U_ax] = 1;
+	m_InputMat[X_vy][U_ay] = 1;
+	m_InputMat[X_vz][U_az] = 1;
 
 	// update components that depend on current state
 	updateStateSpace();
@@ -346,51 +336,51 @@ void PE::updateStateSpace()
 {
 	// derivative of velocity is accelerometer acceleration
 	// (in input matrix) - bias (in body frame)
-//	mDynamicsMat(X_vx, X_bx) = -_R_att(0, 0);
-//	mDynamicsMat(X_vx, X_by) = -_R_att(0, 1);
-//	mDynamicsMat(X_vx, X_bz) = -_R_att(0, 2);
-//
-//	mDynamicsMat(X_vy, X_bx) = -_R_att(1, 0);
-//	mDynamicsMat(X_vy, X_by) = -_R_att(1, 1);
-//	mDynamicsMat(X_vy, X_bz) = -_R_att(1, 2);
-//
-//	mDynamicsMat(X_vz, X_bx) = -_R_att(2, 0);
-//	mDynamicsMat(X_vz, X_by) = -_R_att(2, 1);
-//	mDynamicsMat(X_vz, X_bz) = -_R_att(2, 2);
+	m_DynamicsMat[X_vx][X_bx] = -_R_att[0][0];
+	m_DynamicsMat[X_vx][X_by] = -_R_att[0][1];
+	m_DynamicsMat[X_vx][X_bz] = -_R_att[0][2];
+
+	m_DynamicsMat[X_vy][X_bx] = -_R_att[1][0];
+	m_DynamicsMat[X_vy][X_by] = -_R_att[1][1];
+	m_DynamicsMat[X_vy][X_bz] = -_R_att[1][2];
+
+	m_DynamicsMat[X_vz][X_bx] = -_R_att[2][0];
+	m_DynamicsMat[X_vz][X_by] = -_R_att[2][1];
+	m_DynamicsMat[X_vz][X_bz] = -_R_att[2][2];
 }
 
 void PE::updateStateSpaceParams()
 {
-//	// input noise covariance matrix
-//	mInputCov.setZero();
-//	mInputCov(U_ax, U_ax) = _accel_xy_stddev.get() * _accel_xy_stddev.get();
-//	mInputCov(U_ay, U_ay) = _accel_xy_stddev.get() * _accel_xy_stddev.get();
-//	mInputCov(U_az, U_az) = _accel_z_stddev.get() * _accel_z_stddev.get();
-//
-//	// process noise power matrix
-//	mNoiseCov.setZero();
-//	float pn_p_sq = _pn_p_noise_density.get() * _pn_p_noise_density.get();
-//	float pn_v_sq = _pn_v_noise_density.get() * _pn_v_noise_density.get();
-//	mNoiseCov(X_x, X_x) = pn_p_sq;
-//	mNoiseCov(X_y, X_y) = pn_p_sq;
-//	mNoiseCov(X_z, X_z) = pn_p_sq;
-//	mNoiseCov(X_vx, X_vx) = pn_v_sq;
-//	mNoiseCov(X_vy, X_vy) = pn_v_sq;
-//	mNoiseCov(X_vz, X_vz) = pn_v_sq;
-//
-//	// technically, the noise is in the body frame,
-//	// but the components are all the same, so
-//	// ignoring for now
-//	float pn_b_sq = _pn_b_noise_density.get() * _pn_b_noise_density.get();
-//	mNoiseCov(X_bx, X_bx) = pn_b_sq;
-//	mNoiseCov(X_by, X_by) = pn_b_sq;
-//	mNoiseCov(X_bz, X_bz) = pn_b_sq;
-//
-//	// terrain random walk noise ((m/s)/sqrt(hz)), scales with velocity
-//	float pn_t_noise_density =
-//		_pn_t_noise_density.get() +
-//		(tbl->t_max_grade / 100.0f) * sqrtf(mStateVec(X_vx) * mStateVec(X_vx) + mStateVec(X_vy) * mStateVec(X_vy));
-//	mNoiseCov(X_tz, X_tz) = pn_t_noise_density * pn_t_noise_density;
+	// input noise covariance matrix
+	m_InputCov.Zero();
+	m_InputCov[U_ax][U_ax] = ConfigTblPtr->ACCEL_XY_STDDEV * ConfigTblPtr->ACCEL_XY_STDDEV;
+	m_InputCov[U_ay][U_ay] = ConfigTblPtr->ACCEL_XY_STDDEV * ConfigTblPtr->ACCEL_XY_STDDEV;
+	m_InputCov[U_az][U_az] = ConfigTblPtr->ACCEL_Z_STDDEV * ConfigTblPtr->ACCEL_Z_STDDEV;
+
+	// process noise power matrix
+	m_NoiseCov.Zero();
+	float pn_p_sq = ConfigTblPtr->PN_P_NOISE_DENSITY * ConfigTblPtr->PN_P_NOISE_DENSITY;
+	float pn_v_sq = ConfigTblPtr->PN_V_NOISE_DENSITY * ConfigTblPtr->PN_V_NOISE_DENSITY;
+	m_NoiseCov[X_x][X_x] = pn_p_sq;
+	m_NoiseCov[X_y][X_y] = pn_p_sq;
+	m_NoiseCov[X_z][X_z] = pn_p_sq;
+	m_NoiseCov[X_vx][X_vx] = pn_v_sq;
+	m_NoiseCov[X_vy][X_vy] = pn_v_sq;
+	m_NoiseCov[X_vz][X_vz] = pn_v_sq;
+
+	// technically, the noise is in the body frame,
+	// but the components are all the same, so
+	// ignoring for now
+	float pn_b_sq = ConfigTblPtr->PN_B_NOISE_DENSITY * ConfigTblPtr->PN_B_NOISE_DENSITY;
+	m_NoiseCov[X_bx][X_bx] = pn_b_sq;
+	m_NoiseCov[X_by][X_by] = pn_b_sq;
+	m_NoiseCov[X_bz][X_bz] = pn_b_sq;
+
+	// terrain random walk noise ((m/s)/sqrt(hz)), scales with velocity
+	float pn_t_noise_density =
+		ConfigTblPtr->PN_T_NOISE_DENSITY +
+		(ConfigTblPtr->T_MAX_GRADE / 100.0f) * sqrtf(m_StateVec[X_vx] * m_StateVec[X_vx] + m_StateVec[X_vy] * m_StateVec[X_vy]);
+	m_NoiseCov[X_tz][X_tz] = pn_t_noise_density * pn_t_noise_density;
 }
 
 
@@ -487,43 +477,43 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 break;
 
             case PX4_VEHICLE_GPS_POSITION_MID:
-                memcpy(&mVehicleGpsPositionMsg, MsgPtr, sizeof(mVehicleGpsPositionMsg));
+                memcpy(&m_VehicleGpsPositionMsg, MsgPtr, sizeof(m_VehicleGpsPositionMsg));
                 break;
 
             case PX4_VEHICLE_STATUS_MID:
-                memcpy(&mVehicleStatusMsg, MsgPtr, sizeof(mVehicleStatusMsg));
+                memcpy(&m_VehicleStatusMsg, MsgPtr, sizeof(m_VehicleStatusMsg));
                 break;
 
             case PX4_VEHICLE_LAND_DETECTED_MID:
-                memcpy(&mVehicleLandDetectedMsg, MsgPtr, sizeof(mVehicleLandDetectedMsg));
+                memcpy(&m_VehicleLandDetectedMsg, MsgPtr, sizeof(m_VehicleLandDetectedMsg));
                 break;
 
             case PX4_ACTUATOR_ARMED_MID:
-                memcpy(&mActuatorArmedMsg, MsgPtr, sizeof(mActuatorArmedMsg));
+                memcpy(&m_ActuatorArmedMsg, MsgPtr, sizeof(m_ActuatorArmedMsg));
                 break;
 
             case PX4_VEHICLE_ATTITUDE_MID:
-                memcpy(&mVehicleAttitudeMsg, MsgPtr, sizeof(mVehicleAttitudeMsg));
+                memcpy(&m_VehicleAttitudeMsg, MsgPtr, sizeof(m_VehicleAttitudeMsg));
                 break;
 
             case PX4_VEHICLE_CONTROL_MODE_MID:
-                memcpy(&mVehicleControlModeMsg, MsgPtr, sizeof(mVehicleControlModeMsg));
+                memcpy(&m_VehicleControlModeMsg, MsgPtr, sizeof(m_VehicleControlModeMsg));
                 break;
 
             case PX4_SENSOR_COMBINED_MID:
-                memcpy(&mSensorCombinedMsg, MsgPtr, sizeof(mSensorCombinedMsg));
+                memcpy(&m_SensorCombinedMsg, MsgPtr, sizeof(m_SensorCombinedMsg));
                 break;
 
             case PX4_VEHICLE_ATTITUDE_SETPOINT_MID:
-                memcpy(&mVehicleAttitudeSetpointMsg, MsgPtr, sizeof(mVehicleAttitudeSetpointMsg));
+                memcpy(&m_VehicleAttitudeSetpointMsg, MsgPtr, sizeof(m_VehicleAttitudeSetpointMsg));
                 break;
 
             case PX4_MANUAL_CONTROL_SETPOINT_MID:
-                memcpy(&mManualControlSetpointMsg, MsgPtr, sizeof(mManualControlSetpointMsg));
+                memcpy(&m_ManualControlSetpointMsg, MsgPtr, sizeof(m_ManualControlSetpointMsg));
                 break;
 
             case PX4_DISTANCE_SENSOR_MID:
-                memcpy(&mDistanceSensorMsg, MsgPtr, sizeof(mDistanceSensorMsg));
+                memcpy(&m_DistanceSensorMsg, MsgPtr, sizeof(m_DistanceSensorMsg));
                 break;
 
             default:
@@ -664,18 +654,18 @@ void PE::ReportHousekeeping()
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 void PE::SendVehicleLocalPositionMsg()
 {
-    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&mVehicleLocalPositionMsg);
-    CFE_SB_SendMsg((CFE_SB_Msg_t*)&mVehicleLocalPositionMsg);
+    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
+    CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
 }
 void PE::SendEstimatorStatusMsg()
 {
-    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&mEstimatorStatusMsg);
-    CFE_SB_SendMsg((CFE_SB_Msg_t*)&mEstimatorStatusMsg);
+    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_EstimatorStatusMsg);
+    CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_EstimatorStatusMsg);
 }
 void PE::SendVehicleGlobalPositionMsg()
 {
-    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&mVehicleGlobalPositionMsg);
-    CFE_SB_SendMsg((CFE_SB_Msg_t*)&mVehicleGlobalPositionMsg);
+    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
+    CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
 }
 //void PE::SendEkf2InnovationsMsg()
 //{

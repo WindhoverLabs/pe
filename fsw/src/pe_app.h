@@ -65,8 +65,11 @@ extern "C" {
 #include "math/Matrix3F3.hpp"
 #include "math/LowPass.hpp"
 #include "math/LowPassVector10F.hpp"
+#include "math/Stats1F.hpp"
+#include "math/Stats6F.hpp"
 
 #include <poll.h>
+#include <math.h>
 
 /************************************************************************
  ** Local Defines
@@ -166,71 +169,71 @@ public:
     PE_ConfigTbl_t* ConfigTblPtr;
 
     /** \brief Ingest Data */
-    PX4_VehicleGpsPositionMsg_t mVehicleGpsPositionMsg;
-    PX4_VehicleStatusMsg_t mVehicleStatusMsg;
-    PX4_VehicleLandDetectedMsg_t mVehicleLandDetectedMsg;
-    PX4_ActuatorArmedMsg_t mActuatorArmedMsg;
-    PX4_VehicleAttitudeMsg_t mVehicleAttitudeMsg;
-    PX4_VehicleControlModeMsg_t mVehicleControlModeMsg;
-    PX4_SensorCombinedMsg_t mSensorCombinedMsg;
-    PX4_VehicleAttitudeSetpointMsg_t mVehicleAttitudeSetpointMsg;
-    PX4_ManualControlSetpointMsg_t mManualControlSetpointMsg;
-    PX4_DistanceSensorMsg_t mDistanceSensorMsg;
+    PX4_VehicleGpsPositionMsg_t m_VehicleGpsPositionMsg;
+    PX4_VehicleStatusMsg_t m_VehicleStatusMsg;
+    PX4_VehicleLandDetectedMsg_t m_VehicleLandDetectedMsg;
+    PX4_ActuatorArmedMsg_t m_ActuatorArmedMsg;
+    PX4_VehicleAttitudeMsg_t m_VehicleAttitudeMsg;
+    PX4_VehicleControlModeMsg_t m_VehicleControlModeMsg;
+    PX4_SensorCombinedMsg_t m_SensorCombinedMsg;
+    PX4_VehicleAttitudeSetpointMsg_t m_VehicleAttitudeSetpointMsg;
+    PX4_ManualControlSetpointMsg_t m_ManualControlSetpointMsg;
+    PX4_DistanceSensorMsg_t m_DistanceSensorMsg;
 
     /** \brief Output Data published at the end of cycle */
-    PX4_VehicleLocalPositionMsg_t mVehicleLocalPositionMsg;
-    PX4_EstimatorStatusMsg_t mEstimatorStatusMsg;
-    PX4_VehicleGlobalPositionMsg_t mVehicleGlobalPositionMsg;
-    PX4_Ekf2InnovationsMsg_t mEkf2InnovationsMsg;
+    PX4_VehicleLocalPositionMsg_t m_VehicleLocalPositionMsg;
+    PX4_EstimatorStatusMsg_t m_EstimatorStatusMsg;
+    PX4_VehicleGlobalPositionMsg_t m_VehicleGlobalPositionMsg;
+    PX4_Ekf2InnovationsMsg_t m_Ekf2InnovationsMsg;
 
-    // TODO: implement
-    //BlockStats n_y_baro mBaroStats;
-    //BlockStats n_y_gps mGpsStats;
-    uint16 mLandCount;
+    // Sensor stats
+    Stats1F m_BaroStats;
+    Stats6F m_GpsStats;
+    uint16 m_LandCount;
 
 	// low pass
-	LowPassVector10F mXLowPass;
-	LowPass mAglLowPass;
+	LowPassVector10F m_XLowPass;
+	LowPass m_AglLowPass;
 
 	// delay blocks
-	//BlockDelay<float, n_x, 1, HIST_LEN> mXDelay;
-	//BlockDelay<uint64_t, 1, 1, HIST_LEN> mTDelay;
+	//BlockDelay<float, n_x, 1, HIST_LEN> m_XDelay;
+	//BlockDelay<uint64_t, 1, 1, HIST_LEN> m_TDelay;
 
 	// misc
-    pollfd mPolls[3];
-	uint64 mTimeStamp;
-	uint64 mTimeStampLastBaro;
-	uint64 mTimeLastBaro;
-	uint64 mTimeLastGps;
-	uint64 mTimeLastLand;
+    pollfd m_Polls[3];
+	uint64 m_TimeStamp;
+	uint64 m_TimeStampLastBaro;
+	uint64 m_TimeLastBaro;
+	uint64 m_TimeLastGps;
+	uint64 m_TimeLastLand;
 
 	// reference altitudes
-	float mAltOrigin;
-	bool  mAltOriginInitialized;
-	float mBaroAltOrigin;
-	float mGpsAltOrigin;
+	float m_AltOrigin;
+	bool  m_AltOriginInitialized;
+	float m_BaroAltOrigin;
+	float m_GpsAltOrigin;
 
 	// status
-	bool mReceivedGps;
-	bool mLastArmedState;
+	bool m_ReceivedGps;
+	bool m_LastArmedState;
 
 	// masks
-	uint8 mSensorTimeout;
-	uint8 mSensorFault;
-	uint8 mEstimatorInitialized;
+	uint8 m_SensorTimeout;
+	uint8 m_SensorFault;
+	uint8 m_EstimatorInitialized;
 
 	// state space
-	math::Vector10F  mStateVec; // state vector
-	math::Vector3F  mInputVec; // input vector
-	math::Matrix10F10  mStateCov; // state covariance matrix
+	math::Vector10F  m_StateVec; // state vector
+	math::Vector3F  m_InputVec; // input vector
+	math::Matrix10F10  m_StateCov; // state covariance matrix
 
-	//matrix::Dcm<float> _R_att;
-	math::Vector3F mEuler;
+	math::Matrix3F3 _R_att;
+	math::Vector3F m_Euler;
 
-	math::Matrix10F10 mDynamicsMat; // dynamics matrix
-	math::Matrix10F3 mInputMat; // input matrix
-	//math::Matrix3F3 mInputCov; // input covariance
-	math::Matrix10F10 mNoiseCov; // process noise covariance
+	math::Matrix10F10 m_DynamicsMat; // dynamics matrix
+	math::Matrix10F3 m_InputMat; // input m_atrix
+	math::Matrix3F3 m_InputCov; // input covariance
+	math::Matrix10F10 m_NoiseCov; // process noise covariance
 
     /** \brief Housekeeping Telemetry for downlink */
     PE_HkTlm_t HkTlm;
