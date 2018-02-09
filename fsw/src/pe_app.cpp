@@ -803,9 +803,163 @@ void PE::CheckTimeouts()
 
 void PE::Update()
 {
-	m_Timestamp = PX4LIB_GetPX4TimeUs();
-
+	/* Update timestamps */
+	float dt = 0.0f;
+	uint64 newTimestamp = PX4LIB_GetPX4TimeUs();
+	m_Timestamp = newTimestamp;
+	dt = (newTimestamp - m_Timestamp) / 1.0e6f;
 	CheckTimeouts();
+
+	/* Check if params are updated */
+	if(m_ParamsUpdated)
+	{
+		updateStateSpaceParams();
+		m_ParamsUpdated = false;
+	}
+
+	/* Is xy valid? */
+	bool VxyStdDevValid = false;
+	if (fmax(m_StateCov[X_vx][X_vx], m_StateCov[X_vy][X_vy]) <
+		ConfigTblPtr->VXY_PUB_THRESH * ConfigTblPtr->VXY_PUB_THRESH)
+	{
+		VxyStdDevValid = true;
+	}
+
+	if(m_XyEstValid)
+	{
+		if(!VxyStdDevValid && m_GpsTimeout) // TODO: Should this really be AND?
+		{
+			m_XyEstValid = false;
+		}
+	}
+	else
+	{
+		if(VxyStdDevValid && !m_GpsTimeout)
+		{
+			m_XyEstValid = true;
+		}
+	}
+
+	// is z valid?
+	bool ZStdDevValid = false;
+	if(sqrtf(m_StateCov[X_z][X_z]) < ConfigTblPtr->Z_PUB_THRESH)
+	{
+		ZStdDevValid = true;
+	}
+
+	if(m_ZEstValid)
+	{
+		if(!ZStdDevValid && m_BaroTimeout) // TODO: Should this really be AND?
+		{
+			m_ZEstValid = false;
+		}
+	}
+	else
+	{
+		if(ZStdDevValid && !m_BaroTimeout)
+		{
+			m_ZEstValid = true;
+		}
+	}
+
+	// is terrain valid?
+	bool TzStdDevValid = false;
+	if(sqrtf(m_StateCov[X_tz][X_tz]) < ConfigTblPtr->Z_PUB_THRESH)
+	{
+		TzStdDevValid = true;
+	}
+
+	if(m_TzEstValid)
+	{
+		if(!TzStdDevValid)
+		{
+			m_TzEstValid = false;
+		}
+	}
+	else
+	{
+		if(TzStdDevValid)
+		{
+			m_TzEstValid = true;
+		}
+	}
+
+	// if we have no lat, lon initialize projection to LPE_LAT, LPE_LON parameters
+	if (!m_MapRef.init_done && m_XyEstValid && ConfigTblPtr->FAKE_ORIGIN)
+	{
+		map_projection_init(&m_MapRef,
+							ConfigTblPtr->INIT_ORIGIN_LAT,
+							ConfigTblPtr->INIT_ORIGIN_LON,
+							m_Timestamp); //TODO: Verify correct time
+
+		(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+								 "GPS fake origin init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+								 ConfigTblPtr->INIT_ORIGIN_LAT,
+								 ConfigTblPtr->INIT_ORIGIN_LON,
+								 double(m_AltOrigin));
+	}
+
+	// reinitialize x if necessary
+	bool ReinitStateVec = false;
+
+	for (int i = 0; i < n_x; i++) {
+		// should we do a reinit
+		// of sensors here?
+		// don't want it to take too long
+		if (!isfinite(m_StateVec[i]))
+		{
+			ReinitStateVec = true;
+			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+									 "Reinit state vector. Index (%i) not finite", i);
+			break;
+		}
+	}
+
+	if (ReinitStateVec)
+	{
+		m_StateVec.Zero();
+	}
+
+	// force P symmetry and reinitialize P if necessary
+	bool ReinitStateCov = false;
+
+	for (int i = 0; i < n_x; i++)
+	{
+		for (int j = 0; j <= i; j++)
+		{
+			if (!isfinite(m_StateCov[i][j]))
+			{
+				(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+										 "Reinit state covariance. Index (%i, %i) not finite", i, j);
+				ReinitStateCov = true;
+				break;
+			}
+			if (i == j)
+			{
+				// make sure diagonal elements are positive
+				if (m_StateCov[i][i] <= 0)
+				{
+					(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+											 "Reinit state covariance. Index (%i, %i) negative", i, j);
+					ReinitStateCov = true;
+					break;
+				}
+			}
+			else
+			{
+				// copy elememnt from upper triangle to force
+				// symmetry
+				m_StateCov[j][i] = m_StateCov[i][j];
+			}
+		}
+	}
+
+	if (ReinitStateCov)
+	{
+		initStateCov();
+	}
+
+	//Predict();
 
 }
 

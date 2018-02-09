@@ -84,46 +84,46 @@ extern "C" {
  *************************************************************************/
 
 enum {
-	X_x = 0,
-	X_y,
-	X_z,
-	X_vx,
-	X_vy,
-	X_vz,
-	X_bx,
-	X_by,
-	X_bz,
-	X_tz,
-	n_x
+	X_x  = 0,
+	X_y  = 1,
+	X_z  = 2,
+	X_vx = 3,
+	X_vy = 4,
+	X_vz = 5,
+	X_bx = 6,
+	X_by = 7,
+	X_bz = 8,
+	X_tz = 9,
+	n_x  = 10
 };
 
 enum {
 	U_ax = 0,
-	U_ay,
-	U_az,
-	n_u
+	U_ay = 1,
+	U_az = 2,
+	n_u  = 3
 };
 
 enum {
 	Y_baro_z = 0,
-	n_y_baro
+	n_y_baro = 1
 };
 
 enum {
-	Y_gps_x = 0,
-	Y_gps_y,
-	Y_gps_z,
-	Y_gps_vx,
-	Y_gps_vy,
-	Y_gps_vz,
-	n_y_gps
+	Y_gps_x  = 0,
+	Y_gps_y  = 1,
+	Y_gps_z  = 2,
+	Y_gps_vx = 3,
+	Y_gps_vy = 4,
+	Y_gps_vz = 5,
+	n_y_gps  = 6
 };
 
 enum {
-	Y_land_vx = 0,
-	Y_land_vy,
-	Y_land_agl,
-	n_y_land
+	Y_land_vx  = 0,
+	Y_land_vy  = 1,
+	Y_land_agl = 2,
+	n_y_land   = 3
 };
 
 /* Enums for other sensors would go here */
@@ -187,10 +187,16 @@ public:
     PX4_VehicleGlobalPositionMsg_t m_VehicleGlobalPositionMsg;
     PX4_Ekf2InnovationsMsg_t m_Ekf2InnovationsMsg;
 
+    bool m_ParamsUpdated;
+
     // Sensor stats
     Stats1F m_BaroStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
+
+    bool m_XyEstValid;
+    bool m_ZEstValid;
+    bool m_TzEstValid;
 
     // map
     struct map_projection_reference_s m_MapRef;
@@ -227,7 +233,7 @@ public:
 	// masks
 	uint8 m_SensorTimeout;
 	uint8 m_SensorFault;
-	uint8 m_EstimatorInitialized;
+	bool m_EstimatorInitialized;
 
 	// state space
 	math::Vector10F  m_StateVec; // state vector
