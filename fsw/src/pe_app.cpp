@@ -258,13 +258,17 @@ void PE::InitData()
 	//mXDelay(this, "");
 	//mTDelay(this, "");
 
-	/*  */
-	memset(&m_Polls, 0, sizeof(m_Polls));
-	m_TimeStamp = PX4LIB_GetPX4TimeUs();
-	m_TimeStampLastBaro = PX4LIB_GetPX4TimeUs();
+	/* Timestamps */
+	m_Timestamp = PX4LIB_GetPX4TimeUs();
+	m_TimestampLastBaro = PX4LIB_GetPX4TimeUs();
 	m_TimeLastBaro = 0;
 	m_TimeLastGps = 0;
 	m_TimeLastLand = 0;
+
+	/* Timeouts */
+	m_BaroTimeout = true;
+	m_GpsTimeout = true;
+	m_LandTimeout = true;
 
 	// reference altitudes
 	m_AltOrigin = 0.0;
@@ -469,7 +473,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
         switch (MsgId)
         {
             case PE_WAKEUP_MID:
-                /* TODO:  Do something here. */
+                Update();
                 break;
 
             case PE_SEND_HK_MID:
@@ -479,6 +483,15 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
 
             case PX4_VEHICLE_GPS_POSITION_MID:
                 memcpy(&m_VehicleGpsPositionMsg, MsgPtr, sizeof(m_VehicleGpsPositionMsg));
+                if(m_GpsTimeout)
+                {
+                	gpsInit();
+                }
+                else
+                {
+                	//gpsCorrect();
+                }
+
                 break;
 
             case PX4_VEHICLE_STATUS_MID:
@@ -487,6 +500,15 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
 
             case PX4_VEHICLE_LAND_DETECTED_MID:
                 memcpy(&m_VehicleLandDetectedMsg, MsgPtr, sizeof(m_VehicleLandDetectedMsg));
+                if(m_LandTimeout)
+                {
+                	landInit();
+                }
+                else
+                {
+                	//landCorrect();
+                }
+
                 break;
 
             case PX4_ACTUATOR_ARMED_MID:
@@ -503,6 +525,14 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
 
             case PX4_SENSOR_COMBINED_MID:
                 memcpy(&m_SensorCombinedMsg, MsgPtr, sizeof(m_SensorCombinedMsg));
+                if(m_BaroTimeout)
+                {
+                	baroInit();
+                }
+                else
+                {
+                	//baroCorrect();
+                }
                 break;
 
             case PX4_VEHICLE_ATTITUDE_SETPOINT_MID:
@@ -776,7 +806,11 @@ void PE::AppMain()
     CFE_ES_ExitApp(uiRunStatus);
 }
 
+void PE::Update()
+{
+	m_Timestamp = PX4LIB_GetPX4TimeUs();
 
+}
 
 
 

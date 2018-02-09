@@ -26,8 +26,7 @@ void PE::baroInit()
 								 (int)m_BaroStats.getMean()[0],
 								 (int)(100 * m_BaroStats.getStdDev()[0]));
 
-//		_sensorTimeout &= ~SENSOR_BARO;
-//		_sensorFault &= ~SENSOR_BARO;
+		m_BaroTimeout = false;
 
 		if (!m_AltOriginInitialized)
 		{
@@ -43,7 +42,7 @@ int32 PE::baroMeasure(math::Vector1F &y)
 	y.Zero();
 	y[0] = m_SensorCombinedMsg.BaroAlt;
 	m_BaroStats.update(y);
-	m_TimeLastBaro = m_TimeStamp;
+	m_TimeLastBaro = m_Timestamp;
 	return CFE_SUCCESS;
 }
 
@@ -97,14 +96,17 @@ void PE::baroCorrect()
 //	_x += dx;
 //	_P -= K * C * _P;
 }
-//
-//void PE::baroCheckTimeout()
-//{
-//	if (_timeStamp - _time_last_baro > BARO_TIMEOUT) {
-//		if (!(_sensorTimeout & SENSOR_BARO)) {
-//			_sensorTimeout |= SENSOR_BARO;
-//			m_BaroStats.reset();
-//			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] baro timeout ");
-//		}
-//	}
-//}
+
+void PE::baroCheckTimeout()
+{
+	if (m_Timestamp - m_TimeLastBaro > BARO_TIMEOUT)
+	{
+		if (!m_BaroTimeout)
+		{
+			m_BaroTimeout = true;
+			m_BaroStats.reset();
+			(void) CFE_EVS_SendEvent(PE_SENSOR_ERR_EID, CFE_EVS_ERROR,
+									 "Baro timeout");
+		}
+	}
+}

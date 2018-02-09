@@ -204,13 +204,16 @@ public:
 	//BlockDelay<float, n_x, 1, HIST_LEN> m_XDelay;
 	//BlockDelay<uint64_t, 1, 1, HIST_LEN> m_TDelay;
 
-	// misc
-    pollfd m_Polls[3];
-	uint64 m_TimeStamp;
-	uint64 m_TimeStampLastBaro;
+	// Time
+    pollfd m_Polls[3]; // don't think needed
+	uint64 m_Timestamp;
+	uint64 m_TimestampLastBaro;
 	uint64 m_TimeLastBaro;
 	uint64 m_TimeLastGps;
 	uint64 m_TimeLastLand;
+	bool   m_BaroTimeout;
+	bool   m_GpsTimeout;
+	bool   m_LandTimeout;
 
 	// reference altitudes
 	float m_AltOrigin;
@@ -522,6 +525,8 @@ private:
     **
     *************************************************************************/
     int32  AcquireConfigPointers(void);
+
+    void Update();
 
 
 

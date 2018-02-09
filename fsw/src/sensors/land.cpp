@@ -10,15 +10,16 @@ void PE::landInit()
 {
 	// measure
 	math::Vector3F y;
-
-	if (landMeasure(y) != CFE_SUCCESS) {
+	OS_printf("Land init\n");
+	if (landMeasure(y) != CFE_SUCCESS)
+	{
 		m_LandCount = 0;
 	}
 
 	// if finished
-	if (m_LandCount > REQ_LAND_INIT_COUNT) {
-//		_sensorTimeout &= ~SENSOR_LAND;
-//		_sensorFault &= ~SENSOR_LAND;
+	if (m_LandCount > REQ_LAND_INIT_COUNT)
+	{
+		m_LandTimeout = false;
 
 		(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
 								 "Land detecter init");
@@ -27,7 +28,7 @@ void PE::landInit()
 
 int PE::landMeasure(math::Vector3F &y)
 {
-	m_TimeLastLand = m_TimeStamp;
+	m_TimeLastLand = m_Timestamp;
 	y.Zero();
 	m_LandCount += 1;
 	return CFE_SUCCESS;
@@ -88,15 +89,18 @@ int PE::landMeasure(math::Vector3F &y)
 //	_x += dx;
 //	_P -= K * C * _P;
 //}
-//
-//void PE::landCheckTimeout()
-//{
-//	if (_timeStamp - _time_last_land > LAND_TIMEOUT) {
-//		if (!(_sensorTimeout & SENSOR_LAND)) {
-//			_sensorTimeout |= SENSOR_LAND;
-//			m_LandCount = 0;
-//			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] land timeout ");
-//		}
-//	}
-//}
-//
+
+void PE::landCheckTimeout()
+{
+	if (m_Timestamp - m_TimeLastLand > LAND_TIMEOUT)
+	{
+		if (!m_LandTimeout)
+		{
+			m_LandTimeout = true;
+			m_LandCount = 0;
+			(void) CFE_EVS_SendEvent(PE_SENSOR_ERR_EID, CFE_EVS_ERROR,
+									 "Land detecter timeout");
+		}
+	}
+}
+

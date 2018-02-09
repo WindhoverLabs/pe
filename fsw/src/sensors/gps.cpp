@@ -38,9 +38,7 @@ void PE::gpsInit()
 		double gpsLon = m_GpsStats.getMean()[1];
 		float gpsAlt = m_GpsStats.getMean()[2];
 
-//		_sensorTimeout &= ~SENSOR_GPS;
-//		_sensorFault &= ~SENSOR_GPS;
-
+		m_GpsTimeout = false;
 		m_GpsStats.reset();
 
 		if (!m_ReceivedGps)
@@ -60,11 +58,11 @@ void PE::gpsInit()
 				double gpsLatOrigin = 0;
 				double gpsLonOrigin = 0;
 				// reproject at current coordinates
-				map_projection_init(&m_MapRef, gpsLat, gpsLon, m_TimeStamp);
+				map_projection_init(&m_MapRef, gpsLat, gpsLon, m_Timestamp);
 				// find origin
 				map_projection_reproject(&m_MapRef, -m_StateVec[X_x], -m_StateVec[X_y], &gpsLatOrigin, &gpsLonOrigin);
 				// reinit origin
-				map_projection_init(&m_MapRef, gpsLatOrigin, gpsLonOrigin, m_TimeStamp);
+				map_projection_init(&m_MapRef, gpsLatOrigin, gpsLonOrigin, m_Timestamp);
 
 				// always override alt origin on first GPS to fix
 				// possible baro offset in global altitude at init
@@ -96,7 +94,7 @@ int PE::gpsMeasure(math::Vector6F &y)
 
 	// increament sums for mean
 	m_GpsStats.update(y);
-	m_TimeLastGps = m_TimeStamp;
+	m_TimeLastGps = m_Timestamp;
 	return CFE_SUCCESS;
 }
 
@@ -213,14 +211,17 @@ int PE::gpsMeasure(math::Vector6F &y)
 //	_x += dx;
 //	_P -= K * C * _P;
 //}
-//
-//void BlockLocalPositionEstimator::gpsCheckTimeout()
-//{
-//	if (_timeStamp - _time_last_gps > GPS_TIMEOUT) {
-//		if (!(_sensorTimeout & SENSOR_GPS)) {
-//			_sensorTimeout |= SENSOR_GPS;
-//			m_GpsStats.reset();
-//			mavlink_log_critical(&mavlink_log_pub, "[lpe] GPS timeout ");
-//		}
-//	}
-//}
+
+void PE::gpsCheckTimeout()
+{
+	if (m_Timestamp - m_TimeLastGps > GPS_TIMEOUT)
+	{
+		if (!m_GpsTimeout)
+		{
+			m_GpsTimeout = true;
+			m_GpsStats.reset();
+			(void) CFE_EVS_SendEvent(PE_SENSOR_ERR_EID, CFE_EVS_ERROR,
+									 "GPS timeout");
+		}
+	}
+}
