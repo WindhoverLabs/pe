@@ -160,14 +160,6 @@ int32 PE::InitPipe()
 					 iStatus);
             goto PE_InitPipe_Exit_Tag;
         }
-        iStatus = CFE_SB_SubscribeEx(PX4_DISTANCE_SENSOR_MID, SchPipeId, CFE_SB_Default_Qos, 1);
-        if (iStatus != CFE_SUCCESS)
-        {
-            (void) CFE_EVS_SendEvent(PE_SUBSCRIBE_ERR_EID, CFE_EVS_ERROR,
-					 "CMD Pipe failed to subscribe to PX4_DISTANCE_SENSOR_MID. (0x%08lX)",
-					 iStatus);
-            goto PE_InitPipe_Exit_Tag;
-        }
     }
     else
     {
@@ -482,6 +474,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 break;
 
             case PX4_VEHICLE_GPS_POSITION_MID:
+            	OS_printf("gps msg\n");
                 memcpy(&m_VehicleGpsPositionMsg, MsgPtr, sizeof(m_VehicleGpsPositionMsg));
                 if(m_GpsTimeout)
                 {
@@ -489,7 +482,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 }
                 else
                 {
-                	//gpsCorrect();
+                	gpsCorrect();
                 }
 
                 break;
@@ -506,7 +499,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 }
                 else
                 {
-                	//landCorrect();
+                	landCorrect();
                 }
 
                 break;
@@ -531,7 +524,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 }
                 else
                 {
-                	//baroCorrect();
+                	baroCorrect();
                 }
                 break;
 
@@ -539,12 +532,8 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleAttitudeSetpointMsg, MsgPtr, sizeof(m_VehicleAttitudeSetpointMsg));
                 break;
 
-            case PX4_MANUAL_CONTROL_SETPOINT_MID:
+            case PX4_MANUAL_CONTROL_SETPOINT_MID:// TODO: verify needed
                 memcpy(&m_ManualControlSetpointMsg, MsgPtr, sizeof(m_ManualControlSetpointMsg));
-                break;
-
-            case PX4_DISTANCE_SENSOR_MID:
-                memcpy(&m_DistanceSensorMsg, MsgPtr, sizeof(m_DistanceSensorMsg));
                 break;
 
             default:
@@ -806,11 +795,22 @@ void PE::AppMain()
     CFE_ES_ExitApp(uiRunStatus);
 }
 
+void PE::CheckTimeouts()
+{
+	baroCheckTimeout();
+	gpsCheckTimeout();
+	landCheckTimeout();
+}
+
 void PE::Update()
 {
 	m_Timestamp = PX4LIB_GetPX4TimeUs();
 
+	CheckTimeouts();
+
 }
+
+
 
 
 

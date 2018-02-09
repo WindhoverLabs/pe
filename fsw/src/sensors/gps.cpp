@@ -83,6 +83,7 @@ void PE::gpsInit()
 
 int PE::gpsMeasure(math::Vector6F &y)
 {
+	OS_printf("gps measure\n");
 	// gps measurement
 	y.Zero();
 	y[0] = m_VehicleGpsPositionMsg.Lat * 1e-7;
@@ -98,29 +99,29 @@ int PE::gpsMeasure(math::Vector6F &y)
 	return CFE_SUCCESS;
 }
 
-//void BlockLocalPositionEstimator::gpsCorrect()
-//{
-//	// measure
-//	Vector<double, n_y_gps> y_global;
-//
-//	if (gpsMeasure(y_global) != OK) { return; }
-//
-//	// gps measurement in local frame
-//	double  lat = y_global(0);
-//	double  lon = y_global(1);
-//	float  alt = y_global(2);
-//	float px = 0;
-//	float py = 0;
-//	float pz = -(alt - _gpsAltOrigin);
-//	map_projection_project(&m_MapRef, lat, lon, &px, &py);
-//	Vector<float, 6> y;
-//	y.setZero();
-//	y(0) = px;
-//	y(1) = py;
-//	y(2) = pz;
-//	y(3) = y_global(3);
-//	y(4) = y_global(4);
-//	y(5) = y_global(5);
+void PE::gpsCorrect()
+{
+	// measure
+	math::Vector6F y_global;
+
+	if (gpsMeasure(y_global) != CFE_SUCCESS) { return; }
+
+	// gps measurement in local frame
+	double  lat = y_global[0];
+	double  lon = y_global[1];
+	float  alt = y_global[2];
+	float px = 0;
+	float py = 0;
+	float pz = -(alt - m_GpsAltOrigin);
+	map_projection_project(&m_MapRef, lat, lon, &px, &py);
+	math::Vector6F y;
+	y.Zero();
+	y[0] = px;
+	y[1] = py;
+	y[2] = pz;
+	y[3] = y_global[3];
+	y[4] = y_global[4];
+	y[5] = y_global[5];
 //
 //	// gps measurement matrix, measures position and velocity
 //	Matrix<float, n_y_gps, n_x> C;
@@ -210,7 +211,7 @@ int PE::gpsMeasure(math::Vector6F &y)
 //	Vector<float, n_x> dx = K * r;
 //	_x += dx;
 //	_P -= K * C * _P;
-//}
+}
 
 void PE::gpsCheckTimeout()
 {

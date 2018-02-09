@@ -172,15 +172,14 @@ public:
 
     /** \brief Ingest Data */
     PX4_VehicleGpsPositionMsg_t m_VehicleGpsPositionMsg;
-    PX4_VehicleStatusMsg_t m_VehicleStatusMsg;
+    PX4_VehicleStatusMsg_t m_VehicleStatusMsg; //todo verify needed
     PX4_VehicleLandDetectedMsg_t m_VehicleLandDetectedMsg;
     PX4_ActuatorArmedMsg_t m_ActuatorArmedMsg;
     PX4_VehicleAttitudeMsg_t m_VehicleAttitudeMsg;
-    PX4_VehicleControlModeMsg_t m_VehicleControlModeMsg;
+    PX4_VehicleControlModeMsg_t m_VehicleControlModeMsg; //todo verify needed
     PX4_SensorCombinedMsg_t m_SensorCombinedMsg;
     PX4_VehicleAttitudeSetpointMsg_t m_VehicleAttitudeSetpointMsg;
-    PX4_ManualControlSetpointMsg_t m_ManualControlSetpointMsg;
-    PX4_DistanceSensorMsg_t m_DistanceSensorMsg;
+    PX4_ManualControlSetpointMsg_t m_ManualControlSetpointMsg; //todo verify needed
 
     /** \brief Output Data published at the end of cycle */
     PX4_VehicleLocalPositionMsg_t m_VehicleLocalPositionMsg;
@@ -526,9 +525,6 @@ private:
     *************************************************************************/
     int32  AcquireConfigPointers(void);
 
-    void Update();
-
-
 
 
 private:
@@ -560,12 +556,14 @@ private:
 	void landCheckTimeout();
 
 	// timeouts
-	void checkTimeouts();
+	void CheckTimeouts();
 
 	// misc
 	//inline float agl() { return _x(X_tz) - _x(X_z); }
 	bool landed();
 	int getDelayPeriods(float delay, uint8 *periods);
+
+	void Update();
 
 
 

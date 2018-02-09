@@ -51,10 +51,12 @@ void PE::baroCorrect()
 	// measure
 	math::Vector1F y;
 
-//	if (baroMeasure(y) != CFE_SUCCESS) { return; }
-//
-//	// subtract baro origin alt
-//	y -= m_BaroAltOrigin;
+	if (baroMeasure(y) != CFE_SUCCESS) { return; }
+
+	// subtract baro origin alt
+	y[0] -= m_BaroAltOrigin;
+
+
 //
 //	// baro measurement matrix
 //	math::Matrix1F10 C;

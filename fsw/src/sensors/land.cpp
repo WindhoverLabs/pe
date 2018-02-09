@@ -34,8 +34,8 @@ int PE::landMeasure(math::Vector3F &y)
 	return CFE_SUCCESS;
 }
 
-//void PE::landCorrect()
-//{
+void PE::landCorrect()
+{
 //	// measure land
 //	Vector<float, n_y_land> y;
 //
@@ -88,7 +88,7 @@ int PE::landMeasure(math::Vector3F &y)
 //	Vector<float, n_x> dx = K * r;
 //	_x += dx;
 //	_P -= K * C * _P;
-//}
+}
 
 void PE::landCheckTimeout()
 {
