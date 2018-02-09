@@ -250,6 +250,30 @@ typedef enum {
 */
 	PE_CFGTBL_LOAD_ERR_EID,
 
+/** \brief TODO
+**  \event
+**
+**  \par Type:
+**
+**  \par Cause:
+**
+**  This event message is issued when
+**
+*/
+	PE_SENSOR_INF_EID,
+
+/** \brief TODO
+**  \event
+**
+**  \par Type:
+**
+**  \par Cause:
+**
+**  This event message is issued when
+**
+*/
+	PE_SENSOR_ERR_EID,
+
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT
 } PE_EventIds_t;

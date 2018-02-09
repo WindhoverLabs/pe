@@ -1,107 +1,105 @@
-//#include "../BlockLocalPositionEstimator.hpp"
-//#include <systemlib/mavlink_log.h>
-//#include <matrix/math.hpp>
-//
-//extern orb_advert_t mavlink_log_pub;
-//
-//// required number of samples for sensor
-//// to initialize
-//static const uint32_t 		REQ_GPS_INIT_COUNT = 10;
-//static const uint32_t 		GPS_TIMEOUT =      1000000; // 1.0 s
-//
-//void BlockLocalPositionEstimator::gpsInit()
-//{
-//	// check for good gps signal
-//	uint8_t nSat = _sub_gps.get().satellites_used;
-//	float eph = _sub_gps.get().eph;
-//	float epv = _sub_gps.get().epv;
-//	uint8_t fix_type = _sub_gps.get().fix_type;
-//
-//	if (
-//		nSat < 6 ||
-//		eph > _gps_eph_max.get() ||
-//		epv > _gps_epv_max.get() ||
-//		fix_type < 3
-//	) {
-//		_gpsStats.reset();
-//		return;
-//	}
-//
-//	// measure
-//	Vector<double, n_y_gps> y;
-//
-//	if (gpsMeasure(y) != OK) {
-//		_gpsStats.reset();
-//		return;
-//	}
-//
-//	// if finished
-//	if (_gpsStats.getCount() > REQ_GPS_INIT_COUNT) {
-//		// get mean gps values
-//		double gpsLat = _gpsStats.getMean()(0);
-//		double gpsLon = _gpsStats.getMean()(1);
-//		float gpsAlt = _gpsStats.getMean()(2);
-//
+#include "../pe_app.h"
+
+// required number of samples for sensor
+// to initialize
+#define REQ_GPS_INIT_COUNT  (10)
+#define GPS_TIMEOUT 	    (1000000) // 1.0 s
+
+void PE::gpsInit()
+{
+	// check for good gps signal
+	uint8 nSat = m_VehicleGpsPositionMsg.SatellitesUsed;
+	float eph = m_VehicleGpsPositionMsg.EpH;
+	float epv = m_VehicleGpsPositionMsg.EpV;
+	uint8 fix_type = m_VehicleGpsPositionMsg.FixType;
+
+	if (nSat < 6 ||
+		eph > ConfigTblPtr->GPS_EPH_MAX ||
+		epv > ConfigTblPtr->GPS_EPV_MAX ||
+		fix_type < 3)
+	{
+		m_GpsStats.reset();
+		return;
+	}
+
+	// measure
+	math::Vector6F y;
+
+	if (gpsMeasure(y) != CFE_SUCCESS) {
+		m_GpsStats.reset();
+		return;
+	}
+
+	// if finished
+	if (m_GpsStats.getCount() > REQ_GPS_INIT_COUNT)
+	{
+		// get mean gps values
+		double gpsLat = m_GpsStats.getMean()[0];
+		double gpsLon = m_GpsStats.getMean()[1];
+		float gpsAlt = m_GpsStats.getMean()[2];
+
 //		_sensorTimeout &= ~SENSOR_GPS;
 //		_sensorFault &= ~SENSOR_GPS;
-//		_gpsStats.reset();
-//
-//		if (!_receivedGps) {
-//			// this is the first time we have received gps
-//			_receivedGps = true;
-//
-//			// note we subtract X_z which is in down directon so it is
-//			// an addition
-//			_gpsAltOrigin = gpsAlt + _x(X_z);
-//
-//			// find lat, lon of current origin by subtracting x and y
-//			// if not using vision position since vision will
-//			// have it's own origin, not necessarily where vehicle starts
-//			if (!_map_ref.init_done && !(_fusion.get() & FUSE_VIS_POS)) {
-//				double gpsLatOrigin = 0;
-//				double gpsLonOrigin = 0;
-//				// reproject at current coordinates
-//				map_projection_init(&_map_ref, gpsLat, gpsLon);
-//				// find origin
-//				map_projection_reproject(&_map_ref, -_x(X_x), -_x(X_y), &gpsLatOrigin, &gpsLonOrigin);
-//				// reinit origin
-//				map_projection_init(&_map_ref, gpsLatOrigin, gpsLonOrigin);
-//
-//				// always override alt origin on first GPS to fix
-//				// possible baro offset in global altitude at init
-//				_altOrigin = _gpsAltOrigin;
-//				_altOriginInitialized = true;
-//
-//				mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] global origin init (gps) : lat %6.2f lon %6.2f alt %5.1f m",
-//							     gpsLatOrigin, gpsLonOrigin, double(_gpsAltOrigin));
-//			}
-//
-//			PX4_INFO("[lpe] gps init "
-//				 "lat %6.2f lon %6.2f alt %5.1f m",
-//				 gpsLat,
-//				 gpsLon,
-//				 double(gpsAlt));
-//		}
-//	}
-//}
-//
-//int BlockLocalPositionEstimator::gpsMeasure(Vector<double, n_y_gps> &y)
-//{
-//	// gps measurement
-//	y.setZero();
-//	y(0) = _sub_gps.get().lat * 1e-7;
-//	y(1) = _sub_gps.get().lon * 1e-7;
-//	y(2) = _sub_gps.get().alt * 1e-3;
-//	y(3) = _sub_gps.get().vel_n_m_s;
-//	y(4) = _sub_gps.get().vel_e_m_s;
-//	y(5) = _sub_gps.get().vel_d_m_s;
-//
-//	// increament sums for mean
-//	_gpsStats.update(y);
-//	_time_last_gps = _timeStamp;
-//	return OK;
-//}
-//
+
+		m_GpsStats.reset();
+
+		if (!m_ReceivedGps)
+		{
+			// this is the first time we have received gps
+			m_ReceivedGps = true;
+
+			// note we subtract X_z which is in down directon so it is
+			// an addition
+			m_GpsAltOrigin = gpsAlt + m_StateVec[X_z];
+
+			// find lat, lon of current origin by subtracting x and y
+			// if not using vision position since vision will
+			// have it's own origin, not necessarily where vehicle starts
+			if (!m_MapRef.init_done)
+			{
+				double gpsLatOrigin = 0;
+				double gpsLonOrigin = 0;
+				// reproject at current coordinates
+				map_projection_init(&m_MapRef, gpsLat, gpsLon, m_TimeStamp);
+				// find origin
+				map_projection_reproject(&m_MapRef, -m_StateVec[X_x], -m_StateVec[X_y], &gpsLatOrigin, &gpsLonOrigin);
+				// reinit origin
+				map_projection_init(&m_MapRef, gpsLatOrigin, gpsLonOrigin, m_TimeStamp);
+
+				// always override alt origin on first GPS to fix
+				// possible baro offset in global altitude at init
+				m_AltOrigin = m_GpsAltOrigin;
+				m_AltOriginInitialized = true;
+
+				(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+										 "GPS init origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+										 gpsLatOrigin, gpsLonOrigin, double(m_GpsAltOrigin));
+			}
+
+			(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+									 "GPS init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+									 gpsLat, gpsLon, double(gpsAlt));
+		}
+	}
+}
+
+int PE::gpsMeasure(math::Vector6F &y)
+{
+	// gps measurement
+	y.Zero();
+	y[0] = m_VehicleGpsPositionMsg.Lat * 1e-7;
+	y[1] = m_VehicleGpsPositionMsg.Lon * 1e-7;
+	y[2] = m_VehicleGpsPositionMsg.Alt * 1e-3;
+	y[3] = m_VehicleGpsPositionMsg.Vel_n_m_s;
+	y[4] = m_VehicleGpsPositionMsg.Vel_e_m_s;
+	y[5] = m_VehicleGpsPositionMsg.Vel_d_m_s;
+
+	// increament sums for mean
+	m_GpsStats.update(y);
+	m_TimeLastGps = m_TimeStamp;
+	return CFE_SUCCESS;
+}
+
 //void BlockLocalPositionEstimator::gpsCorrect()
 //{
 //	// measure
@@ -116,7 +114,7 @@
 //	float px = 0;
 //	float py = 0;
 //	float pz = -(alt - _gpsAltOrigin);
-//	map_projection_project(&_map_ref, lat, lon, &px, &py);
+//	map_projection_project(&m_MapRef, lat, lon, &px, &py);
 //	Vector<float, 6> y;
 //	y.setZero();
 //	y(0) = px;
@@ -221,7 +219,7 @@
 //	if (_timeStamp - _time_last_gps > GPS_TIMEOUT) {
 //		if (!(_sensorTimeout & SENSOR_GPS)) {
 //			_sensorTimeout |= SENSOR_GPS;
-//			_gpsStats.reset();
+//			m_GpsStats.reset();
 //			mavlink_log_critical(&mavlink_log_pub, "[lpe] GPS timeout ");
 //		}
 //	}

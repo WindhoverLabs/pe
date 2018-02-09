@@ -58,8 +58,9 @@ extern "C" {
 #include "px4_msgs.h"
 #include "px4lib.h"
 
-#include "math/Vector10F.hpp"
+#include "math/Vector1F.hpp"
 #include "math/Vector3F.hpp"
+#include "math/Vector10F.hpp"
 #include "math/Matrix10F10.hpp"
 #include "math/Matrix10F3.hpp"
 #include "math/Matrix3F3.hpp"
@@ -67,6 +68,7 @@ extern "C" {
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
 #include "math/Stats6F.hpp"
+#include "geo/geo.h"
 
 #include <poll.h>
 #include <math.h>
@@ -190,6 +192,9 @@ public:
     Stats1F m_BaroStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
+
+    // map
+    struct map_projection_reference_s m_MapRef;
 
 	// low pass
 	LowPassVector10F m_XLowPass;
@@ -532,19 +537,19 @@ private:
 	void predict();
 
 	// baro
-	//int  baroMeasure(Vector<float, n_y_baro> &y);
+	int32  baroMeasure(math::Vector1F &y);
 	void baroCorrect();
 	void baroInit();
 	void baroCheckTimeout();
 
 	// gps
-	//int  gpsMeasure(Vector<double, n_y_gps> &y);
+	int  gpsMeasure(math::Vector6F &y);
 	void gpsCorrect();
 	void gpsInit();
 	void gpsCheckTimeout();
 
 	// land
-	//int  landMeasure(Vector<float, n_y_land> &y);
+	int  landMeasure(math::Vector3F &y);
 	void landCorrect();
 	void landInit();
 	void landCheckTimeout();

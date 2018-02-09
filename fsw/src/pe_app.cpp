@@ -288,7 +288,7 @@ void PE::InitData()
 	InitStateSpace();
 
 	/* Map */
-	//mMap_ref.init_done = false;
+	m_MapRef.init_done = false;
 
 }
 
@@ -411,13 +411,14 @@ int32 PE::InitApp()
         goto PE_InitApp_Exit_Tag;
     }
 
-    InitData();
 
     iStatus = InitConfigTbl();
     if (iStatus != CFE_SUCCESS)
     {
         goto PE_InitApp_Exit_Tag;
     }
+
+    InitData();
 
 PE_InitApp_Exit_Tag:
     if (iStatus == CFE_SUCCESS)

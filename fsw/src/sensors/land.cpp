@@ -1,41 +1,39 @@
-//#include "../BlockLocalPositionEstimator.hpp"
-//#include <systemlib/mavlink_log.h>
-//#include <matrix/math.hpp>
+#include "../pe_app.h"
+
+// required number of samples for sensor
+// to initialize
 //
-//extern orb_advert_t mavlink_log_pub;
-//
-//// required number of samples for sensor
-//// to initialize
-////
-//static const uint32_t 		REQ_LAND_INIT_COUNT = 1;
-//static const uint32_t 		LAND_TIMEOUT =   1000000; // 1.0 s
-//
-//void BlockLocalPositionEstimator::landInit()
-//{
-//	// measure
-//	Vector<float, n_y_land> y;
-//
-//	if (landMeasure(y) != OK) {
-//		_landCount = 0;
-//	}
-//
-//	// if finished
-//	if (_landCount > REQ_LAND_INIT_COUNT) {
-//		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] land init");
+#define 	REQ_LAND_INIT_COUNT (1)
+#define 	LAND_TIMEOUT   		(1000000) // 1.0 s
+
+void PE::landInit()
+{
+	// measure
+	math::Vector3F y;
+
+	if (landMeasure(y) != CFE_SUCCESS) {
+		m_LandCount = 0;
+	}
+
+	// if finished
+	if (m_LandCount > REQ_LAND_INIT_COUNT) {
 //		_sensorTimeout &= ~SENSOR_LAND;
 //		_sensorFault &= ~SENSOR_LAND;
-//	}
-//}
-//
-//int BlockLocalPositionEstimator::landMeasure(Vector<float, n_y_land> &y)
-//{
-//	_time_last_land = _timeStamp;
-//	y.setZero();
-//	_landCount += 1;
-//	return OK;
-//}
-//
-//void BlockLocalPositionEstimator::landCorrect()
+
+		(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+								 "Land detecter init");
+	}
+}
+
+int PE::landMeasure(math::Vector3F &y)
+{
+	m_TimeLastLand = m_TimeStamp;
+	y.Zero();
+	m_LandCount += 1;
+	return CFE_SUCCESS;
+}
+
+//void PE::landCorrect()
 //{
 //	// measure land
 //	Vector<float, n_y_land> y;
@@ -91,12 +89,12 @@
 //	_P -= K * C * _P;
 //}
 //
-//void BlockLocalPositionEstimator::landCheckTimeout()
+//void PE::landCheckTimeout()
 //{
 //	if (_timeStamp - _time_last_land > LAND_TIMEOUT) {
 //		if (!(_sensorTimeout & SENSOR_LAND)) {
 //			_sensorTimeout |= SENSOR_LAND;
-//			_landCount = 0;
+//			m_LandCount = 0;
 //			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] land timeout ");
 //		}
 //	}
