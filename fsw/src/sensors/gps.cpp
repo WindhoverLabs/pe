@@ -83,7 +83,6 @@ void PE::gpsInit()
 
 int PE::gpsMeasure(math::Vector6F &y)
 {
-	OS_printf("gps measure\n");
 	// gps measurement
 	y.Zero();
 	y[0] = m_VehicleGpsPositionMsg.Lat * 1e-7;

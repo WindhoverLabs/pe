@@ -474,7 +474,6 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 break;
 
             case PX4_VEHICLE_GPS_POSITION_MID:
-            	OS_printf("gps msg\n");
                 memcpy(&m_VehicleGpsPositionMsg, MsgPtr, sizeof(m_VehicleGpsPositionMsg));
                 if(m_GpsTimeout)
                 {
