@@ -83,6 +83,33 @@ extern "C" {
  ** Local Structure Definitions
  *************************************************************************/
 
+typedef struct
+{
+	int32  FUSION;
+	float  VXY_PUB_THRESH;
+	float  Z_PUB_THRESH;
+	float  ACCEL_XY_STDDEV;
+	float  ACCEL_Z_STDDEV;
+	float  BARO_STDDEV;
+	float  GPS_DELAY;
+	float  GPS_XY_STDDEV;
+	float  GPS_Z_STDDEV;
+	float  GPS_VXY_STDDEV;
+	float  GPS_VZ_STDDEV;
+	float  GPS_EPH_MAX;
+	float  GPS_EPV_MAX;
+	float  LAND_Z_STDDEV;
+	float  LAND_VXY_STDDEV;// TODO TODO TODO XXX Check what this is supposed to be
+	float  PN_P_NOISE_DENSITY;
+	float  PN_V_NOISE_DENSITY;
+	float  PN_B_NOISE_DENSITY;
+	float  PN_T_NOISE_DENSITY;
+	float  T_MAX_GRADE;
+	int32  FAKE_ORIGIN;
+	float  INIT_ORIGIN_LAT;
+	float  INIT_ORIGIN_LON;
+} PE_Params_t;
+
 enum {
 	X_x  = 0,
 	X_y  = 1,
@@ -247,6 +274,8 @@ public:
 	math::Matrix10F3 m_InputMat; // input m_atrix
 	math::Matrix3F3 m_InputCov; // input covariance
 	math::Matrix10F10 m_NoiseCov; // process noise covariance
+
+	PE_Params_t m_Params;
 
     /** \brief Housekeeping Telemetry for downlink */
     PE_HkTlm_t HkTlm;
@@ -569,7 +598,11 @@ private:
 	bool landed();
 	int getDelayPeriods(float delay, uint8 *periods);
 
+	void UpdateLocalParams();
+
 	void Update();
+	void Predict();
+
 
 
 

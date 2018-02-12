@@ -239,6 +239,8 @@ void PE::InitData()
 	P_MAX = 1.0e6f;
 	LAND_RATE = 10.0f;
 
+	UpdateLocalParams();
+
 	/* Map projection */
 	// todo
 
@@ -806,8 +808,8 @@ void PE::Update()
 	/* Update timestamps */
 	float dt = 0.0f;
 	uint64 newTimestamp = PX4LIB_GetPX4TimeUs();
-	m_Timestamp = newTimestamp;
 	dt = (newTimestamp - m_Timestamp) / 1.0e6f;
+	m_Timestamp = newTimestamp;
 	CheckTimeouts();
 
 	/* Check if params are updated */
@@ -959,11 +961,54 @@ void PE::Update()
 		initStateCov();
 	}
 
-	//Predict();
+	Predict();
+
+	if(m_AltOriginInitialized)
+	{
+		SendVehicleLocalPositionMsg();
+		SendEstimatorStatusMsg();
+
+		if(m_XyEstValid && (m_MapRef.init_done || ConfigTblPtr->FAKE_ORIGIN))
+		{
+			SendVehicleGlobalPositionMsg();
+		}
+	}
+
+
 
 }
 
+void PE::Predict()
+{
 
+}
+
+void PE::UpdateLocalParams()
+{
+	m_Params.FUSION = ConfigTblPtr->FUSION;
+	m_Params.VXY_PUB_THRESH = ConfigTblPtr->VXY_PUB_THRESH;
+	m_Params.Z_PUB_THRESH = ConfigTblPtr->Z_PUB_THRESH;
+	m_Params.ACCEL_XY_STDDEV = ConfigTblPtr->ACCEL_XY_STDDEV;
+	m_Params.ACCEL_Z_STDDEV = ConfigTblPtr->ACCEL_Z_STDDEV;
+	m_Params.BARO_STDDEV = ConfigTblPtr->BARO_STDDEV;
+	m_Params.GPS_DELAY = ConfigTblPtr->GPS_DELAY;
+	m_Params.GPS_XY_STDDEV = ConfigTblPtr->GPS_XY_STDDEV;
+	m_Params.GPS_Z_STDDEV = ConfigTblPtr->GPS_Z_STDDEV;
+	m_Params.GPS_VXY_STDDEV = ConfigTblPtr->GPS_VXY_STDDEV;
+	m_Params.GPS_VZ_STDDEV = ConfigTblPtr->GPS_VZ_STDDEV;
+	m_Params.GPS_EPH_MAX = ConfigTblPtr->GPS_EPH_MAX;
+	m_Params.GPS_EPV_MAX = ConfigTblPtr->GPS_EPV_MAX;
+	m_Params.LAND_Z_STDDEV = ConfigTblPtr->LAND_Z_STDDEV;
+	m_Params.LAND_VXY_STDDEV = ConfigTblPtr->LAND_VXY_STDDEV;
+	m_Params.PN_P_NOISE_DENSITY = ConfigTblPtr->PN_P_NOISE_DENSITY;
+	m_Params.PN_V_NOISE_DENSITY = ConfigTblPtr->PN_V_NOISE_DENSITY;
+	m_Params.PN_B_NOISE_DENSITY = ConfigTblPtr->PN_B_NOISE_DENSITY;
+	m_Params.PN_T_NOISE_DENSITY = ConfigTblPtr->PN_T_NOISE_DENSITY;
+	m_Params.T_MAX_GRADE = ConfigTblPtr->T_MAX_GRADE;
+	m_Params.FAKE_ORIGIN = ConfigTblPtr->FAKE_ORIGIN;
+	m_Params.INIT_ORIGIN_LAT = ConfigTblPtr->INIT_ORIGIN_LAT;
+	m_Params.INIT_ORIGIN_LON = ConfigTblPtr->INIT_ORIGIN_LON;
+}
 
 
 
