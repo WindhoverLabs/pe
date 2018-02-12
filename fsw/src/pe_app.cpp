@@ -293,15 +293,18 @@ void PE::InitData()
 void PE::initStateCov()
 {
 	m_StateCov.Zero();
-	// initialize to twice valid condition
+
+	/* Initialize to twice valid condition */
 	m_StateCov[X_x][X_x] = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
 	m_StateCov[X_y][X_y] = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
 	m_StateCov[X_z][X_z] = 2 * EST_STDDEV_Z_VALID * EST_STDDEV_Z_VALID;
-	m_StateCov[X_vx][X_vx] = 2 * ConfigTblPtr->VXY_PUB_THRESH * ConfigTblPtr->VXY_PUB_THRESH;
-	m_StateCov[X_vy][X_vy] = 2 * ConfigTblPtr->VXY_PUB_THRESH * ConfigTblPtr->VXY_PUB_THRESH;
-	// use vxy thresh for vz init as well
-	m_StateCov[X_vz][X_vz] = 2 * ConfigTblPtr->VXY_PUB_THRESH * ConfigTblPtr->VXY_PUB_THRESH;
-	// initialize bias uncertainty to small values to keep them stable
+	m_StateCov[X_vx][X_vx] = 2 * m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH;
+	m_StateCov[X_vy][X_vy] = 2 * m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH;
+
+	/* Use vxy threshold for vz init as well */
+	m_StateCov[X_vz][X_vz] = 2 * m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH;
+
+	/* Initialize bias uncertainty to small values to keep them stable */
 	m_StateCov[X_bx][X_bx] = 1e-6;
 	m_StateCov[X_by][X_by] = 1e-6;
 	m_StateCov[X_bz][X_bz] = 1e-6;
@@ -312,28 +315,27 @@ void PE::InitStateSpace()
 {
 	initStateCov();
 
-	// dynamics matrix
+	/* Derivative of position is velocity */
 	m_DynamicsMat.Zero();
-	// derivative of position is velocity
 	m_DynamicsMat[X_x][X_vx] = 1;
 	m_DynamicsMat[X_y][X_vy] = 1;
 	m_DynamicsMat[X_z][X_vz] = 1;
 
-	// input matrix
+	/* Input matrix */
 	m_InputMat.Zero();
 	m_InputMat[X_vx][U_ax] = 1;
 	m_InputMat[X_vy][U_ay] = 1;
 	m_InputMat[X_vz][U_az] = 1;
 
-	// update components that depend on current state
+	/* Update components that depend on current state */
 	updateStateSpace();
 	updateStateSpaceParams();
 }
 
 void PE::updateStateSpace()
 {
-	// derivative of velocity is accelerometer acceleration
-	// (in input matrix) - bias (in body frame)
+	/* Derivative of velocity is accelerometer acceleration
+	 * (in input matrix) - bias (in body frame) */
 	m_DynamicsMat[X_vx][X_bx] = -_R_att[0][0];
 	m_DynamicsMat[X_vx][X_by] = -_R_att[0][1];
 	m_DynamicsMat[X_vx][X_bz] = -_R_att[0][2];
@@ -349,16 +351,16 @@ void PE::updateStateSpace()
 
 void PE::updateStateSpaceParams()
 {
-	// input noise covariance matrix
+	/* Input noise covariance matrix */
 	m_InputCov.Zero();
-	m_InputCov[U_ax][U_ax] = ConfigTblPtr->ACCEL_XY_STDDEV * ConfigTblPtr->ACCEL_XY_STDDEV;
-	m_InputCov[U_ay][U_ay] = ConfigTblPtr->ACCEL_XY_STDDEV * ConfigTblPtr->ACCEL_XY_STDDEV;
-	m_InputCov[U_az][U_az] = ConfigTblPtr->ACCEL_Z_STDDEV * ConfigTblPtr->ACCEL_Z_STDDEV;
+	m_InputCov[U_ax][U_ax] = m_Params.ACCEL_XY_STDDEV * m_Params.ACCEL_XY_STDDEV;
+	m_InputCov[U_ay][U_ay] = m_Params.ACCEL_XY_STDDEV * m_Params.ACCEL_XY_STDDEV;
+	m_InputCov[U_az][U_az] = m_Params.ACCEL_Z_STDDEV * m_Params.ACCEL_Z_STDDEV;
 
-	// process noise power matrix
+	/* Process noise power matrix */
 	m_NoiseCov.Zero();
-	float pn_p_sq = ConfigTblPtr->PN_P_NOISE_DENSITY * ConfigTblPtr->PN_P_NOISE_DENSITY;
-	float pn_v_sq = ConfigTblPtr->PN_V_NOISE_DENSITY * ConfigTblPtr->PN_V_NOISE_DENSITY;
+	float pn_p_sq = m_Params.PN_P_NOISE_DENSITY * m_Params.PN_P_NOISE_DENSITY;
+	float pn_v_sq = m_Params.PN_V_NOISE_DENSITY * m_Params.PN_V_NOISE_DENSITY;
 	m_NoiseCov[X_x][X_x] = pn_p_sq;
 	m_NoiseCov[X_y][X_y] = pn_p_sq;
 	m_NoiseCov[X_z][X_z] = pn_p_sq;
@@ -366,18 +368,18 @@ void PE::updateStateSpaceParams()
 	m_NoiseCov[X_vy][X_vy] = pn_v_sq;
 	m_NoiseCov[X_vz][X_vz] = pn_v_sq;
 
-	// technically, the noise is in the body frame,
-	// but the components are all the same, so
-	// ignoring for now
-	float pn_b_sq = ConfigTblPtr->PN_B_NOISE_DENSITY * ConfigTblPtr->PN_B_NOISE_DENSITY;
+	/* Technically the noise is in the body frame,
+	* but the components are all the same, so
+	* ignoring for now */
+	float pn_b_sq = m_Params.PN_B_NOISE_DENSITY * m_Params.PN_B_NOISE_DENSITY;
 	m_NoiseCov[X_bx][X_bx] = pn_b_sq;
 	m_NoiseCov[X_by][X_by] = pn_b_sq;
 	m_NoiseCov[X_bz][X_bz] = pn_b_sq;
 
-	// terrain random walk noise ((m/s)/sqrt(hz)), scales with velocity
+	/* Terrain random walk noise ((m/s)/sqrt(hz)), scales with velocity */
 	float pn_t_noise_density =
-		ConfigTblPtr->PN_T_NOISE_DENSITY +
-		(ConfigTblPtr->T_MAX_GRADE / 100.0f) * sqrtf(m_StateVec[X_vx] * m_StateVec[X_vx] + m_StateVec[X_vy] * m_StateVec[X_vy]);
+		m_Params.PN_T_NOISE_DENSITY +
+		(m_Params.T_MAX_GRADE / 100.0f) * sqrtf(m_StateVec[X_vx] * m_StateVec[X_vx] + m_StateVec[X_vy] * m_StateVec[X_vy]);
 	m_NoiseCov[X_tz][X_tz] = pn_t_noise_density * pn_t_noise_density;
 }
 
@@ -466,6 +468,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
         MsgId = CFE_SB_GetMsgId(MsgPtr);
         switch (MsgId)
         {
+        	/* Cyclic op - 250hz */
             case PE_WAKEUP_MID:
                 Update();
                 break;
@@ -819,14 +822,15 @@ void PE::Update()
 		m_ParamsUpdated = false;
 	}
 
-	/* Is xy valid? */
+	/* Check if xy is valid */
 	bool VxyStdDevValid = false;
 	if (fmax(m_StateCov[X_vx][X_vx], m_StateCov[X_vy][X_vy]) <
-		ConfigTblPtr->VXY_PUB_THRESH * ConfigTblPtr->VXY_PUB_THRESH)
+		m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH)
 	{
 		VxyStdDevValid = true;
 	}
 
+	/* Update current validity if needed */
 	if(m_XyEstValid)
 	{
 		if(!VxyStdDevValid && m_GpsTimeout) // TODO: Should this really be AND?
@@ -842,13 +846,14 @@ void PE::Update()
 		}
 	}
 
-	// is z valid?
+	/* Check if z is valid */
 	bool ZStdDevValid = false;
-	if(sqrtf(m_StateCov[X_z][X_z]) < ConfigTblPtr->Z_PUB_THRESH)
+	if(sqrtf(m_StateCov[X_z][X_z]) < m_Params.Z_PUB_THRESH)
 	{
 		ZStdDevValid = true;
 	}
 
+	/* Update current validity if needed */
 	if(m_ZEstValid)
 	{
 		if(!ZStdDevValid && m_BaroTimeout) // TODO: Should this really be AND?
@@ -864,13 +869,14 @@ void PE::Update()
 		}
 	}
 
-	// is terrain valid?
+	/* Check if terrain is valid */
 	bool TzStdDevValid = false;
-	if(sqrtf(m_StateCov[X_tz][X_tz]) < ConfigTblPtr->Z_PUB_THRESH)
+	if(sqrtf(m_StateCov[X_tz][X_tz]) < m_Params.Z_PUB_THRESH)
 	{
 		TzStdDevValid = true;
 	}
 
+	/* Update current validity if needed */
 	if(m_TzEstValid)
 	{
 		if(!TzStdDevValid)
@@ -886,28 +892,26 @@ void PE::Update()
 		}
 	}
 
-	// if we have no lat, lon initialize projection to LPE_LAT, LPE_LON parameters
-	if (!m_MapRef.init_done && m_XyEstValid && ConfigTblPtr->FAKE_ORIGIN)
+	/* Initialize map projection to INIT_ORIGIN_LAT, INIT_ORIGIN_LON if we don't
+	 * have lat, lon data and allowing fake origin */
+	if (!m_MapRef.init_done && m_XyEstValid && m_Params.FAKE_ORIGIN)
 	{
 		map_projection_init(&m_MapRef,
-							ConfigTblPtr->INIT_ORIGIN_LAT,
-							ConfigTblPtr->INIT_ORIGIN_LON,
+							m_Params.INIT_ORIGIN_LAT,
+							m_Params.INIT_ORIGIN_LON,
 							m_Timestamp); //TODO: Verify correct time
 
 		(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
 								 "GPS fake origin init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
-								 ConfigTblPtr->INIT_ORIGIN_LAT,
-								 ConfigTblPtr->INIT_ORIGIN_LON,
+								 m_Params.INIT_ORIGIN_LAT,
+								 m_Params.INIT_ORIGIN_LON,
 								 double(m_AltOrigin));
 	}
 
-	// reinitialize x if necessary
+	/* Check if state vector needs to be reinitialized  */
 	bool ReinitStateVec = false;
-
-	for (int i = 0; i < n_x; i++) {
-		// should we do a reinit
-		// of sensors here?
-		// don't want it to take too long
+	for (int i = 0; i < n_x; i++)
+	{
 		if (!isfinite(m_StateVec[i]))
 		{
 			ReinitStateVec = true;
@@ -920,11 +924,11 @@ void PE::Update()
 	if (ReinitStateVec)
 	{
 		m_StateVec.Zero();
+		/* TODO: Decide if we want to reinit sensors heere. PX4 didn't */
 	}
 
-	// force P symmetry and reinitialize P if necessary
+	/* Force state covariance symmetry and reinitialize matrix if necessary */
 	bool ReinitStateCov = false;
-
 	for (int i = 0; i < n_x; i++)
 	{
 		for (int j = 0; j <= i; j++)
@@ -938,7 +942,7 @@ void PE::Update()
 			}
 			if (i == j)
 			{
-				// make sure diagonal elements are positive
+				/* Ensure diagonal elements are positive */
 				if (m_StateCov[i][i] <= 0)
 				{
 					(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
@@ -949,8 +953,7 @@ void PE::Update()
 			}
 			else
 			{
-				// copy elememnt from upper triangle to force
-				// symmetry
+				/* Copy element from upper triangle to force symmetry */
 				m_StateCov[j][i] = m_StateCov[i][j];
 			}
 		}
@@ -963,12 +966,13 @@ void PE::Update()
 
 	Predict();
 
+	/* Publish updated data if initialized */
 	if(m_AltOriginInitialized)
 	{
 		SendVehicleLocalPositionMsg();
 		SendEstimatorStatusMsg();
 
-		if(m_XyEstValid && (m_MapRef.init_done || ConfigTblPtr->FAKE_ORIGIN))
+		if(m_XyEstValid && (m_MapRef.init_done || m_Params.FAKE_ORIGIN))
 		{
 			SendVehicleGlobalPositionMsg();
 		}
@@ -985,6 +989,7 @@ void PE::Predict()
 
 void PE::UpdateLocalParams()
 {
+	/* Update all locally stored params with the up to date value in the table */
 	m_Params.FUSION = ConfigTblPtr->FUSION;
 	m_Params.VXY_PUB_THRESH = ConfigTblPtr->VXY_PUB_THRESH;
 	m_Params.Z_PUB_THRESH = ConfigTblPtr->Z_PUB_THRESH;
