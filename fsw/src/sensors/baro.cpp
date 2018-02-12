@@ -1,5 +1,6 @@
 #include "../pe_app.h"
 #include <math/Matrix1F10.hpp>
+#include <math/Matrix1F1.hpp>
 
 /* required number of samples for sensor to initialize */
 #define REQ_BARO_INIT_COUNT   (100)
@@ -60,22 +61,25 @@ void PE::baroCorrect()
     /* subtract baro origin alt */
     y[0] -= m_BaroAltOrigin;
 
-
-
     /* baro measurement matrix */
     math::Matrix1F10 C;
     C.Zero();
     /* measured altitude, negative down dir */
     C[Y_baro_z][X_z] = -1;
-//
-////	Matrix<float, n_y_baro, n_y_baro> R;
-////	R.setZero();
-////	R(0, 0) = _baro_stddev.get() * _baro_stddev.get();
-//	float residual = 0;
-//	residual = ConfigTblPtr->BARO_STDDEV * ConfigTblPtr->BARO_STDDEV;
-//
-//	float si =
-//	// residual
+
+    math::Matrix1F1 R;
+    R.Zero();
+    //R[0][0] = m_Params.BAR_Z * m_Params.BAR_Z;
+
+    /* residual */
+    math::Matrix1F1 S_I;
+    S_I.Zero();
+    
+    
+    
+    math::Matrix1F10 test;
+    test = C * m_StateCov;
+    
 //	Matrix<float, n_y_baro, n_y_baro> S_I =
 //		inv<float, n_y_baro>((C * _P * C.transpose()) + R);
 //	Vector<float, n_y_baro> r = y - (C * _x);
