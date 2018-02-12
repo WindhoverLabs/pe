@@ -1,13 +1,14 @@
 #include "../pe_app.h"
+#include <math/Matrix1F10.hpp>
 
-// required number of samples for sensor
-// to initialize
+/* required number of samples for sensor to initialize */
 #define REQ_BARO_INIT_COUNT   (100)
-#define BARO_TIMEOUT 		  (100000)	// 0.1 s
+/* 0.1 s */
+#define BARO_TIMEOUT          (100000)
 
 void PE::baroInit()
 {
-	// measure
+    /* measure */
 	math::Vector1F y;
 
 	if (baroMeasure(y) != CFE_SUCCESS)
@@ -48,20 +49,24 @@ int32 PE::baroMeasure(math::Vector1F &y)
 
 void PE::baroCorrect()
 {
-	// measure
-	math::Vector1F y;
+    /* measure */
+    math::Vector1F y;
 
-	if (baroMeasure(y) != CFE_SUCCESS) { return; }
+    if (baroMeasure(y) != CFE_SUCCESS) 
+    { 
+        return;
+    }
 
-	// subtract baro origin alt
-	y[0] -= m_BaroAltOrigin;
+    /* subtract baro origin alt */
+    y[0] -= m_BaroAltOrigin;
 
 
-//
-//	// baro measurement matrix
-//	math::Matrix1F10 C;
-//	C.Zero();
-//	C[Y_baro_z][X_z] = -1; // measured altitude, negative down dir.
+
+    /* baro measurement matrix */
+    math::Matrix1F10 C;
+    C.Zero();
+    /* measured altitude, negative down dir */
+    C[Y_baro_z][X_z] = -1;
 //
 ////	Matrix<float, n_y_baro, n_y_baro> R;
 ////	R.setZero();
