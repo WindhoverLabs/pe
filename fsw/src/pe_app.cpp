@@ -1063,6 +1063,9 @@ void PE::Predict(float dt)
 	math::Matrix10F10 dP = (m_DynamicsMat * m_StateCov + m_StateCov * m_DynamicsMat.Transpose() +
 			m_InputMat * m_InputCov * m_InputMat.Transpose() + m_NoiseCov) * dt;
 
+	OS_printf("PRE\n");
+	m_StateCov.Print();
+
 	// covariance propagation logic
 	for (int i = 0; i < n_x; i++) {
 		if (m_StateCov[i][i] > P_MAX)
@@ -1079,6 +1082,10 @@ void PE::Predict(float dt)
 	}
 
 	m_StateCov += dP;
+
+	OS_printf("m_StateCov\n");
+	m_StateCov.Print();
+
 //	_xLowPass.update(_x);
 //	_aglLowPass.update(agl());
 
