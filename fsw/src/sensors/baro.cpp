@@ -123,14 +123,21 @@ void PE::baroCorrect()
     math::Matrix10F1 K;
     K.Zero();
     /* 10x10 * 10x1 * 1x1 */
-    //K = m_StateCov * C.Transpose() * S_I;
-    math::Vector10F dx;
-    dx.Zero();
+    K = m_StateCov * C.Transpose() * S_I;
+    
     /* 10x1 * 1x1 */
     //dx = K * r;
-    /* 10F * 10F*/
-    //m_StateVec = m_StateVec * dx;
-    /* 10x10 - 10x1 * 1x10 * */
+    math::Matrix10F1 temp;
+    temp.Zero();
+    temp = K * r;
+
+    math::Vector10F dx;
+    dx.Zero();
+    dx = temp.ToVector();
+
+    /* 10F + 10F*/
+    m_StateVec = m_StateVec + dx;
+    /* 10x10 - 10x1 * 1x10 * 10x10 */
     //m_StateCov = m_StateCov - K * C * m_StateCov;
 }
 
