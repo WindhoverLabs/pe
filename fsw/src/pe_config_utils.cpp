@@ -141,6 +141,8 @@ int32 PE::AcquireConfigPointers(void)
     iStatus = CFE_TBL_GetAddress((void**)&ConfigTblPtr, ConfigTblHdl);
     if (iStatus == CFE_TBL_INFO_UPDATED)
     {
+    	m_ParamsUpdated = true;
+    	UpdateLocalParams(); // TODO move this to params specific fx
         iStatus = CFE_SUCCESS;
     }
     else if(iStatus != CFE_SUCCESS)

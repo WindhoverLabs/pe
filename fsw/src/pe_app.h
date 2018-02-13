@@ -68,6 +68,9 @@ extern "C" {
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
 #include "math/Stats6F.hpp"
+#include "math/Quaternion.hpp"
+#include "math/Euler.hpp"
+#include "math/Dcm.hpp"
 #include "geo/geo.h"
 
 #include <poll.h>
@@ -83,47 +86,74 @@ extern "C" {
  ** Local Structure Definitions
  *************************************************************************/
 
+typedef struct
+{
+	int32  FUSION;
+	float  VXY_PUB_THRESH;
+	float  Z_PUB_THRESH;
+	float  ACCEL_XY_STDDEV;
+	float  ACCEL_Z_STDDEV;
+	float  BARO_STDDEV;
+	float  GPS_DELAY;
+	float  GPS_XY_STDDEV;
+	float  GPS_Z_STDDEV;
+	float  GPS_VXY_STDDEV;
+	float  GPS_VZ_STDDEV;
+	float  GPS_EPH_MAX;
+	float  GPS_EPV_MAX;
+	float  LAND_Z_STDDEV;
+	float  LAND_VXY_STDDEV;// TODO TODO TODO XXX Check what this is supposed to be
+	float  PN_P_NOISE_DENSITY;
+	float  PN_V_NOISE_DENSITY;
+	float  PN_B_NOISE_DENSITY;
+	float  PN_T_NOISE_DENSITY;
+	float  T_MAX_GRADE;
+	int32  FAKE_ORIGIN;
+	float  INIT_ORIGIN_LAT;
+	float  INIT_ORIGIN_LON;
+} PE_Params_t;
+
 enum {
-	X_x = 0,
-	X_y,
-	X_z,
-	X_vx,
-	X_vy,
-	X_vz,
-	X_bx,
-	X_by,
-	X_bz,
-	X_tz,
-	n_x
+	X_x  = 0,
+	X_y  = 1,
+	X_z  = 2,
+	X_vx = 3,
+	X_vy = 4,
+	X_vz = 5,
+	X_bx = 6,
+	X_by = 7,
+	X_bz = 8,
+	X_tz = 9,
+	n_x  = 10
 };
 
 enum {
 	U_ax = 0,
-	U_ay,
-	U_az,
-	n_u
+	U_ay = 1,
+	U_az = 2,
+	n_u  = 3
 };
 
 enum {
 	Y_baro_z = 0,
-	n_y_baro
+	n_y_baro = 1
 };
 
 enum {
-	Y_gps_x = 0,
-	Y_gps_y,
-	Y_gps_z,
-	Y_gps_vx,
-	Y_gps_vy,
-	Y_gps_vz,
-	n_y_gps
+	Y_gps_x  = 0,
+	Y_gps_y  = 1,
+	Y_gps_z  = 2,
+	Y_gps_vx = 3,
+	Y_gps_vy = 4,
+	Y_gps_vz = 5,
+	n_y_gps  = 6
 };
 
 enum {
-	Y_land_vx = 0,
-	Y_land_vy,
-	Y_land_agl,
-	n_y_land
+	Y_land_vx  = 0,
+	Y_land_vy  = 1,
+	Y_land_agl = 2,
+	n_y_land   = 3
 };
 
 /* Enums for other sensors would go here */
@@ -142,7 +172,7 @@ public:
     float 	DELAY_MAX;
     float 	HIST_STEP;
     float 	BIAS_MAX;
-    size_t 	HIST_LEN;
+    size_t 	HIST_LEN = 10;
     size_t 	N_DIST_SUBS;
     float  	BETA_TABLE[PE_BETA_TABLE_SIZE];
     uint32 	EST_STDDEV_XY_VALID; // 2.0 m
@@ -170,6 +200,8 @@ public:
     /** \brief Config Table Pointer */
     PE_ConfigTbl_t* ConfigTblPtr;
 
+    int32 ConfigMutex;
+
     /** \brief Ingest Data */
     PX4_VehicleGpsPositionMsg_t m_VehicleGpsPositionMsg;
     PX4_VehicleStatusMsg_t m_VehicleStatusMsg; //todo verify needed
@@ -187,10 +219,16 @@ public:
     PX4_VehicleGlobalPositionMsg_t m_VehicleGlobalPositionMsg;
     PX4_Ekf2InnovationsMsg_t m_Ekf2InnovationsMsg;
 
+    bool m_ParamsUpdated;
+
     // Sensor stats
     Stats1F m_BaroStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
+
+    bool m_XyEstValid;
+    bool m_ZEstValid;
+    bool m_TzEstValid;
 
     // map
     struct map_projection_reference_s m_MapRef;
@@ -227,7 +265,7 @@ public:
 	// masks
 	uint8 m_SensorTimeout;
 	uint8 m_SensorFault;
-	uint8 m_EstimatorInitialized;
+	bool m_EstimatorInitialized;
 
 	// state space
 	math::Vector10F  m_StateVec; // state vector
@@ -238,9 +276,11 @@ public:
 	math::Vector3F m_Euler;
 
 	math::Matrix10F10 m_DynamicsMat; // dynamics matrix
-	math::Matrix10F3 m_InputMat; // input m_atrix
+	math::Matrix10F3 m_InputMat; // input matrix
 	math::Matrix3F3 m_InputCov; // input covariance
 	math::Matrix10F10 m_NoiseCov; // process noise covariance
+
+	PE_Params_t m_Params;
 
     /** \brief Housekeeping Telemetry for downlink */
     PE_HkTlm_t HkTlm;
@@ -563,7 +603,13 @@ private:
 	bool landed();
 	int getDelayPeriods(float delay, uint8 *periods);
 
+	void UpdateLocalParams();
+
 	void Update();
+	void Predict(float dt);
+
+	math::Vector10F dynamics(const math::Vector10F &x, const math::Vector3F &u);
+
 
 
 

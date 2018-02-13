@@ -1,5 +1,6 @@
 #include "../pe_app.h"
 #include <math/Matrix6F10.hpp>
+#include <math/Matrix6F6.hpp>
 
 /* required number of samples for sensor to initialize */
 #define REQ_GPS_INIT_COUNT  (10)
@@ -135,55 +136,77 @@ void PE::gpsCorrect()
     //	C.setZero();
     math::Matrix6F10 C;
     C.Zero();
-//	C(Y_gps_x, X_x) = 1;
-//	C(Y_gps_y, X_y) = 1;
-//	C(Y_gps_z, X_z) = 1;
-//	C(Y_gps_vx, X_vx) = 1;
-//	C(Y_gps_vy, X_vy) = 1;
-//	C(Y_gps_vz, X_vz) = 1;
-//
-//	// gps covariance matrix
+    C[Y_gps_x][X_x] = 1;
+    C[Y_gps_y][X_y] = 1;
+    C[Y_gps_z][X_z] = 1;
+    C[Y_gps_vx][X_vx] = 1;
+    C[Y_gps_vy][X_vy] = 1;
+    C[Y_gps_vz][X_vz] = 1;
+
+    /* gps covariance matrix */
 //	SquareMatrix<float, n_y_gps> R;
 //	R.setZero();
-//
-//	// default to parameter, use gps cov if provided
-//	float var_xy = _gps_xy_stddev.get() * _gps_xy_stddev.get();
-//	float var_z = _gps_z_stddev.get() * _gps_z_stddev.get();
-//	float var_vxy = _gps_vxy_stddev.get() * _gps_vxy_stddev.get();
-//	float var_vz = _gps_vz_stddev.get() * _gps_vz_stddev.get();
-//
-//	// if field is not below minimum, set it to the value provided
-//	if (_sub_gps.get().eph > _gps_xy_stddev.get()) {
-//		var_xy = _sub_gps.get().eph * _sub_gps.get().eph;
-//	}
-//
-//	if (_sub_gps.get().epv > _gps_z_stddev.get()) {
-//		var_z = _sub_gps.get().epv * _sub_gps.get().epv;
-//	}
-//
-//	float gps_s_stddev =  _sub_gps.get().s_variance_m_s;
-//
-//	if (gps_s_stddev > _gps_vxy_stddev.get()) {
-//		var_vxy = gps_s_stddev * gps_s_stddev;
-//	}
-//
-//	if (gps_s_stddev > _gps_vz_stddev.get()) {
-//		var_vz = gps_s_stddev * gps_s_stddev;
-//	}
-//
-//
-//	R(0, 0) = var_xy;
-//	R(1, 1) = var_xy;
-//	R(2, 2) = var_z;
-//	R(3, 3) = var_vxy;
-//	R(4, 4) = var_vxy;
-//	R(5, 5) = var_vz;
-//
-//	// get delayed x
-//	uint8_t i_hist = 0;
-//
+    math::Matrix6F6 R;
+    R.Zero();
+    /* default to parameter, use gps cov if provided */
+    //	float var_xy = _gps_xy_stddev.get() * _gps_xy_stddev.get();
+    float var_xy = m_Params.GPS_XY_STDDEV * m_Params.GPS_XY_STDDEV;
+    //	float var_z = _gps_z_stddev.get() * _gps_z_stddev.get();
+    float var_z = m_Params.GPS_Z_STDDEV * m_Params.GPS_Z_STDDEV;
+    //	float var_vxy = _gps_vxy_stddev.get() * _gps_vxy_stddev.get();
+    float var_vxy = m_Params.GPS_VXY_STDDEV * m_Params.GPS_VXY_STDDEV;
+    //	float var_vz = _gps_vz_stddev.get() * _gps_vz_stddev.get();
+    float var_vz = m_Params.GPS_VZ_STDDEV * m_Params.GPS_VZ_STDDEV;
+
+    /* if field is not below minimum, set it to the value provided */
+    //	if (_sub_gps.get().eph > _gps_xy_stddev.get()) {
+    //		var_xy = _sub_gps.get().eph * _sub_gps.get().eph;
+    //	}
+    if(m_VehicleGpsPositionMsg.EpH > m_Params.GPS_XY_STDDEV)
+    {
+        var_xy = m_VehicleGpsPositionMsg.EpH * m_VehicleGpsPositionMsg.EpH;
+    }
+    //	if (_sub_gps.get().epv > _gps_z_stddev.get()) {
+    //		var_z = _sub_gps.get().epv * _sub_gps.get().epv;
+    //	}
+    if (m_VehicleGpsPositionMsg.EpV > m_Params.GPS_Z_STDDEV)
+    {
+        var_z = m_VehicleGpsPositionMsg.EpV * m_VehicleGpsPositionMsg.EpV;
+    }
+    //	float gps_s_stddev =  _sub_gps.get().s_variance_m_s;
+    float gps_s_stddev = m_VehicleGpsPositionMsg.SVariance;
+    //	if (gps_s_stddev > _gps_vxy_stddev.get()) {
+    //		var_vxy = gps_s_stddev * gps_s_stddev;
+    //	}
+    if(gps_s_stddev > m_Params.GPS_VXY_STDDEV)
+    {
+        var_vxy = gps_s_stddev * gps_s_stddev;
+    }
+    //	if (gps_s_stddev > _gps_vz_stddev.get()) {
+    //		var_vz = gps_s_stddev * gps_s_stddev;
+    //	}
+    if(gps_s_stddev > m_Params.GPS_VZ_STDDEV)
+    {
+        var_vz = gps_s_stddev * gps_s_stddev;
+    }
+
+    //	R(0, 0) = var_xy;
+    //	R(1, 1) = var_xy;
+    //	R(2, 2) = var_z;
+    //	R(3, 3) = var_vxy;
+    //	R(4, 4) = var_vxy;
+    //	R(5, 5) = var_vz;
+    R[0][0] = var_xy;
+    R[1][1] = var_xy;
+    R[2][2] = var_z;
+    R[3][3] = var_vxy;
+    R[4][4] = var_vxy;
+    R[5][5] = var_vz;
+
+    /* get delayed x */
+    uint8 i_hist = 0;
+
 //	if (getDelayPeriods(_gps_delay.get(), &i_hist)  < 0) { return; }
-//
 //	Vector<float, n_x> x0 = _xDelay.get(i_hist);
 //
 //	// residual

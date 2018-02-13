@@ -72,7 +72,7 @@ void PE::baroCorrect()
 
     math::Matrix1F1 R;
     R.Zero();
-    R[0][0] = m_Params.BAR_Z * m_Params.BAR_Z;
+    R[0][0] = m_Params.BARO_STDDEV * m_Params.BARO_STDDEV;
 
     /* residual */
     math::Matrix1F1 S_I;
