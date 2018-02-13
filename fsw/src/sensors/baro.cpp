@@ -138,7 +138,7 @@ void PE::baroCorrect()
     /* 10F + 10F*/
     m_StateVec = m_StateVec + dx;
     /* 10x10 - 10x1 * 1x10 * 10x10 */
-    //m_StateCov = m_StateCov - K * C * m_StateCov;
+    m_StateCov = m_StateCov - K * C * m_StateCov;
 }
 
 void PE::baroCheckTimeout()
