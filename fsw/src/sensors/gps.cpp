@@ -1,130 +1,140 @@
 #include "../pe_app.h"
+#include <math/Matrix6F10.hpp>
 
-// required number of samples for sensor
-// to initialize
+/* required number of samples for sensor to initialize */
 #define REQ_GPS_INIT_COUNT  (10)
-#define GPS_TIMEOUT 	    (1000000) // 1.0 s
+/* 1.0 s */
+#define GPS_TIMEOUT         (1000000)
 
 void PE::gpsInit()
 {
-	// check for good gps signal
-	uint8 nSat = m_VehicleGpsPositionMsg.SatellitesUsed;
-	float eph = m_VehicleGpsPositionMsg.EpH;
-	float epv = m_VehicleGpsPositionMsg.EpV;
-	uint8 fix_type = m_VehicleGpsPositionMsg.FixType;
+    /* check for good gps signal */
+    uint8 nSat = m_VehicleGpsPositionMsg.SatellitesUsed;
+    float eph = m_VehicleGpsPositionMsg.EpH;
+    float epv = m_VehicleGpsPositionMsg.EpV;
+    uint8 fix_type = m_VehicleGpsPositionMsg.FixType;
 
-	if (nSat < 6 ||
-		eph > ConfigTblPtr->GPS_EPH_MAX ||
-		epv > ConfigTblPtr->GPS_EPV_MAX ||
-		fix_type < 3)
-	{
-		m_GpsStats.reset();
-		return;
-	}
+    if (nSat < 6 ||
+        eph > m_Params.GPS_EPH_MAX ||
+        epv > m_Params.GPS_EPV_MAX ||
+        fix_type < 3)
+    {
+        m_GpsStats.reset();
+        return;
+    }
 
-	// measure
-	math::Vector6F y;
+    /* measure */
+    math::Vector6F y;
 
-	if (gpsMeasure(y) != CFE_SUCCESS) {
-		m_GpsStats.reset();
-		return;
-	}
+    if (gpsMeasure(y) != CFE_SUCCESS) 
+    {
+        m_GpsStats.reset();
+        return;
+    }
 
-	// if finished
-	if (m_GpsStats.getCount() > REQ_GPS_INIT_COUNT)
-	{
-		// get mean gps values
-		double gpsLat = m_GpsStats.getMean()[0];
-		double gpsLon = m_GpsStats.getMean()[1];
-		float gpsAlt = m_GpsStats.getMean()[2];
+    /* if finished */
+    if (m_GpsStats.getCount() > REQ_GPS_INIT_COUNT)
+    {
+        /* get mean gps values */
+        double gpsLat = m_GpsStats.getMean()[0];
+        double gpsLon = m_GpsStats.getMean()[1];
+        float gpsAlt = m_GpsStats.getMean()[2];
 
-		m_GpsTimeout = false;
-		m_GpsStats.reset();
+        m_GpsTimeout = false;
+        m_GpsStats.reset();
 
-		if (!m_ReceivedGps)
-		{
-			// this is the first time we have received gps
-			m_ReceivedGps = true;
+        if (!m_ReceivedGps)
+        {
+            /* this is the first time we have received gps */
+            m_ReceivedGps = true;
 
-			// note we subtract X_z which is in down directon so it is
-			// an addition
-			m_GpsAltOrigin = gpsAlt + m_StateVec[X_z];
+            /* note we subtract X_z which is in down directon so it is 
+             * an addition
+             **/
+            m_GpsAltOrigin = gpsAlt + m_StateVec[X_z];
 
-			// find lat, lon of current origin by subtracting x and y
-			// if not using vision position since vision will
-			// have it's own origin, not necessarily where vehicle starts
-			if (!m_MapRef.init_done)
-			{
-				double gpsLatOrigin = 0;
-				double gpsLonOrigin = 0;
-				// reproject at current coordinates
-				map_projection_init(&m_MapRef, gpsLat, gpsLon, m_Timestamp);
-				// find origin
-				map_projection_reproject(&m_MapRef, -m_StateVec[X_x], -m_StateVec[X_y], &gpsLatOrigin, &gpsLonOrigin);
-				// reinit origin
-				map_projection_init(&m_MapRef, gpsLatOrigin, gpsLonOrigin, m_Timestamp);
+            /* find lat, lon of current origin by subtracting x and y
+             * if not using vision position since vision will
+             * have it's own origin, not necessarily where vehicle starts
+             **/ 
+            if (!m_MapRef.init_done)
+            {
+                double gpsLatOrigin = 0;
+                double gpsLonOrigin = 0;
+                /* reproject at current coordinates */
+                map_projection_init(&m_MapRef, gpsLat, gpsLon, m_Timestamp);
+                /* find origin */
+                map_projection_reproject(&m_MapRef, -m_StateVec[X_x], -m_StateVec[X_y], &gpsLatOrigin, &gpsLonOrigin);
+                /* reinit origin */
+                map_projection_init(&m_MapRef, gpsLatOrigin, gpsLonOrigin, m_Timestamp);
 
-				// always override alt origin on first GPS to fix
-				// possible baro offset in global altitude at init
-				m_AltOrigin = m_GpsAltOrigin;
-				m_AltOriginInitialized = true;
+                /* always override alt origin on first GPS to fix
+                 * possible baro offset in global altitude at init
+                 **/
+                m_AltOrigin = m_GpsAltOrigin;
+                m_AltOriginInitialized = true;
 
-				(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
-										 "GPS init origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
-										 gpsLatOrigin, gpsLonOrigin, double(m_GpsAltOrigin));
-			}
+                (void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+                        "GPS init origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+                        gpsLatOrigin, gpsLonOrigin, double(m_GpsAltOrigin));
+            }
 
-			(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
-									 "GPS init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
-									 gpsLat, gpsLon, double(gpsAlt));
-		}
-	}
+            (void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+                    "GPS init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+                    gpsLat, gpsLon, double(gpsAlt));
+        }
+    }
 }
 
 int PE::gpsMeasure(math::Vector6F &y)
 {
-	// gps measurement
-	y.Zero();
-	y[0] = m_VehicleGpsPositionMsg.Lat * 1e-7;
-	y[1] = m_VehicleGpsPositionMsg.Lon * 1e-7;
-	y[2] = m_VehicleGpsPositionMsg.Alt * 1e-3;
-	y[3] = m_VehicleGpsPositionMsg.Vel_n_m_s;
-	y[4] = m_VehicleGpsPositionMsg.Vel_e_m_s;
-	y[5] = m_VehicleGpsPositionMsg.Vel_d_m_s;
+    /* gps measurement */
+    y.Zero();
+    y[0] = m_VehicleGpsPositionMsg.Lat * 1e-7;
+    y[1] = m_VehicleGpsPositionMsg.Lon * 1e-7;
+    y[2] = m_VehicleGpsPositionMsg.Alt * 1e-3;
+    y[3] = m_VehicleGpsPositionMsg.Vel_n_m_s;
+    y[4] = m_VehicleGpsPositionMsg.Vel_e_m_s;
+    y[5] = m_VehicleGpsPositionMsg.Vel_d_m_s;
 
-	// increament sums for mean
-	m_GpsStats.update(y);
-	m_TimeLastGps = m_Timestamp;
-	return CFE_SUCCESS;
+    /* increament sums for mean */
+    m_GpsStats.update(y);
+    m_TimeLastGps = m_Timestamp;
+    return CFE_SUCCESS;
 }
 
 void PE::gpsCorrect()
 {
-	// measure
-	math::Vector6F y_global;
+    /* measure */
+    math::Vector6F y_global;
 
-	if (gpsMeasure(y_global) != CFE_SUCCESS) { return; }
+    if (gpsMeasure(y_global) != CFE_SUCCESS) 
+    {
+        return; 
+    }
 
-	// gps measurement in local frame
-	double  lat = y_global[0];
-	double  lon = y_global[1];
-	float  alt = y_global[2];
-	float px = 0;
-	float py = 0;
-	float pz = -(alt - m_GpsAltOrigin);
-	map_projection_project(&m_MapRef, lat, lon, &px, &py);
-	math::Vector6F y;
-	y.Zero();
-	y[0] = px;
-	y[1] = py;
-	y[2] = pz;
-	y[3] = y_global[3];
-	y[4] = y_global[4];
-	y[5] = y_global[5];
-//
-//	// gps measurement matrix, measures position and velocity
-//	Matrix<float, n_y_gps, n_x> C;
-//	C.setZero();
+    /* gps measurement in local frame */
+    double  lat = y_global[0];
+    double  lon = y_global[1];
+    float  alt = y_global[2];
+    float px = 0;
+    float py = 0;
+    float pz = -(alt - m_GpsAltOrigin);
+    map_projection_project(&m_MapRef, lat, lon, &px, &py);
+    math::Vector6F y;
+    y.Zero();
+    y[0] = px;
+    y[1] = py;
+    y[2] = pz;
+    y[3] = y_global[3];
+    y[4] = y_global[4];
+    y[5] = y_global[5];
+
+    /* gps measurement matrix, measures position and velocity */
+    //	Matrix<float, n_y_gps, n_x> C;
+    //	C.setZero();
+    math::Matrix6F10 C;
+    C.Zero();
 //	C(Y_gps_x, X_x) = 1;
 //	C(Y_gps_y, X_y) = 1;
 //	C(Y_gps_z, X_z) = 1;

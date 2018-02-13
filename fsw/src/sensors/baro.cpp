@@ -72,7 +72,7 @@ void PE::baroCorrect()
 
     math::Matrix1F1 R;
     R.Zero();
-    //R[0][0] = m_Params.BAR_Z * m_Params.BAR_Z;
+    R[0][0] = m_Params.BAR_Z * m_Params.BAR_Z;
 
     /* residual */
     math::Matrix1F1 S_I;
@@ -140,6 +140,7 @@ void PE::baroCorrect()
     /* 10x10 - 10x1 * 1x10 * 10x10 */
     m_StateCov = m_StateCov - K * C * m_StateCov;
 }
+
 
 void PE::baroCheckTimeout()
 {
