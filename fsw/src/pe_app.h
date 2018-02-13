@@ -68,6 +68,9 @@ extern "C" {
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
 #include "math/Stats6F.hpp"
+#include "math/Quaternion.hpp"
+#include "math/Euler.hpp"
+#include "math/Dcm.hpp"
 #include "geo/geo.h"
 
 #include <poll.h>
@@ -271,7 +274,7 @@ public:
 	math::Vector3F m_Euler;
 
 	math::Matrix10F10 m_DynamicsMat; // dynamics matrix
-	math::Matrix10F3 m_InputMat; // input m_atrix
+	math::Matrix10F3 m_InputMat; // input matrix
 	math::Matrix3F3 m_InputCov; // input covariance
 	math::Matrix10F10 m_NoiseCov; // process noise covariance
 
@@ -601,7 +604,9 @@ private:
 	void UpdateLocalParams();
 
 	void Update();
-	void Predict();
+	void Predict(float dt);
+
+	math::Vector10F dynamics(const math::Vector10F &x, const math::Vector3F &u);
 
 
 

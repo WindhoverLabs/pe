@@ -964,7 +964,7 @@ void PE::Update()
 		initStateCov();
 	}
 
-	Predict();
+	Predict(dt);
 
 	/* Publish updated data if initialized */
 	if(m_AltOriginInitialized)
@@ -982,9 +982,111 @@ void PE::Update()
 
 }
 
-void PE::Predict()
-{
 
+
+void PE::Predict(float dt)
+{
+	// get acceleration
+	math::Quaternion q(m_VehicleAttitudeMsg.Q[0],
+					   m_VehicleAttitudeMsg.Q[1],
+					   m_VehicleAttitudeMsg.Q[2],
+					   m_VehicleAttitudeMsg.Q[3]);
+
+	_R_att = math::Dcm(q);
+	m_Euler = math::Euler(_R_att);
+	math::Vector3F a(m_SensorCombinedMsg.Acc[0], m_SensorCombinedMsg.Acc[1], m_SensorCombinedMsg.Acc[2]);
+
+	// note, bias is removed in dynamics function
+	m_InputVec = _R_att * a;
+	m_InputVec[U_az] += 9.81f; // add g
+
+	// update state space based on new states
+	updateStateSpace();
+
+	// continuous time kalman filter prediction
+	// integrate runge kutta 4th order
+	// TODO move rk4 algorithm to matrixlib
+	// https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
+	math::Vector10F k1, k2, k3, k4;
+	k1 = dynamics(m_StateVec, m_InputVec);
+	k2 = dynamics(m_StateVec + k1 * dt / 2, m_InputVec);
+	k3 = dynamics(m_StateVec + k2 * dt / 2, m_InputVec);
+	k4 = dynamics(m_StateVec + k3 * dt, m_InputVec);
+	math::Vector10F dx = (k1 + k2 * 2 + k3 * 2 + k4) * (dt / 6);
+
+	// don't integrate position if no valid xy data
+	if (!m_XyEstValid)
+	{
+		dx[X_x] = 0;
+		dx[X_vx] = 0;
+		dx[X_y] = 0;
+		dx[X_vy] = 0;
+	}
+
+	// don't integrate z if no valid z data
+	if (!m_ZEstValid)
+	{
+		dx[X_z] = 0;
+	}
+
+	// don't integrate tz if no valid tz data
+	if (!m_TzEstValid)
+	{
+		dx[X_tz] = 0;
+	}
+
+	// saturate bias
+	float bx = dx[X_bx] + m_StateVec[X_bx];
+	float by = dx[X_by] + m_StateVec[X_by];
+	float bz = dx[X_bz] + m_StateVec[X_bz];
+
+	if (::abs(bx) > BIAS_MAX)
+	{
+		bx = BIAS_MAX * bx / ::abs(bx);
+		dx[X_bx] = bx - m_StateVec[X_bx];
+	}
+
+	if (::abs(by) > BIAS_MAX)
+	{
+		by = BIAS_MAX * by / ::abs(by);
+		dx[X_by] = by - m_StateVec[X_by];
+	}
+
+	if (::abs(bz) > BIAS_MAX)
+	{
+		bz = BIAS_MAX * bz / ::abs(bz);
+		dx[X_bz] = bz - m_StateVec[X_bz];
+	}
+
+	// propagate
+	m_StateVec += dx;
+	math::Matrix10F10 dP = (m_DynamicsMat * m_StateCov + m_StateCov * m_DynamicsMat.Transpose() +
+			m_InputMat * m_InputCov * m_InputMat.Transpose() + m_NoiseCov) * dt;
+
+	// covariance propagation logic
+	for (int i = 0; i < n_x; i++) {
+		if (m_StateCov[i][i] > P_MAX)
+		{
+			// if diagonal element greater than max, stop propagating
+			dP[i][i] = 0;
+
+			for (int j = 0; j < n_x; j++)
+			{
+				dP[i][j] = 0;
+				dP[j][i] = 0;
+			}
+		}
+	}
+
+	m_StateCov += dP;
+//	_xLowPass.update(_x);
+//	_aglLowPass.update(agl());
+
+}
+
+math::Vector10F PE::dynamics(const math::Vector10F &x, const math::Vector3F &u)
+{
+	return (m_DynamicsMat * x) + (m_InputMat * u);
 }
 
 void PE::UpdateLocalParams()
