@@ -200,6 +200,8 @@ public:
     /** \brief Config Table Pointer */
     PE_ConfigTbl_t* ConfigTblPtr;
 
+    int32 ConfigMutex;
+
     /** \brief Ingest Data */
     PX4_VehicleGpsPositionMsg_t m_VehicleGpsPositionMsg;
     PX4_VehicleStatusMsg_t m_VehicleStatusMsg; //todo verify needed

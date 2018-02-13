@@ -1091,6 +1091,9 @@ math::Vector10F PE::dynamics(const math::Vector10F &x, const math::Vector3F &u)
 
 void PE::UpdateLocalParams()
 {
+	/* Lock the mutex */
+	OS_MutSemTake(ConfigMutex);
+
 	/* Update all locally stored params with the up to date value in the table */
 	m_Params.FUSION = ConfigTblPtr->FUSION;
 	m_Params.VXY_PUB_THRESH = ConfigTblPtr->VXY_PUB_THRESH;
@@ -1115,6 +1118,9 @@ void PE::UpdateLocalParams()
 	m_Params.FAKE_ORIGIN = ConfigTblPtr->FAKE_ORIGIN;
 	m_Params.INIT_ORIGIN_LAT = ConfigTblPtr->INIT_ORIGIN_LAT;
 	m_Params.INIT_ORIGIN_LON = ConfigTblPtr->INIT_ORIGIN_LON;
+
+	/* Unlock the mutex */
+	OS_MutSemGive(ConfigMutex);
 }
 
 
