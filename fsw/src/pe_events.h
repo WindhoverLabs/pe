@@ -296,7 +296,31 @@ typedef enum {
 **  This event message is issued when
 **
 */
+	PE_BARO_FAULT_ERR_EID,
+
+/** \brief TODO
+**  \event
+**
+**  \par Type:
+**
+**  \par Cause:
+**
+**  This event message is issued when
+**
+*/
 	PE_ESTIMATOR_ERR_EID,
+
+/** \brief TODO
+**  \event
+**
+**  \par Type:
+**
+**  \par Cause:
+**
+**  This event message is issued when
+**
+*/
+    PE_BARO_OK_ERR_EID,
 
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT

@@ -1,13 +1,18 @@
 #include "../pe_app.h"
+#include <math/Matrix1F10.hpp>
+#include <math/Matrix1F1.hpp>
 
-// required number of samples for sensor
-// to initialize
+/* required number of samples for sensor to initialize */
 #define REQ_BARO_INIT_COUNT   (100)
-#define BARO_TIMEOUT 		  (100000)	// 0.1 s
+/* 0.1 s */
+#define BARO_TIMEOUT          (100000)
+
+/* Move to PE.h enum */
+#define SENSOR_BARO           (1 << 0)
 
 void PE::baroInit()
 {
-	// measure
+    /* measure */
 	math::Vector1F y;
 
 	if (baroMeasure(y) != CFE_SUCCESS)
@@ -48,55 +53,92 @@ int32 PE::baroMeasure(math::Vector1F &y)
 
 void PE::baroCorrect()
 {
-	// measure
-	math::Vector1F y;
+    /* measure */
+    math::Vector1F y;
 
-	if (baroMeasure(y) != CFE_SUCCESS) { return; }
+    if (baroMeasure(y) != CFE_SUCCESS) 
+    { 
+        return;
+    }
 
-	// subtract baro origin alt
-	y[0] -= m_BaroAltOrigin;
+    /* subtract baro origin alt */
+    y[0] -= m_BaroAltOrigin;
 
+    /* baro measurement matrix */
+    math::Matrix1F10 C;
+    C.Zero();
+    /* measured altitude, negative down dir */
+    C[Y_baro_z][X_z] = -1;
 
-//
-//	// baro measurement matrix
-//	math::Matrix1F10 C;
-//	C.Zero();
-//	C[Y_baro_z][X_z] = -1; // measured altitude, negative down dir.
-//
-////	Matrix<float, n_y_baro, n_y_baro> R;
-////	R.setZero();
-////	R(0, 0) = _baro_stddev.get() * _baro_stddev.get();
-//	float residual = 0;
-//	residual = ConfigTblPtr->BARO_STDDEV * ConfigTblPtr->BARO_STDDEV;
-//
-//	float si =
-//	// residual
+    math::Matrix1F1 R;
+    R.Zero();
+    //R[0][0] = m_Params.BAR_Z * m_Params.BAR_Z;
+
+    /* residual */
+    math::Matrix1F1 S_I;
+    S_I.Zero();
+
 //	Matrix<float, n_y_baro, n_y_baro> S_I =
 //		inv<float, n_y_baro>((C * _P * C.transpose()) + R);
+
+    /* ((1x10 * 10x10) * 10x1) + 1x1) */
+    S_I = C * m_StateCov * C.Transpose() + R;
+    /* Take the inverse of a 1x1 matrix (reciprical of the single entry) */
+    S_I[0][0] = 1 / S_I[0][0];
+
 //	Vector<float, n_y_baro> r = y - (C * _x);
-//
-//	//float S_I =
-//
+    math::Vector1F r;
+    r.Zero();
+    /* Vector1F -  (1x10 * Vector10F) */
+    r = y - (C * m_StateVec);
+
 //	// fault detection
 //	float beta = (r.transpose() * (S_I * r))(0, 0);
-//
-//	if (beta > BETA_TABLE[n_y_baro]) {
-//		if (!(_sensorFault & SENSOR_BARO)) {
-//			mavlink_log_critical(&mavlink_log_pub, "[lpe] baro fault, r %5.2f m, beta %5.2f",
-//					     double(r(0)), double(beta));
-//			_sensorFault |= SENSOR_BARO;
-//		}
-//
-//	} else if (_sensorFault & SENSOR_BARO) {
-//		_sensorFault &= ~SENSOR_BARO;
-//		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] baro OK");
-//	}
-//
-//	// kalman filter correction always
+    /* fault detection 1F * 1x1 * 1F */
+    float beta = r[0] * S_I[0][0] * r[0];
+
+
+    if (beta > BETA_TABLE[n_y_baro])
+    {
+        if (!(m_SensorFault & SENSOR_BARO))
+        {
+            (void) CFE_EVS_SendEvent(PE_BARO_FAULT_ERR_EID, CFE_EVS_ERROR,
+                    "baro fault, r %5.2f m, beta %5.2f", r[0], beta);
+            m_SensorFault |= SENSOR_BARO;
+        }
+
+    } 
+    else if (m_SensorFault & SENSOR_BARO) 
+    {
+        m_SensorFault &= ~SENSOR_BARO;
+        (void) CFE_EVS_SendEvent(PE_BARO_OK_ERR_EID, CFE_EVS_INFORMATION,
+                "baro OK");
+    }
+
+// kalman filter correction always
 //	Matrix<float, n_x, n_y_baro> K = _P * C.transpose() * S_I;
 //	Vector<float, n_x> dx = K * r;
 //	_x += dx;
 //	_P -= K * C * _P;
+    math::Matrix10F1 K;
+    K.Zero();
+    /* 10x10 * 10x1 * 1x1 */
+    K = m_StateCov * C.Transpose() * S_I;
+    
+    /* 10x1 * 1x1 */
+    //dx = K * r;
+    math::Matrix10F1 temp;
+    temp.Zero();
+    temp = K * r;
+
+    math::Vector10F dx;
+    dx.Zero();
+    dx = temp.ToVector();
+
+    /* 10F + 10F*/
+    m_StateVec = m_StateVec + dx;
+    /* 10x10 - 10x1 * 1x10 * 10x10 */
+    m_StateCov = m_StateCov - K * C * m_StateCov;
 }
 
 void PE::baroCheckTimeout()
