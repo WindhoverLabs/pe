@@ -108,6 +108,8 @@ int PE::gpsMeasure(math::Vector6F &y)
 
 void PE::gpsCorrect()
 {
+    int i = 0;
+
     /* measure */
     math::Vector6F y_global;
 
@@ -226,14 +228,24 @@ void PE::gpsCorrect()
     /* 6F - */
     math::Vector6F r;
     r.Zero();
+    r = y - C * x0;
     
-//	for (int i = 0; i < 6; i ++) {
-//		_pub_innov.get().vel_pos_innov[i] = r(i);
-//		_pub_innov.get().vel_pos_innov_var[i] = R(i, i);
-//	}
-//
-//	Matrix<float, n_y_gps, n_y_gps> S_I = inv<float, 6>(C * _P * C.transpose() + R);
-//
+    //	for (int i = 0; i < 6; i ++) {
+    //		_pub_innov.get().vel_pos_innov[i] = r(i);
+    //		_pub_innov.get().vel_pos_innov_var[i] = R(i, i);
+    //	}
+    for(i = 0; i < 6; i++)
+    {
+        m_Ekf2InnovationsMsg.VelPosInnov[i] = r[i];
+        m_Ekf2InnovationsMsg.VelPosInnovVar[i] = r[i];
+    }
+
+    //	Matrix<float, n_y_gps, n_y_gps> S_I = inv<float, 6>(C * _P * C.transpose() + R);
+    math::Matrix6F6 S_I;
+    S_I.Zero();
+
+    S_I = C * m_StateCov * C.Transpose() + R;
+    //S_I.Inverse();
 //	// fault detection
 //	float beta = (r.transpose() * (S_I * r))(0, 0);
 //
