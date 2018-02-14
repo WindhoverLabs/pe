@@ -56,8 +56,8 @@ void PE::baroCorrect()
     /* measure */
     math::Vector1F y;
 
-    if (baroMeasure(y) != CFE_SUCCESS) 
-    { 
+    if (baroMeasure(y) != CFE_SUCCESS)
+    {
         return;
     }
 
@@ -72,7 +72,7 @@ void PE::baroCorrect()
 
     math::Matrix1F1 R;
     R.Zero();
-    //R[0][0] = m_Params.BAR_Z * m_Params.BAR_Z;
+    R[0][0] = m_Params.BARO_STDDEV * m_Params.BARO_STDDEV;
 
     /* residual */
     math::Matrix1F1 S_I;
@@ -107,8 +107,8 @@ void PE::baroCorrect()
             m_SensorFault |= SENSOR_BARO;
         }
 
-    } 
-    else if (m_SensorFault & SENSOR_BARO) 
+    }
+    else if (m_SensorFault & SENSOR_BARO)
     {
         m_SensorFault &= ~SENSOR_BARO;
         (void) CFE_EVS_SendEvent(PE_BARO_OK_ERR_EID, CFE_EVS_INFORMATION,
@@ -124,7 +124,7 @@ void PE::baroCorrect()
     K.Zero();
     /* 10x10 * 10x1 * 1x1 */
     K = m_StateCov * C.Transpose() * S_I;
-    
+
     /* 10x1 * 1x1 */
     //dx = K * r;
     math::Matrix10F1 temp;

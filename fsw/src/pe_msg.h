@@ -151,6 +151,51 @@ typedef struct
         \brief Count of failed commands */
     uint8              usCmdErrCnt; 
 
+    /** \brief Flag for if estimator is initialized */
+    bool EstimatorInitialized;
+
+    /** \brief Flag for XY estimation validity */
+    bool XyEstValid;
+
+    /** \brief Flag for Z estimation validity */
+	bool ZEstValid;
+
+	/** \brief Flag for terrain estimation validity */
+	bool TzEstValid;
+
+	/** \brief Timestamp */
+	uint64 Timestamp;
+
+	/** \brief Timestamp of last baro read */
+	uint64 TimeLastBaro;
+
+	/** \brief Timestamp of last gps read */
+	uint64 TimeLastGps;
+
+	/** \brief Timestamp of last landing read */
+	uint64 TimeLastLand;
+
+	/** \brief Flag for baro timeout */
+	bool   BaroTimeout;
+
+	/** \brief Flag for GPS timeout */
+	bool   GpsTimeout;
+
+	/** \brief Flag for landing timeout */
+	bool   LandTimeout;
+
+	/** \brief Origin altitude */
+	float AltOrigin;
+
+	/** \brief Origin altitude initialized flag*/
+	bool  AltOriginInitialized;
+
+	/** \brief Origin altitude of baro */
+	float BaroAltOrigin;
+
+	/** \brief Origin altitude of GPS */
+	float GpsAltOrigin;
+
 } PE_HkTlm_t;
 
 

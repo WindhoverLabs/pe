@@ -180,6 +180,7 @@ public:
     uint32 	EST_STDDEV_TZ_VALID; // 2.0 m
     float 	P_MAX; // max allowed value in state covariance
     float 	LAND_RATE; // rate of land detector correction
+    float	LOW_PASS_CUTOFF;
 
     /**\brief Scheduling Pipe ID */
     CFE_SB_PipeId_t SchPipeId;
@@ -452,6 +453,8 @@ public:
      **       None
      **
      *************************************************************************/
+    void UpdateVehicleLocalPositionMsg(void);
+
     void SendVehicleLocalPositionMsg(void);
     /************************************************************************/
     /** \brief Sends the EstimatorStatusMsg message.
@@ -476,6 +479,8 @@ public:
      **       None
      **
      *************************************************************************/
+    void UpdateVehicleGlobalPositionMsg(void);
+
     void SendVehicleGlobalPositionMsg(void);
     /************************************************************************/
     /** \brief Sends the Ekf2InnovationsMsg message.
