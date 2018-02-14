@@ -336,17 +336,17 @@ void PE::updateStateSpace()
 {
 	/* Derivative of velocity is accelerometer acceleration
 	 * (in input matrix) - bias (in body frame) */
-	m_DynamicsMat[X_vx][X_bx] = -_R_att[0][0];
-	m_DynamicsMat[X_vx][X_by] = -_R_att[0][1];
-	m_DynamicsMat[X_vx][X_bz] = -_R_att[0][2];
+	m_DynamicsMat[X_vx][X_bx] = -m_RotationMat[0][0];
+	m_DynamicsMat[X_vx][X_by] = -m_RotationMat[0][1];
+	m_DynamicsMat[X_vx][X_bz] = -m_RotationMat[0][2];
 
-	m_DynamicsMat[X_vy][X_bx] = -_R_att[1][0];
-	m_DynamicsMat[X_vy][X_by] = -_R_att[1][1];
-	m_DynamicsMat[X_vy][X_bz] = -_R_att[1][2];
+	m_DynamicsMat[X_vy][X_bx] = -m_RotationMat[1][0];
+	m_DynamicsMat[X_vy][X_by] = -m_RotationMat[1][1];
+	m_DynamicsMat[X_vy][X_bz] = -m_RotationMat[1][2];
 
-	m_DynamicsMat[X_vz][X_bx] = -_R_att[2][0];
-	m_DynamicsMat[X_vz][X_by] = -_R_att[2][1];
-	m_DynamicsMat[X_vz][X_bz] = -_R_att[2][2];
+	m_DynamicsMat[X_vz][X_bx] = -m_RotationMat[2][0];
+	m_DynamicsMat[X_vz][X_by] = -m_RotationMat[2][1];
+	m_DynamicsMat[X_vz][X_bz] = -m_RotationMat[2][2];
 }
 
 void PE::updateStateSpaceParams()
@@ -1077,7 +1077,7 @@ void PE::Update()
 	if (ReinitStateVec)
 	{
 		m_StateVec.Zero();
-		/* TODO: Decide if we want to reinit sensors heere. PX4 didn't */
+		/* TODO: Decide if we want to reinit sensors here. PX4 didn't */
 	}
 
 	/* Force state covariance symmetry and reinitialize matrix if necessary */
@@ -1141,27 +1141,25 @@ void PE::Update()
 
 void PE::Predict(float dt)
 {
-	// get acceleration
+	/* Get acceleration */
 	math::Quaternion q(m_VehicleAttitudeMsg.Q[0],
 					   m_VehicleAttitudeMsg.Q[1],
 					   m_VehicleAttitudeMsg.Q[2],
 					   m_VehicleAttitudeMsg.Q[3]);
 
-	_R_att = math::Dcm(q);
-	m_Euler = math::Euler(_R_att);
+	m_RotationMat = math::Dcm(q);
+	m_Euler = math::Euler(m_RotationMat);
 	math::Vector3F a(m_SensorCombinedMsg.Acc[0], m_SensorCombinedMsg.Acc[1], m_SensorCombinedMsg.Acc[2]);
 
-	// note, bias is removed in dynamics function
-	m_InputVec = _R_att * a;
+	/* Note: bias is removed in dynamics function */
+	m_InputVec = m_RotationMat * a;
 	m_InputVec[U_az] += 9.81f; // add g
 
-	// update state space based on new states
+	/* Update state space based on new states */
 	updateStateSpace();
 
-	// continuous time kalman filter prediction
-	// integrate runge kutta 4th order
-	// TODO move rk4 algorithm to matrixlib
-	// https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
+	/* Continuous time Kalman filter prediction. Integrate runge kutta 4th order.
+	 * https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods */
 	math::Vector10F k1, k2, k3, k4;
 	k1 = dynamics(m_StateVec, m_InputVec);
 	k2 = dynamics(m_StateVec + k1 * dt / 2, m_InputVec);
@@ -1169,7 +1167,7 @@ void PE::Predict(float dt)
 	k4 = dynamics(m_StateVec + k3 * dt, m_InputVec);
 	math::Vector10F dx = (k1 + k2 * 2 + k3 * 2 + k4) * (dt / 6);
 
-	// don't integrate position if no valid xy data
+	/* Don't integrate position if no valid xy data */
 	if (!m_XyEstValid)
 	{
 		dx[X_x] = 0;
@@ -1178,19 +1176,19 @@ void PE::Predict(float dt)
 		dx[X_vy] = 0;
 	}
 
-	// don't integrate z if no valid z data
+	/* Don't integrate z if no valid z data */
 	if (!m_ZEstValid)
 	{
 		dx[X_z] = 0;
 	}
 
-	// don't integrate tz if no valid tz data
+	/* Don't integrate tz if no valid tz data */
 	if (!m_TzEstValid)
 	{
 		dx[X_tz] = 0;
 	}
 
-	// saturate bias
+	/* Saturate bias */
 	float bx = dx[X_bx] + m_StateVec[X_bx];
 	float by = dx[X_by] + m_StateVec[X_by];
 	float bz = dx[X_bz] + m_StateVec[X_bz];
@@ -1213,7 +1211,7 @@ void PE::Predict(float dt)
 		dx[X_bz] = bz - m_StateVec[X_bz];
 	}
 
-	// propagate
+	/* Propagate */
 	m_StateVec += dx;
 	math::Matrix10F10 dP = (m_DynamicsMat * m_StateCov + m_StateCov * m_DynamicsMat.Transpose() +
 			m_InputMat * m_InputCov * m_InputMat.Transpose() + m_NoiseCov) * dt;
@@ -1221,11 +1219,12 @@ void PE::Predict(float dt)
 //	OS_printf("PRE\n");
 //	m_StateCov.Print();
 
-	// covariance propagation logic
+	//
+	/* Covariance propagation logic */
 	for (int i = 0; i < n_x; i++) {
 		if (m_StateCov[i][i] > P_MAX)
 		{
-			// if diagonal element greater than max, stop propagating
+			/* If diagonal element greater than max stop propagating */
 			dP[i][i] = 0;
 
 			for (int j = 0; j < n_x; j++)
@@ -1236,6 +1235,7 @@ void PE::Predict(float dt)
 		}
 	}
 
+	/* Update state */
 	m_StateCov += dP;
 
 //	OS_printf("m_StateCov\n");

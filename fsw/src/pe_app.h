@@ -273,7 +273,7 @@ public:
 	math::Vector3F  m_InputVec; // input vector
 	math::Matrix10F10  m_StateCov; // state covariance matrix
 
-	math::Matrix3F3 _R_att;
+	math::Matrix3F3 m_RotationMat;
 	math::Vector3F m_Euler;
 
 	math::Matrix10F10 m_DynamicsMat; // dynamics matrix
