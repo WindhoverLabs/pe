@@ -141,6 +141,7 @@ void PE::baroCorrect()
     m_StateCov = m_StateCov - K * C * m_StateCov;
 }
 
+
 void PE::baroCheckTimeout()
 {
 	if (m_Timestamp - m_TimeLastBaro > BARO_TIMEOUT)

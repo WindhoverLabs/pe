@@ -76,6 +76,8 @@ extern "C" {
 #include <poll.h>
 #include <math.h>
 
+#include "BlockDelay.hpp"
+
 /************************************************************************
  ** Local Defines
  *************************************************************************/
@@ -169,10 +171,10 @@ public:
     ~PE();
 
     /** \brief Constants */
-    float 	DELAY_MAX;
+    float 	DELAY_MAX = 0.5f;
     float 	HIST_STEP;
     float 	BIAS_MAX;
-    size_t 	HIST_LEN;
+    size_t 	HIST_LEN = 10;
     size_t 	N_DIST_SUBS;
     float  	BETA_TABLE[PE_BETA_TABLE_SIZE];
     uint32 	EST_STDDEV_XY_VALID; // 2.0 m
@@ -241,6 +243,8 @@ public:
 	// delay blocks
 	//BlockDelay<float, n_x, 1, HIST_LEN> m_XDelay;
 	//BlockDelay<uint64_t, 1, 1, HIST_LEN> m_TDelay;
+    delay::BlockDelay10F1LEN10 m_XDelay;
+    delay::BlockDelayUINT64LEN10 m_TDelay;
 
 	// Time
     pollfd m_Polls[3]; // don't think needed

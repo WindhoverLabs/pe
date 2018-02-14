@@ -299,6 +299,7 @@ typedef enum {
 **  This event message is issued when baro has (re)initialized successfully.
 **
 */
+
     PE_BARO_OK_INF_EID,
 
 /** \brief Baro timeout
@@ -313,6 +314,19 @@ typedef enum {
 */
 	PE_BARO_TIMEOUT_ERR_EID,
 
+
+/** \brief TODO
+**  \event
+**
+**  \par Type:
+**
+**  \par Cause:
+**
+**  This event message is issued when
+**
+*/
+	PE_BARO_FAULT_ERR_EID,
+
 /** \brief GPS timeout
 **  \event GPS timeout
 **
@@ -324,6 +338,7 @@ typedef enum {
 **
 */
 	PE_GPS_TIMEOUT_ERR_EID,
+
 
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT
