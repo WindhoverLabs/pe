@@ -1,6 +1,8 @@
 #include "../pe_app.h"
 #include <math/Matrix6F10.hpp>
 #include <math/Matrix6F6.hpp>
+#include <math/Vector6F.hpp>
+
 
 /* required number of samples for sensor to initialize */
 #define REQ_GPS_INIT_COUNT  (10)
@@ -206,12 +208,25 @@ void PE::gpsCorrect()
     /* get delayed x */
     uint8 i_hist = 0;
 
-//	if (getDelayPeriods(_gps_delay.get(), &i_hist)  < 0) { return; }
-//	Vector<float, n_x> x0 = _xDelay.get(i_hist);
-//
-//	// residual
-//	Vector<float, n_y_gps> r = y - C * x0;
-//
+    //	if (getDelayPeriods(_gps_delay.get(), &i_hist)  < 0) { return; }
+    //	Vector<float, n_x> x0 = _xDelay.get(i_hist);
+    if(getDelayPeriods(m_Params.GPS_DELAY, &i_hist) < 0)
+    {
+        return;
+    }
+    
+    math::Matrix10F1 temp;
+    temp = m_XDelay.Get(i_hist);
+    
+    math::Vector10F x0;
+    x0 = temp.ToVector();
+
+    /* residual */
+    //	Vector<float, n_y_gps> r = y - C * x0;
+    /* 6F - */
+    math::Vector6F r;
+    r.Zero();
+    
 //	for (int i = 0; i < 6; i ++) {
 //		_pub_innov.get().vel_pos_innov[i] = r(i);
 //		_pub_innov.get().vel_pos_innov_var[i] = R(i, i);
