@@ -249,9 +249,14 @@ public:
 	uint64 m_TimeLastBaro;
 	uint64 m_TimeLastGps;
 	uint64 m_TimeLastLand;
+
 	bool   m_BaroTimeout;
 	bool   m_GpsTimeout;
 	bool   m_LandTimeout;
+
+	bool   m_BaroFault;
+	bool   m_GpsFault;
+	bool   m_LandFault;
 
 	// reference altitudes
 	float m_AltOrigin;

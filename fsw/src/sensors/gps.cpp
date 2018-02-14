@@ -69,12 +69,12 @@ void PE::gpsInit()
 				m_AltOrigin = m_GpsAltOrigin;
 				m_AltOriginInitialized = true;
 
-				(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+				(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,//TODO update to gps eid
 										 "GPS init origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
 										 gpsLatOrigin, gpsLonOrigin, double(m_GpsAltOrigin));
 			}
 
-			(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,//TODO update to gps eid
 									 "GPS init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
 									 gpsLat, gpsLon, double(gpsAlt));
 		}
@@ -220,7 +220,7 @@ void PE::gpsCheckTimeout()
 		{
 			m_GpsTimeout = true;
 			m_GpsStats.reset();
-			(void) CFE_EVS_SendEvent(PE_SENSOR_ERR_EID, CFE_EVS_ERROR,
+			(void) CFE_EVS_SendEvent(PE_GPS_TIMEOUT_ERR_EID, CFE_EVS_ERROR,
 									 "GPS timeout");
 		}
 	}

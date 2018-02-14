@@ -175,6 +175,15 @@ typedef struct
 	/** \brief Timestamp of last landing read */
 	uint64 TimeLastLand;
 
+	/** \brief Flag for baro fault */
+	bool   BaroFault;
+
+	/** \brief Flag for GPS fault */
+	bool   GpsFault;
+
+	/** \brief Flag for landing fault */
+	bool   LandFault;
+
 	/** \brief Flag for baro timeout */
 	bool   BaroTimeout;
 

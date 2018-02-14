@@ -264,6 +264,11 @@ void PE::InitData()
 	m_GpsTimeout = true;
 	m_LandTimeout = true;
 
+	/* Faults */
+	m_BaroFault = false;
+	m_GpsFault = false;
+	m_LandFault = false;
+
 	// reference altitudes
 	m_AltOrigin = 0.0;
 	m_AltOriginInitialized = FALSE;
@@ -677,6 +682,9 @@ void PE::ReportHousekeeping()
 	HkTlm.BaroTimeout = m_BaroTimeout;
 	HkTlm.GpsTimeout = m_GpsTimeout;
 	HkTlm.LandTimeout = m_LandTimeout;
+	HkTlm.BaroFault = m_BaroFault;
+	HkTlm.GpsFault = m_GpsFault;
+	HkTlm.LandFault = m_LandFault;
 	HkTlm.AltOrigin = m_AltOrigin;
 	HkTlm.AltOriginInitialized = m_AltOriginInitialized;
 	HkTlm.BaroAltOrigin = m_BaroAltOrigin;
@@ -1054,7 +1062,7 @@ void PE::Update()
 							m_Params.INIT_ORIGIN_LON,
 							m_Timestamp); //TODO: Verify correct time
 
-		(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION, //TODO update to gps eid
 								 "GPS fake origin init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
 								 m_Params.INIT_ORIGIN_LAT,
 								 m_Params.INIT_ORIGIN_LON,
@@ -1088,7 +1096,7 @@ void PE::Update()
 		{
 			if (!isfinite(m_StateCov[i][j]))
 			{
-				(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+				(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
 										 "Reinit state covariance. Index (%i, %i) not finite", i, j);
 				ReinitStateCov = true;
 				break;
@@ -1098,7 +1106,7 @@ void PE::Update()
 				/* Ensure diagonal elements are positive */
 				if (m_StateCov[i][i] <= 0)
 				{
-					(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+					(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
 											 "Reinit state covariance. Index (%i, %i) negative", i, j);
 					ReinitStateCov = true;
 					break;
@@ -1114,6 +1122,8 @@ void PE::Update()
 
 	if (ReinitStateCov)
 	{
+		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+								 "State covariance matrix reinitialized");
 		initStateCov();
 	}
 
@@ -1122,6 +1132,13 @@ void PE::Update()
 	/* Publish updated data if initialized */
 	if(m_AltOriginInitialized)
 	{
+		if(!m_EstimatorInitialized)
+		{
+			m_EstimatorInitialized = true;
+			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+									 "Estimator initialized");
+		}
+
 		UpdateVehicleLocalPositionMsg();
 		SendVehicleLocalPositionMsg();
 		SendEstimatorStatusMsg();

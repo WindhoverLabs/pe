@@ -21,7 +21,7 @@ void PE::landInit()
 	{
 		m_LandTimeout = false;
 
-		(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION, //TODO update to ld eid
 								 "Land detecter init");
 	}
 }
@@ -98,7 +98,7 @@ void PE::landCheckTimeout()
 		{
 			m_LandTimeout = true;
 			m_LandCount = 0;
-			(void) CFE_EVS_SendEvent(PE_SENSOR_ERR_EID, CFE_EVS_ERROR,
+			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,//TODO update to ld eid
 									 "Land detecter timeout");
 		}
 	}
