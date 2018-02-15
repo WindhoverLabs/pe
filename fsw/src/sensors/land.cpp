@@ -21,8 +21,8 @@ void PE::landInit()
 	{
 		m_LandTimeout = false;
 
-		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION, //TODO update to ld eid
-								 "Land detecter init");
+		(void) CFE_EVS_SendEvent(PE_LAND_OK_INF_EID, CFE_EVS_INFORMATION,
+								 "Land detector initialized");
 	}
 }
 
@@ -36,58 +36,66 @@ int PE::landMeasure(math::Vector3F &y)
 
 void PE::landCorrect()
 {
-//	// measure land
-//	Vector<float, n_y_land> y;
+	// measure land
+//	math::Vector3F y;
 //
-//	if (landMeasure(y) != OK) { return; }
+//	if (landMeasure(y) != CFE_SUCCESS)
+//	{
+//		return;
+//	}
 //
 //	// measurement matrix
-//	Matrix<float, n_y_land, n_x> C;
-//	C.setZero();
+//	math::Matrix3F10 C;
+//	C.Zero();
 //	// y = -(z - tz)
-//	C(Y_land_vx, X_vx) = 1;
-//	C(Y_land_vy, X_vy) = 1;
-//	C(Y_land_agl, X_z) = -1; // measured altitude, negative down dir.
-//	C(Y_land_agl, X_tz) = 1; // measured altitude, negative down dir.
+//	C[Y_land_vx][X_vx] = 1;
+//	C[Y_land_vy][X_vy] = 1;
+//	C[Y_land_agl][X_z] = -1; // measured altitude, negative down dir.
+//	C[Y_land_agl][X_tz] = 1; // measured altitude, negative down dir.
 //
 //	// use parameter covariance
-//	SquareMatrix<float, n_y_land> R;
-//	R.setZero();
-//	R(Y_land_vx, Y_land_vx) = _land_vxy_stddev.get() * _land_vxy_stddev.get();
-//	R(Y_land_vy, Y_land_vy) = _land_vxy_stddev.get() * _land_vxy_stddev.get();
-//	R(Y_land_agl, Y_land_agl) = _land_z_stddev.get() * _land_z_stddev.get();
+//	math::Matrix3F3 R;
+//	R.Zero();
+//	R[Y_land_vx][Y_land_vx] = m_Params.LAND_VXY_STDDEV * m_Params.LAND_VXY_STDDEV;
+//	R[Y_land_vy][Y_land_vy] = m_Params.LAND_VXY_STDDEV * m_Params.LAND_VXY_STDDEV;
+//	R[Y_land_agl][Y_land_agl] = m_Params.LAND_Z_STDDEV * m_Params.LAND_Z_STDDEV;
 //
 //	// residual
-//	Matrix<float, n_y_land, n_y_land> S_I = inv<float, n_y_land>((C * _P * C.transpose()) + R);
-//	Vector<float, n_y_land> r = y - C * _x;
-//	_pub_innov.get().hagl_innov = r(Y_land_agl);
-//	_pub_innov.get().hagl_innov_var = R(Y_land_agl, Y_land_agl);
+//	math::Matrix3F3 S_I;// = inv<float, n_y_land>((C * _P * C.transpose()) + R);
+//	math::Vector3F r = y - C * m_StateVec;
+//	m_Ekf2InnovationsMsg.HaglInnov = r[Y_land_agl];
+//	m_Ekf2InnovationsMsg.HaglInnovVar = R[Y_land_agl][Y_land_agl];
 //
 //	// fault detection
-//	float beta = (r.transpose() * (S_I * r))(0, 0);
+//	float beta;// = (r.transpose() * (S_I * r))[0][0];
 //
 //	// artifically increase beta threshhold to prevent fault during landing
 //	float beta_thresh = 1e2f;
 //
-//	if (beta / BETA_TABLE[n_y_land] > beta_thresh) {
-//		if (!(_sensorFault & SENSOR_LAND)) {
-//			_sensorFault |= SENSOR_LAND;
-//			mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] land fault,  beta %5.2f", double(beta));
+//	if (beta / BETA_TABLE[n_y_land] > beta_thresh)
+//	{
+//		if (!m_BaroFault)
+//		{
+//			m_BaroFault = true;
+//			(void) CFE_EVS_SendEvent(PE_LAND_FAULT_ERR_EID, CFE_EVS_ERROR,
+//									 "Land detector fault, beta %5.2f", double(beta));
 //		}
 //
 //		// abort correction
 //		return;
-//
-//	} else if (_sensorFault & SENSOR_LAND) {
-//		_sensorFault &= ~SENSOR_LAND;
-//		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] land OK");
+//	}
+//	else if (m_BaroFault)
+//	{
+//		m_BaroFault = false;
+//		(void) CFE_EVS_SendEvent(PE_LAND_OK_INF_EID, CFE_EVS_ERROR,
+//								 "Land detector OK");
 //	}
 //
 //	// kalman filter correction always for land detector
-//	Matrix<float, n_x, n_y_land> K = _P * C.transpose() * S_I;
-//	Vector<float, n_x> dx = K * r;
-//	_x += dx;
-//	_P -= K * C * _P;
+//	math::Matrix10F3 K = m_StateCov * C.transpose() * S_I;
+//	math::Vector10F dx = K * r;
+//	m_StateVec += dx;
+//	m_StateCov -= K * C * m_StateCov;
 }
 
 void PE::landCheckTimeout()
@@ -98,8 +106,8 @@ void PE::landCheckTimeout()
 		{
 			m_LandTimeout = true;
 			m_LandCount = 0;
-			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,//TODO update to ld eid
-									 "Land detecter timeout");
+			(void) CFE_EVS_SendEvent(PE_LAND_TIMEOUT_ERR_EID, CFE_EVS_ERROR,
+									 "Land detector timeout");
 		}
 	}
 }

@@ -326,6 +326,44 @@ typedef enum {
 */
 	PE_GPS_TIMEOUT_ERR_EID,
 
+/** \brief Land fault, beta %5.2f
+**  \event Land fault, beta %5.2f
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the land detector fails a validity check.
+**  Land detector will reinitialize after this event is broadcast.
+**
+*/
+	PE_LAND_FAULT_ERR_EID,
+
+/** \brief Land detector initialized
+**  \event Land detector initialized
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when land detector has (re)initialized successfully.
+**
+*/
+
+	PE_LAND_OK_INF_EID,
+
+/** \brief Land detector timeout
+**  \event Land detector timeout
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the land detector data times out and needs to be reset
+**
+*/
+	PE_LAND_TIMEOUT_ERR_EID,
+
 
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT
