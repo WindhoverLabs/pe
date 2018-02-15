@@ -294,8 +294,8 @@ void PE::InitData()
 	m_MapRef.init_done = false;
 
     /* Initialize delay blocks */
-    m_XDelay.Initialize();
-    m_TDelay.Initialize();
+//    m_XDelay.Initialize();
+//    m_TDelay.Initialize();
 
 }
 
@@ -776,6 +776,33 @@ void PE::UpdateVehicleLocalPositionMsg()
 
 void PE::SendVehicleLocalPositionMsg()
 {
+	OS_printf("\nLocal Pos Msg:\n");
+	OS_printf("Timestamp : %u\n", m_VehicleLocalPositionMsg.Timestamp);
+	OS_printf("XY_Valid : %u\n", m_VehicleLocalPositionMsg.XY_Valid);
+	OS_printf("Z_Valid : %u\n", m_VehicleLocalPositionMsg.Z_Valid);
+	OS_printf("V_XY_Valid : %u\n", m_VehicleLocalPositionMsg.V_XY_Valid);
+	OS_printf("V_Z_Valid : %u\n", m_VehicleLocalPositionMsg.V_Z_Valid);
+	OS_printf("X : %f\n", m_VehicleLocalPositionMsg.X);
+	OS_printf("Y : %f\n", m_VehicleLocalPositionMsg.Y);
+	OS_printf("Z : %f\n", m_VehicleLocalPositionMsg.Z);
+	OS_printf("VX : %f\n", m_VehicleLocalPositionMsg.VX);
+	OS_printf("VY : %f\n", m_VehicleLocalPositionMsg.VY);
+	OS_printf("VZ : %f\n", m_VehicleLocalPositionMsg.VZ);
+	OS_printf("Yaw : %f\n", m_VehicleLocalPositionMsg.Yaw);
+	OS_printf("XY_Global : %u\n", m_VehicleLocalPositionMsg.XY_Global);
+	OS_printf("Z_Global : %u\n", m_VehicleLocalPositionMsg.Z_Global);
+	OS_printf("RefTimestamp : %u\n", m_VehicleLocalPositionMsg.RefTimestamp);
+	OS_printf("RefLat : %f\n", m_VehicleLocalPositionMsg.RefLat);
+	OS_printf("RefLon : %f\n", m_VehicleLocalPositionMsg.RefLon);
+	OS_printf("RefAlt : %f\n", m_VehicleLocalPositionMsg.RefAlt);
+	//m_VehicleLocalPositionMsg.DistBottom = ; //TODO agl low pass
+	OS_printf("DistBottomRate : %f\n", m_VehicleLocalPositionMsg.DistBottomRate);
+	OS_printf("SurfaceBottomTimestamp : %u\n", m_VehicleLocalPositionMsg.SurfaceBottomTimestamp);
+	OS_printf("DistBottomValid : %u\n", m_VehicleLocalPositionMsg.DistBottomValid);
+	OS_printf("EpH : %f\n", m_VehicleLocalPositionMsg.EpH);
+	OS_printf("EpV : %f\n", m_VehicleLocalPositionMsg.EpV);
+
+
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
 }
@@ -853,6 +880,23 @@ void PE::UpdateVehicleGlobalPositionMsg()
 
 void PE::SendVehicleGlobalPositionMsg()
 {
+	OS_printf("\nGlobal Pos Msg:\n");
+	OS_printf("Timestamp : %u\n", m_VehicleGlobalPositionMsg.Timestamp);
+	OS_printf("TimeUtcUsec : %u\n", m_VehicleGlobalPositionMsg.TimeUtcUsec);
+	OS_printf("Lat : %f\n", m_VehicleGlobalPositionMsg.Lat);
+	OS_printf("Lon : %f\n", m_VehicleGlobalPositionMsg.Lon);
+	OS_printf("Alt : %f\n", m_VehicleGlobalPositionMsg.Alt);
+	OS_printf("VelN : %f\n", m_VehicleGlobalPositionMsg.VelN);
+	OS_printf("VelE : %f\n", m_VehicleGlobalPositionMsg.VelE);
+	OS_printf("VelD : %f\n", m_VehicleGlobalPositionMsg.VelD);
+	OS_printf("Yaw : %f\n", m_VehicleGlobalPositionMsg.Yaw);
+	OS_printf("EpH : %f\n", m_VehicleGlobalPositionMsg.EpH);
+	OS_printf("EpV : %f\n", m_VehicleGlobalPositionMsg.EpV);
+	OS_printf("TerrainAlt : %f\n", m_VehicleGlobalPositionMsg.TerrainAlt);
+	OS_printf("PressureAlt : %f\n", m_VehicleGlobalPositionMsg.PressureAlt);
+	OS_printf("TerrainAltValid : %u\n", m_VehicleGlobalPositionMsg.TerrainAltValid);
+	OS_printf("DeadReckoning : %u\n", m_VehicleGlobalPositionMsg.DeadReckoning);
+
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
 }
@@ -1309,26 +1353,26 @@ void PE::UpdateLocalParams()
 
 int PE::getDelayPeriods(float delay, uint8 *periods)
 {
-    float t_delay = 0;
-    uint8 i_hist = 0;
-    
-    for(i_hist = 1; i_hist < HIST_LEN; i_hist++)
-    {
-        t_delay = 1.0e-6f * (m_Timestamp - m_TDelay.Get(i_hist));
-        if(t_delay > delay)
-        {
-            break;
-        }
-    }
-    
-    *periods = i_hist;
-    
-    if(t_delay > DELAY_MAX)
-    {
-        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
-                "LPE delayed data old: %8.4f", t_delay);
-        return -1;
-    }
+//    float t_delay = 0;
+//    uint8 i_hist = 0;
+//
+//    for(i_hist = 1; i_hist < HIST_LEN; i_hist++)
+//    {
+//        t_delay = 1.0e-6f * (m_Timestamp - m_TDelay.Get(i_hist));
+//        if(t_delay > delay)
+//        {
+//            break;
+//        }
+//    }
+//
+//    *periods = i_hist;
+//
+//    if(t_delay > DELAY_MAX)
+//    {
+//        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+//                "LPE delayed data old: %8.4f", t_delay);
+//        return -1;
+//    }
     
     return CFE_SUCCESS;
 }

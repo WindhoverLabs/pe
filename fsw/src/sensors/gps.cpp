@@ -109,123 +109,123 @@ int PE::gpsMeasure(math::Vector6F &y)
 void PE::gpsCorrect()
 {
     /* measure */
-    math::Vector6F y_global;
-
-    if (gpsMeasure(y_global) != CFE_SUCCESS) 
-    {
-        return; 
-    }
-
-    /* gps measurement in local frame */
-    double  lat = y_global[0];
-    double  lon = y_global[1];
-    float  alt = y_global[2];
-    float px = 0;
-    float py = 0;
-    float pz = -(alt - m_GpsAltOrigin);
-    map_projection_project(&m_MapRef, lat, lon, &px, &py);
-    math::Vector6F y;
-    y.Zero();
-    y[0] = px;
-    y[1] = py;
-    y[2] = pz;
-    y[3] = y_global[3];
-    y[4] = y_global[4];
-    y[5] = y_global[5];
-
-    /* gps measurement matrix, measures position and velocity */
-    //	Matrix<float, n_y_gps, n_x> C;
-    //	C.setZero();
-    math::Matrix6F10 C;
-    C.Zero();
-    C[Y_gps_x][X_x] = 1;
-    C[Y_gps_y][X_y] = 1;
-    C[Y_gps_z][X_z] = 1;
-    C[Y_gps_vx][X_vx] = 1;
-    C[Y_gps_vy][X_vy] = 1;
-    C[Y_gps_vz][X_vz] = 1;
-
-    /* gps covariance matrix */
-//	SquareMatrix<float, n_y_gps> R;
-//	R.setZero();
-    math::Matrix6F6 R;
-    R.Zero();
-    /* default to parameter, use gps cov if provided */
-    //	float var_xy = _gps_xy_stddev.get() * _gps_xy_stddev.get();
-    float var_xy = m_Params.GPS_XY_STDDEV * m_Params.GPS_XY_STDDEV;
-    //	float var_z = _gps_z_stddev.get() * _gps_z_stddev.get();
-    float var_z = m_Params.GPS_Z_STDDEV * m_Params.GPS_Z_STDDEV;
-    //	float var_vxy = _gps_vxy_stddev.get() * _gps_vxy_stddev.get();
-    float var_vxy = m_Params.GPS_VXY_STDDEV * m_Params.GPS_VXY_STDDEV;
-    //	float var_vz = _gps_vz_stddev.get() * _gps_vz_stddev.get();
-    float var_vz = m_Params.GPS_VZ_STDDEV * m_Params.GPS_VZ_STDDEV;
-
-    /* if field is not below minimum, set it to the value provided */
-    //	if (_sub_gps.get().eph > _gps_xy_stddev.get()) {
-    //		var_xy = _sub_gps.get().eph * _sub_gps.get().eph;
-    //	}
-    if(m_VehicleGpsPositionMsg.EpH > m_Params.GPS_XY_STDDEV)
-    {
-        var_xy = m_VehicleGpsPositionMsg.EpH * m_VehicleGpsPositionMsg.EpH;
-    }
-    //	if (_sub_gps.get().epv > _gps_z_stddev.get()) {
-    //		var_z = _sub_gps.get().epv * _sub_gps.get().epv;
-    //	}
-    if (m_VehicleGpsPositionMsg.EpV > m_Params.GPS_Z_STDDEV)
-    {
-        var_z = m_VehicleGpsPositionMsg.EpV * m_VehicleGpsPositionMsg.EpV;
-    }
-    //	float gps_s_stddev =  _sub_gps.get().s_variance_m_s;
-    float gps_s_stddev = m_VehicleGpsPositionMsg.SVariance;
-    //	if (gps_s_stddev > _gps_vxy_stddev.get()) {
-    //		var_vxy = gps_s_stddev * gps_s_stddev;
-    //	}
-    if(gps_s_stddev > m_Params.GPS_VXY_STDDEV)
-    {
-        var_vxy = gps_s_stddev * gps_s_stddev;
-    }
-    //	if (gps_s_stddev > _gps_vz_stddev.get()) {
-    //		var_vz = gps_s_stddev * gps_s_stddev;
-    //	}
-    if(gps_s_stddev > m_Params.GPS_VZ_STDDEV)
-    {
-        var_vz = gps_s_stddev * gps_s_stddev;
-    }
-
-    //	R(0, 0) = var_xy;
-    //	R(1, 1) = var_xy;
-    //	R(2, 2) = var_z;
-    //	R(3, 3) = var_vxy;
-    //	R(4, 4) = var_vxy;
-    //	R(5, 5) = var_vz;
-    R[0][0] = var_xy;
-    R[1][1] = var_xy;
-    R[2][2] = var_z;
-    R[3][3] = var_vxy;
-    R[4][4] = var_vxy;
-    R[5][5] = var_vz;
-
-    /* get delayed x */
-    uint8 i_hist = 0;
-
-    //	if (getDelayPeriods(_gps_delay.get(), &i_hist)  < 0) { return; }
-    //	Vector<float, n_x> x0 = _xDelay.get(i_hist);
-    if(getDelayPeriods(m_Params.GPS_DELAY, &i_hist) < 0)
-    {
-        return;
-    }
-    
-    math::Matrix10F1 temp;
-    temp = m_XDelay.Get(i_hist);
-    
-    math::Vector10F x0;
-    x0 = temp.ToVector();
-
-    /* residual */
-    //	Vector<float, n_y_gps> r = y - C * x0;
-    /* 6F - */
-    math::Vector6F r;
-    r.Zero();
+//    math::Vector6F y_global;
+//
+//    if (gpsMeasure(y_global) != CFE_SUCCESS)
+//    {
+//        return;
+//    }
+//
+//    /* gps measurement in local frame */
+//    double  lat = y_global[0];
+//    double  lon = y_global[1];
+//    float  alt = y_global[2];
+//    float px = 0;
+//    float py = 0;
+//    float pz = -(alt - m_GpsAltOrigin);
+//    map_projection_project(&m_MapRef, lat, lon, &px, &py);
+//    math::Vector6F y;
+//    y.Zero();
+//    y[0] = px;
+//    y[1] = py;
+//    y[2] = pz;
+//    y[3] = y_global[3];
+//    y[4] = y_global[4];
+//    y[5] = y_global[5];
+//
+//    /* gps measurement matrix, measures position and velocity */
+//    //	Matrix<float, n_y_gps, n_x> C;
+//    //	C.setZero();
+//    math::Matrix6F10 C;
+//    C.Zero();
+//    C[Y_gps_x][X_x] = 1;
+//    C[Y_gps_y][X_y] = 1;
+//    C[Y_gps_z][X_z] = 1;
+//    C[Y_gps_vx][X_vx] = 1;
+//    C[Y_gps_vy][X_vy] = 1;
+//    C[Y_gps_vz][X_vz] = 1;
+//
+//    /* gps covariance matrix */
+////	SquareMatrix<float, n_y_gps> R;
+////	R.setZero();
+//    math::Matrix6F6 R;
+//    R.Zero();
+//    /* default to parameter, use gps cov if provided */
+//    //	float var_xy = _gps_xy_stddev.get() * _gps_xy_stddev.get();
+//    float var_xy = m_Params.GPS_XY_STDDEV * m_Params.GPS_XY_STDDEV;
+//    //	float var_z = _gps_z_stddev.get() * _gps_z_stddev.get();
+//    float var_z = m_Params.GPS_Z_STDDEV * m_Params.GPS_Z_STDDEV;
+//    //	float var_vxy = _gps_vxy_stddev.get() * _gps_vxy_stddev.get();
+//    float var_vxy = m_Params.GPS_VXY_STDDEV * m_Params.GPS_VXY_STDDEV;
+//    //	float var_vz = _gps_vz_stddev.get() * _gps_vz_stddev.get();
+//    float var_vz = m_Params.GPS_VZ_STDDEV * m_Params.GPS_VZ_STDDEV;
+//
+//    /* if field is not below minimum, set it to the value provided */
+//    //	if (_sub_gps.get().eph > _gps_xy_stddev.get()) {
+//    //		var_xy = _sub_gps.get().eph * _sub_gps.get().eph;
+//    //	}
+//    if(m_VehicleGpsPositionMsg.EpH > m_Params.GPS_XY_STDDEV)
+//    {
+//        var_xy = m_VehicleGpsPositionMsg.EpH * m_VehicleGpsPositionMsg.EpH;
+//    }
+//    //	if (_sub_gps.get().epv > _gps_z_stddev.get()) {
+//    //		var_z = _sub_gps.get().epv * _sub_gps.get().epv;
+//    //	}
+//    if (m_VehicleGpsPositionMsg.EpV > m_Params.GPS_Z_STDDEV)
+//    {
+//        var_z = m_VehicleGpsPositionMsg.EpV * m_VehicleGpsPositionMsg.EpV;
+//    }
+//    //	float gps_s_stddev =  _sub_gps.get().s_variance_m_s;
+//    float gps_s_stddev = m_VehicleGpsPositionMsg.SVariance;
+//    //	if (gps_s_stddev > _gps_vxy_stddev.get()) {
+//    //		var_vxy = gps_s_stddev * gps_s_stddev;
+//    //	}
+//    if(gps_s_stddev > m_Params.GPS_VXY_STDDEV)
+//    {
+//        var_vxy = gps_s_stddev * gps_s_stddev;
+//    }
+//    //	if (gps_s_stddev > _gps_vz_stddev.get()) {
+//    //		var_vz = gps_s_stddev * gps_s_stddev;
+//    //	}
+//    if(gps_s_stddev > m_Params.GPS_VZ_STDDEV)
+//    {
+//        var_vz = gps_s_stddev * gps_s_stddev;
+//    }
+//
+//    //	R(0, 0) = var_xy;
+//    //	R(1, 1) = var_xy;
+//    //	R(2, 2) = var_z;
+//    //	R(3, 3) = var_vxy;
+//    //	R(4, 4) = var_vxy;
+//    //	R(5, 5) = var_vz;
+//    R[0][0] = var_xy;
+//    R[1][1] = var_xy;
+//    R[2][2] = var_z;
+//    R[3][3] = var_vxy;
+//    R[4][4] = var_vxy;
+//    R[5][5] = var_vz;
+//
+//    /* get delayed x */
+//    uint8 i_hist = 0;
+//
+//    //	if (getDelayPeriods(_gps_delay.get(), &i_hist)  < 0) { return; }
+//    //	Vector<float, n_x> x0 = _xDelay.get(i_hist);
+//    if(getDelayPeriods(m_Params.GPS_DELAY, &i_hist) < 0)
+//    {
+//        return;
+//    }
+//
+//    math::Matrix10F1 temp;
+//    temp = m_XDelay.Get(i_hist);
+//
+//    math::Vector10F x0;
+//    x0 = temp.ToVector();
+//
+//    /* residual */
+//    //	Vector<float, n_y_gps> r = y - C * x0;
+//    /* 6F - */
+//    math::Vector6F r;
+//    r.Zero();
     
 //	for (int i = 0; i < 6; i ++) {
 //		_pub_innov.get().vel_pos_innov[i] = r(i);
