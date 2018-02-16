@@ -12,6 +12,7 @@
 /* TODO move to single fault bool */
 #define SENSOR_GPS          (1 << 1)
 
+
 void PE::gpsInit()
 {
     /* check for good gps signal */
@@ -92,6 +93,7 @@ void PE::gpsInit()
     }
 }
 
+
 int PE::gpsMeasure(math::Vector6F &y)
 {
     /* gps measurement */
@@ -108,6 +110,7 @@ int PE::gpsMeasure(math::Vector6F &y)
     m_TimeLastGps = m_Timestamp;
     return CFE_SUCCESS;
 }
+
 
 void PE::gpsCorrect()
 {
@@ -151,8 +154,8 @@ void PE::gpsCorrect()
     C[Y_gps_vz][X_vz] = 1;
 
     /* gps covariance matrix */
-//	SquareMatrix<float, n_y_gps> R;
-//	R.setZero();
+    //	SquareMatrix<float, n_y_gps> R;
+    //	R.setZero();
     math::Matrix6F6 R;
     R.Zero();
     /* default to parameter, use gps cov if provided */
@@ -251,7 +254,7 @@ void PE::gpsCorrect()
     S_I = S_I.Inversed();
 
     /* fault detection */
-//	float beta = (r.transpose() * (S_I * r))(0, 0);
+    //	float beta = (r.transpose() * (S_I * r))(0, 0);
     /* 6x6 * 6x1 */
     
     math::Matrix1F6 rTranspose;
@@ -307,6 +310,7 @@ void PE::gpsCorrect()
     /* 10x10 - (10x6 * 6x10 * 10x10)*/
     m_StateCov = m_StateCov - K * C * m_StateCov;
 }
+
 
 void PE::gpsCheckTimeout()
 {
