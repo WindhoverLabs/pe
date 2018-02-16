@@ -512,7 +512,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 }
                 else
                 {
-                	//landCorrect();
+                	landCorrect();
                 }
 
                 break;
