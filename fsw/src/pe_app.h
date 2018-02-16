@@ -244,8 +244,8 @@ public:
 	// delay blocks
 	//BlockDelay<float, n_x, 1, HIST_LEN> m_XDelay;
 	//BlockDelay<uint64_t, 1, 1, HIST_LEN> m_TDelay;
-//    delay::BlockDelay10F1LEN10 m_XDelay;
-//    delay::BlockDelayUINT64LEN10 m_TDelay;
+    delay::BlockDelay10F1LEN10 m_XDelay;
+    delay::BlockDelayUINT64LEN10 m_TDelay;
 
 	// Time
     pollfd m_Polls[3]; // don't think needed
