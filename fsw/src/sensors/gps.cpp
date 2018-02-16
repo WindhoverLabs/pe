@@ -2,6 +2,7 @@
 #include <math/Matrix6F10.hpp>
 #include <math/Matrix6F6.hpp>
 #include <math/Vector6F.hpp>
+#include <math/Matrix1F6.hpp>
 
 
 /* required number of samples for sensor to initialize */
@@ -225,7 +226,7 @@ void PE::gpsCorrect()
 
     /* residual */
     //	Vector<float, n_y_gps> r = y - C * x0;
-    /* 6F - */
+    /* 6F - 6F10 * 10x1(10F)*/
     math::Vector6F r;
     r.Zero();
     r = y - C * x0;
@@ -245,10 +246,21 @@ void PE::gpsCorrect()
     S_I.Zero();
 
     S_I = C * m_StateCov * C.Transpose() + R;
-    //S_I.Inverse();
-//	// fault detection
+    S_I = S_I.Inversed();
+
+    /* fault detection */
 //	float beta = (r.transpose() * (S_I * r))(0, 0);
-//
+    /* 6x6 * 6x1 */
+    
+    math::Matrix1F6 rTranspose;
+    rTranspose[0][0] = r[0];
+    rTranspose[0][1] = r[1];
+    rTranspose[0][2] = r[2];
+    rTranspose[0][3] = r[3];
+    rTranspose[0][4] = r[4];
+    rTranspose[0][5] = r[5];
+    
+    float beta = (rTranspose * (S_I * r))[0][0];
 //	// artifically increase beta threshhold to prevent fault during landing
 //	float beta_thresh = 1e2f;
 //
