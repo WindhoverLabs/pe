@@ -9,6 +9,8 @@ add_airliner_app_def(pe
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_msg.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_tbldefs.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_version.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/BlockDelay.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/BlockDelay.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/baro.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/gps.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/land.cpp

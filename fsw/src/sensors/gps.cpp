@@ -9,8 +9,6 @@
 #define REQ_GPS_INIT_COUNT  (10)
 /* 1.0 s */
 #define GPS_TIMEOUT         (1000000)
-/* TODO move to single fault bool */
-#define SENSOR_GPS          (1 << 1)
 
 
 void PE::gpsInit()
@@ -81,12 +79,12 @@ void PE::gpsInit()
                 m_AltOrigin = m_GpsAltOrigin;
                 m_AltOriginInitialized = true;
 
-                (void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+                (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,//todo eid
                         "GPS init origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
                         gpsLatOrigin, gpsLonOrigin, double(m_GpsAltOrigin));
             }
 
-            (void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+            (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,//todo eid
                     "GPS init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
                     gpsLat, gpsLon, double(gpsAlt));
         }
@@ -273,23 +271,20 @@ void PE::gpsCorrect()
 
     if (beta / BETA_TABLE[n_y_gps] > beta_thresh) 
     {
-        /* TODO move to single fault bool */
-        if (!(m_SensorFault & SENSOR_GPS)) 
+        if (!m_SensorFault)
         {
             (void) CFE_EVS_SendEvent(PE_GPS_FAULT_ERR_EID, CFE_EVS_ERROR,
                     "gps fault, %3g %3g %3g %3g %3g %3g", 
                     double(r[0]*r[0] / S_I[0][0]),  double(r[1]*r[1] / S_I[1][1]), double(r[2]*r[2] / S_I[2][2]),
                     double(r[3]*r[3] / S_I[3][3]),  double(r[4]*r[4] / S_I[4][4]), double(r[5]*r[5] / S_I[5][5]));
             /* TODO move to single fault bool */
-            m_SensorFault |= SENSOR_GPS;
+            m_SensorFault = true;
         }
     }
-    /* TODO move to single fault bool */
-    else if (m_SensorFault & SENSOR_GPS) 
+    else if (m_SensorFault)
     {
-        /* TODO move to single fault bool */
-        m_SensorFault &= ~SENSOR_GPS;
-        (void) CFE_EVS_SendEvent(PE_GPS_OK_ERR_EID, CFE_EVS_INFORMATION,
+        m_SensorFault = false;
+        (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
                 "GPS OK");
     }
 
@@ -320,7 +315,7 @@ void PE::gpsCheckTimeout()
 		{
 			m_GpsTimeout = true;
 			m_GpsStats.reset();
-			(void) CFE_EVS_SendEvent(PE_SENSOR_ERR_EID, CFE_EVS_ERROR,
+			(void) CFE_EVS_SendEvent(PE_GPS_TIMEOUT_ERR_EID, CFE_EVS_ERROR,
 									 "GPS timeout");
 		}
 	}

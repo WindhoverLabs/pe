@@ -250,100 +250,145 @@ typedef enum {
 */
 	PE_CFGTBL_LOAD_ERR_EID,
 
-/** \brief TODO
-**  \event
-**
-**  \par Type:
-**
-**  \par Cause:
-**
-**  This event message is issued when
-**
-*/
-	PE_SENSOR_INF_EID,
 
-/** \brief TODO
-**  \event
+/** \brief Estimator initialized
+**  \event Estimator initialized
 **
-**  \par Type:
-**
-**  \par Cause:
-**
-**  This event message is issued when
-**
-*/
-	PE_SENSOR_ERR_EID,
-
-/** \brief TODO
-**  \event
-**
-**  \par Type:
+**  \par Type: INFORMATION
 **
 **  \par Cause:
 **
-**  This event message is issued when
+**  This event message is issued when the estimator has received enough data to initialize
 **
 */
 	PE_ESTIMATOR_INF_EID,
 
-/** \brief TODO
-**  \event
+/** \brief Reinit state covariance. Index (%i, %i) not finite
+**  \event Reinit state covariance. Index (%i, %i) not finite
 **
-**  \par Type:
+**  \par Type: ERROR
 **
 **  \par Cause:
 **
-**  This event message is issued when
+**  This event message is issued when one of the estimator validity checks fails.
+**  The estimator will reinitialize after this event is broadcast.
 **
 */
 	PE_ESTIMATOR_ERR_EID,
 
-/** \brief TODO
-**  \event
+/** \brief Baro fault, r %5.2f m, beta %5.2f
+**  \event Baro fault, r %5.2f m, beta %5.2f
 **
-**  \par Type:
+**  \par Type: ERROR
 **
 **  \par Cause:
 **
-**  This event message is issued when
+**  This event message is issued when the baro fails a validity check.
+**  Baro will reinitialize after this event is broadcast.
 **
 */
 	PE_BARO_FAULT_ERR_EID,
-/** \brief TODO
-**  \event
+
+/** \brief Baro initialized. Mean: (%d) Std dev: (%d) cm
+**  \event Baro initialized. Mean: (%d) Std dev: (%d) cm
 **
-**  \par Type:
+**  \par Type: INFORMATION
 **
 **  \par Cause:
 **
-**  This event message is issued when
+**  This event message is issued when baro has (re)initialized successfully.
 **
 */
-    PE_BARO_OK_ERR_EID,
-    
-/** \brief TODO
-**  \event
+
+    PE_BARO_OK_INF_EID,
+
+/** \brief Baro timeout
+**  \event Baro timeout
 **
-**  \par Type:
+**  \par Type: ERROR
 **
 **  \par Cause:
 **
-**  This event message is issued when
+**  This event message is issued when the baro data times out and needs to be reset
+**
+*/
+	PE_BARO_TIMEOUT_ERR_EID,
+
+/** \brief GPS timeout
+**  \event GPS timeout
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the gps data times out and needs to be reset
+**
+*/
+	PE_GPS_TIMEOUT_ERR_EID,
+
+/** \brief gps fault, %3g %3g %3g %3g %3g %3g
+**  \event gps fault, %3g %3g %3g %3g %3g %3g
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the GPS fails a validity check.
+**  GPS will reinitialize after this event is broadcast.
 **
 */
 	PE_GPS_FAULT_ERR_EID,
 
-/** \brief TODO
-**  \event
+/** \brief GPS OK
+**  \event GPS OK
 **
-**  \par Type:
+**  \par Type: INFORMATION
 **
 **  \par Cause:
 **
-**  This event message is issued when
+**  This event message is issued when GPS has (re)initialized successfully.
 **
 */
-    PE_GPS_OK_ERR_EID,
+    PE_GPS_OK_INF_EID,
+
+/** \brief Land fault, beta %5.2f
+**  \event Land fault, beta %5.2f
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the land detector fails a validity check.
+**  Land detector will reinitialize after this event is broadcast.
+**
+*/
+	PE_LAND_FAULT_ERR_EID,
+
+/** \brief Land detector initialized
+**  \event Land detector initialized
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when land detector has (re)initialized successfully.
+**
+*/
+
+	PE_LAND_OK_INF_EID,
+
+/** \brief Land detector timeout
+**  \event Land detector timeout
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the land detector data times out and needs to be reset
+**
+*/
+	PE_LAND_TIMEOUT_ERR_EID,
+
 
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT

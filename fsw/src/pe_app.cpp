@@ -238,6 +238,7 @@ void PE::InitData()
 	EST_STDDEV_TZ_VALID = 2.0;
 	P_MAX = 1.0e6f;
 	LAND_RATE = 10.0f;
+	LOW_PASS_CUTOFF = 5.0f;
 
 	UpdateLocalParams();
 
@@ -254,8 +255,7 @@ void PE::InitData()
 
 	/* Timestamps */
 	m_Timestamp = PX4LIB_GetPX4TimeUs();
-	m_TimestampLastBaro = PX4LIB_GetPX4TimeUs();
-	m_TimeLastBaro = 0;
+	m_TimeLastBaro = PX4LIB_GetPX4TimeUs();
 	m_TimeLastGps = 0;
 	m_TimeLastLand = 0;
 
@@ -263,6 +263,11 @@ void PE::InitData()
 	m_BaroTimeout = true;
 	m_GpsTimeout = true;
 	m_LandTimeout = true;
+
+	/* Faults */
+	m_BaroFault = false;
+	m_GpsFault = false;
+	m_LandFault = false;
 
 	// reference altitudes
 	m_AltOrigin = 0.0;
@@ -289,8 +294,8 @@ void PE::InitData()
 	m_MapRef.init_done = false;
 
     /* Initialize delay blocks */
-    m_XDelay.Initialize();
-    m_TDelay.Initialize();
+//    m_XDelay.Initialize();
+//    m_TDelay.Initialize();
 
 }
 
@@ -340,17 +345,17 @@ void PE::updateStateSpace()
 {
 	/* Derivative of velocity is accelerometer acceleration
 	 * (in input matrix) - bias (in body frame) */
-	m_DynamicsMat[X_vx][X_bx] = -_R_att[0][0];
-	m_DynamicsMat[X_vx][X_by] = -_R_att[0][1];
-	m_DynamicsMat[X_vx][X_bz] = -_R_att[0][2];
+	m_DynamicsMat[X_vx][X_bx] = -m_RotationMat[0][0];
+	m_DynamicsMat[X_vx][X_by] = -m_RotationMat[0][1];
+	m_DynamicsMat[X_vx][X_bz] = -m_RotationMat[0][2];
 
-	m_DynamicsMat[X_vy][X_bx] = -_R_att[1][0];
-	m_DynamicsMat[X_vy][X_by] = -_R_att[1][1];
-	m_DynamicsMat[X_vy][X_bz] = -_R_att[1][2];
+	m_DynamicsMat[X_vy][X_bx] = -m_RotationMat[1][0];
+	m_DynamicsMat[X_vy][X_by] = -m_RotationMat[1][1];
+	m_DynamicsMat[X_vy][X_bz] = -m_RotationMat[1][2];
 
-	m_DynamicsMat[X_vz][X_bx] = -_R_att[2][0];
-	m_DynamicsMat[X_vz][X_by] = -_R_att[2][1];
-	m_DynamicsMat[X_vz][X_bz] = -_R_att[2][2];
+	m_DynamicsMat[X_vz][X_bx] = -m_RotationMat[2][0];
+	m_DynamicsMat[X_vz][X_by] = -m_RotationMat[2][1];
+	m_DynamicsMat[X_vz][X_bz] = -m_RotationMat[2][2];
 }
 
 void PE::updateStateSpaceParams()
@@ -507,7 +512,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 }
                 else
                 {
-                	landCorrect();
+                	//landCorrect();
                 }
 
                 break;
@@ -670,6 +675,25 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
 
 void PE::ReportHousekeeping()
 {
+	HkTlm.EstimatorInitialized = m_EstimatorInitialized;
+	HkTlm.XyEstValid = m_XyEstValid;
+	HkTlm.ZEstValid = m_ZEstValid;
+	HkTlm.TzEstValid = m_TzEstValid;
+	HkTlm.Timestamp = m_Timestamp;
+	HkTlm.TimeLastBaro = m_TimeLastBaro;
+	HkTlm.TimeLastGps = m_TimeLastGps;
+	HkTlm.TimeLastLand = m_TimeLastLand;
+	HkTlm.BaroTimeout = m_BaroTimeout;
+	HkTlm.GpsTimeout = m_GpsTimeout;
+	HkTlm.LandTimeout = m_LandTimeout;
+	HkTlm.BaroFault = m_BaroFault;
+	HkTlm.GpsFault = m_GpsFault;
+	HkTlm.LandFault = m_LandFault;
+	HkTlm.AltOrigin = m_AltOrigin;
+	HkTlm.AltOriginInitialized = m_AltOriginInitialized;
+	HkTlm.BaroAltOrigin = m_BaroAltOrigin;
+	HkTlm.GpsAltOrigin = m_GpsAltOrigin;
+
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&HkTlm);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&HkTlm);
 }
@@ -680,8 +704,105 @@ void PE::ReportHousekeeping()
 /* Publish Output Data                                             */
 /*                                                                 */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+void PE::UpdateVehicleLocalPositionMsg()
+{
+	float alt 			 = 0;
+	float vxy_stddev     = 0;
+	float epv 			 = 0;
+	float eph			 = 0;
+	float eph_thresh	 = 3.0f;
+	float epv_thresh     = 3.0f;
+	bool data_valid = false;
+
+	vxy_stddev = sqrtf(m_StateCov[X_vx][X_vx] + m_StateCov[X_vy][X_vy]);
+	epv = sqrt(m_StateCov[X_z][X_z]);
+	eph = sqrt(m_StateCov[X_x][X_x] + m_StateCov[X_y][X_y]);
+
+	if (vxy_stddev < m_Params.VXY_PUB_THRESH)
+	{
+		if (eph > eph_thresh)
+		{
+			eph = eph_thresh;
+		}
+
+		if (epv > epv_thresh)
+		{
+			epv = epv_thresh;
+		}
+	}
+
+	if(	isfinite(m_XLowPass[X_vx]) &&
+		isfinite(m_XLowPass[X_vy]) &&
+		isfinite(m_XLowPass[X_vz]) &&
+		isfinite(m_XLowPass[X_x]) &&
+		isfinite(m_XLowPass[X_y]) &&
+		isfinite(m_XLowPass[X_z]))
+	{
+		data_valid = true;
+	}
+
+	if(data_valid)
+	{
+		m_VehicleLocalPositionMsg.Timestamp = m_Timestamp;
+		m_VehicleLocalPositionMsg.XY_Valid = m_XyEstValid;
+		m_VehicleLocalPositionMsg.Z_Valid = m_ZEstValid;
+		m_VehicleLocalPositionMsg.V_XY_Valid = m_XyEstValid;
+		m_VehicleLocalPositionMsg.V_Z_Valid = m_ZEstValid;
+		m_VehicleLocalPositionMsg.X = m_XLowPass[X_x];
+		m_VehicleLocalPositionMsg.Y = m_XLowPass[X_y];
+		m_VehicleLocalPositionMsg.Z = m_XLowPass[X_z]; // todo check if this should be agl
+		m_VehicleLocalPositionMsg.VX = m_XLowPass[X_vx];
+		m_VehicleLocalPositionMsg.VY = m_XLowPass[X_vy];
+		m_VehicleLocalPositionMsg.VZ = m_XLowPass[X_vz];
+		m_VehicleLocalPositionMsg.Yaw = m_Euler[2];
+		m_VehicleLocalPositionMsg.XY_Global = m_XyEstValid;
+		m_VehicleLocalPositionMsg.Z_Global = !m_BaroTimeout;
+		m_VehicleLocalPositionMsg.RefTimestamp = m_Timestamp;
+		m_VehicleLocalPositionMsg.RefLat = m_MapRef.lat_rad * 180/M_PI;
+		m_VehicleLocalPositionMsg.RefLon = m_MapRef.lon_rad * 180/M_PI;
+		m_VehicleLocalPositionMsg.RefAlt = m_AltOrigin;
+		//m_VehicleLocalPositionMsg.DistBottom = ; //TODO agl low pass
+		m_VehicleLocalPositionMsg.DistBottomRate = m_XLowPass[X_vz];
+		m_VehicleLocalPositionMsg.SurfaceBottomTimestamp = m_Timestamp;
+		m_VehicleLocalPositionMsg.DistBottomValid = m_ZEstValid;
+		m_VehicleLocalPositionMsg.EpH = eph;
+		m_VehicleLocalPositionMsg.EpV = epv;
+	}
+	else
+	{
+		OS_printf("VehicleLocalPositionMsg data invalid\n");
+	}
+}
+
 void PE::SendVehicleLocalPositionMsg()
 {
+//	OS_printf("\nLocal Pos Msg:\n");
+//	OS_printf("Timestamp : %u\n", m_VehicleLocalPositionMsg.Timestamp);
+//	OS_printf("XY_Valid : %u\n", m_VehicleLocalPositionMsg.XY_Valid);
+//	OS_printf("Z_Valid : %u\n", m_VehicleLocalPositionMsg.Z_Valid);
+//	OS_printf("V_XY_Valid : %u\n", m_VehicleLocalPositionMsg.V_XY_Valid);
+//	OS_printf("V_Z_Valid : %u\n", m_VehicleLocalPositionMsg.V_Z_Valid);
+//	OS_printf("X : %f\n", m_VehicleLocalPositionMsg.X);
+//	OS_printf("Y : %f\n", m_VehicleLocalPositionMsg.Y);
+//	OS_printf("Z : %f\n", m_VehicleLocalPositionMsg.Z);
+//	OS_printf("VX : %f\n", m_VehicleLocalPositionMsg.VX);
+//	OS_printf("VY : %f\n", m_VehicleLocalPositionMsg.VY);
+//	OS_printf("VZ : %f\n", m_VehicleLocalPositionMsg.VZ);
+//	OS_printf("Yaw : %f\n", m_VehicleLocalPositionMsg.Yaw);
+//	OS_printf("XY_Global : %u\n", m_VehicleLocalPositionMsg.XY_Global);
+//	OS_printf("Z_Global : %u\n", m_VehicleLocalPositionMsg.Z_Global);
+//	OS_printf("RefTimestamp : %u\n", m_VehicleLocalPositionMsg.RefTimestamp);
+//	OS_printf("RefLat : %f\n", m_VehicleLocalPositionMsg.RefLat);
+//	OS_printf("RefLon : %f\n", m_VehicleLocalPositionMsg.RefLon);
+//	OS_printf("RefAlt : %f\n", m_VehicleLocalPositionMsg.RefAlt);
+//	//m_VehicleLocalPositionMsg.DistBottom = ; //TODO agl low pass
+//	OS_printf("DistBottomRate : %f\n", m_VehicleLocalPositionMsg.DistBottomRate);
+//	OS_printf("SurfaceBottomTimestamp : %u\n", m_VehicleLocalPositionMsg.SurfaceBottomTimestamp);
+//	OS_printf("DistBottomValid : %u\n", m_VehicleLocalPositionMsg.DistBottomValid);
+//	OS_printf("EpH : %f\n", m_VehicleLocalPositionMsg.EpH);
+//	OS_printf("EpV : %f\n", m_VehicleLocalPositionMsg.EpV);
+
+
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
 }
@@ -690,8 +811,92 @@ void PE::SendEstimatorStatusMsg()
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_EstimatorStatusMsg);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_EstimatorStatusMsg);
 }
+
+void PE::UpdateVehicleGlobalPositionMsg()
+{
+	double lat			 = 0;
+	double lon 		  	 = 0;
+	float alt 			 = 0;
+	float vxy_stddev     = 0;
+	float epv 			 = 0;
+	float eph			 = 0;
+	float eph_thresh	 = 3.0f;
+	float epv_thresh     = 3.0f;
+	bool data_valid = false;
+
+	map_projection_reproject(&m_MapRef, m_XLowPass[X_x], m_XLowPass[X_y], &lat, &lon);
+
+	alt = -m_XLowPass[X_z] + m_AltOrigin;
+	vxy_stddev = sqrtf(m_StateCov[X_vx][X_vx] + m_StateCov[X_vy][X_vy]);
+	epv = sqrt(m_StateCov[X_z][X_z]);
+	eph = sqrt(m_StateCov[X_x][X_x] + m_StateCov[X_y][X_y]);
+
+	if (vxy_stddev < m_Params.VXY_PUB_THRESH)
+	{
+		if (eph > eph_thresh)
+		{
+			eph = eph_thresh;
+		}
+
+		if (epv > epv_thresh)
+		{
+			epv = epv_thresh;
+		}
+	}
+
+	if( isfinite(lat) &&
+		isfinite(lon) &&
+		isfinite(alt) &&
+		isfinite(m_XLowPass[X_vx]) &&
+		isfinite(m_XLowPass[X_vy]) &&
+		isfinite(m_XLowPass[X_vz]))
+	{
+		data_valid = true;
+	}
+
+	if(data_valid)
+	{
+		m_VehicleGlobalPositionMsg.Timestamp = m_Timestamp;
+		m_VehicleGlobalPositionMsg.TimeUtcUsec = m_VehicleGpsPositionMsg.TimeUtcUsec;
+		m_VehicleGlobalPositionMsg.Lat = lat;
+		m_VehicleGlobalPositionMsg.Lon = lon;
+		m_VehicleGlobalPositionMsg.Alt = alt;
+		m_VehicleGlobalPositionMsg.VelN = m_XLowPass[X_vx];
+		m_VehicleGlobalPositionMsg.VelE = m_XLowPass[X_vy];
+		m_VehicleGlobalPositionMsg.VelD = m_XLowPass[X_vz];
+		m_VehicleGlobalPositionMsg.Yaw = m_Euler[2];
+		m_VehicleGlobalPositionMsg.EpH = eph;
+		m_VehicleGlobalPositionMsg.EpV = epv;
+		m_VehicleGlobalPositionMsg.TerrainAlt = m_AltOrigin - m_XLowPass[X_tz];
+		m_VehicleGlobalPositionMsg.TerrainAltValid = m_TzEstValid; //todo check - bool to boolean
+		m_VehicleGlobalPositionMsg.DeadReckoning = !m_XyEstValid;
+		m_VehicleGlobalPositionMsg.PressureAlt = m_SensorCombinedMsg.BaroAlt;
+	}
+	else
+	{
+		OS_printf("VehicleGlobalPositionMsg data invalid\n");
+	}
+}
+
 void PE::SendVehicleGlobalPositionMsg()
 {
+//	OS_printf("\nGlobal Pos Msg:\n");
+//	OS_printf("Timestamp : %u\n", m_VehicleGlobalPositionMsg.Timestamp);
+//	OS_printf("TimeUtcUsec : %u\n", m_VehicleGlobalPositionMsg.TimeUtcUsec);
+//	OS_printf("Lat : %f\n", m_VehicleGlobalPositionMsg.Lat);
+//	OS_printf("Lon : %f\n", m_VehicleGlobalPositionMsg.Lon);
+//	OS_printf("Alt : %f\n", m_VehicleGlobalPositionMsg.Alt);
+//	OS_printf("VelN : %f\n", m_VehicleGlobalPositionMsg.VelN);
+//	OS_printf("VelE : %f\n", m_VehicleGlobalPositionMsg.VelE);
+//	OS_printf("VelD : %f\n", m_VehicleGlobalPositionMsg.VelD);
+//	OS_printf("Yaw : %f\n", m_VehicleGlobalPositionMsg.Yaw);
+//	OS_printf("EpH : %f\n", m_VehicleGlobalPositionMsg.EpH);
+//	OS_printf("EpV : %f\n", m_VehicleGlobalPositionMsg.EpV);
+//	OS_printf("TerrainAlt : %f\n", m_VehicleGlobalPositionMsg.TerrainAlt);
+//	OS_printf("PressureAlt : %f\n", m_VehicleGlobalPositionMsg.PressureAlt);
+//	OS_printf("TerrainAltValid : %u\n", m_VehicleGlobalPositionMsg.TerrainAltValid);
+//	OS_printf("DeadReckoning : %u\n", m_VehicleGlobalPositionMsg.DeadReckoning);
+
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
 }
@@ -905,7 +1110,7 @@ void PE::Update()
 							m_Params.INIT_ORIGIN_LON,
 							m_Timestamp); //TODO: Verify correct time
 
-		(void) CFE_EVS_SendEvent(PE_SENSOR_INF_EID, CFE_EVS_INFORMATION,
+		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION, //TODO update to gps eid
 								 "GPS fake origin init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
 								 m_Params.INIT_ORIGIN_LAT,
 								 m_Params.INIT_ORIGIN_LON,
@@ -928,7 +1133,7 @@ void PE::Update()
 	if (ReinitStateVec)
 	{
 		m_StateVec.Zero();
-		/* TODO: Decide if we want to reinit sensors heere. PX4 didn't */
+		/* TODO: Decide if we want to reinit sensors here. PX4 didn't */
 	}
 
 	/* Force state covariance symmetry and reinitialize matrix if necessary */
@@ -939,7 +1144,7 @@ void PE::Update()
 		{
 			if (!isfinite(m_StateCov[i][j]))
 			{
-				(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+				(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
 										 "Reinit state covariance. Index (%i, %i) not finite", i, j);
 				ReinitStateCov = true;
 				break;
@@ -949,7 +1154,7 @@ void PE::Update()
 				/* Ensure diagonal elements are positive */
 				if (m_StateCov[i][i] <= 0)
 				{
-					(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+					(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
 											 "Reinit state covariance. Index (%i, %i) negative", i, j);
 					ReinitStateCov = true;
 					break;
@@ -965,6 +1170,8 @@ void PE::Update()
 
 	if (ReinitStateCov)
 	{
+		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+								 "State covariance matrix reinitialized");
 		initStateCov();
 	}
 
@@ -973,11 +1180,20 @@ void PE::Update()
 	/* Publish updated data if initialized */
 	if(m_AltOriginInitialized)
 	{
+		if(!m_EstimatorInitialized)
+		{
+			m_EstimatorInitialized = true;
+			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+									 "Estimator initialized");
+		}
+
+		UpdateVehicleLocalPositionMsg();
 		SendVehicleLocalPositionMsg();
 		SendEstimatorStatusMsg();
 
 		if(m_XyEstValid && (m_MapRef.init_done || m_Params.FAKE_ORIGIN))
 		{
+			UpdateVehicleGlobalPositionMsg();
 			SendVehicleGlobalPositionMsg();
 		}
 	}
@@ -990,27 +1206,25 @@ void PE::Update()
 
 void PE::Predict(float dt)
 {
-	// get acceleration
+	/* Get acceleration */
 	math::Quaternion q(m_VehicleAttitudeMsg.Q[0],
 					   m_VehicleAttitudeMsg.Q[1],
 					   m_VehicleAttitudeMsg.Q[2],
 					   m_VehicleAttitudeMsg.Q[3]);
 
-	_R_att = math::Dcm(q);
-	m_Euler = math::Euler(_R_att);
+	m_RotationMat = math::Dcm(q);
+	m_Euler = math::Euler(m_RotationMat);
 	math::Vector3F a(m_SensorCombinedMsg.Acc[0], m_SensorCombinedMsg.Acc[1], m_SensorCombinedMsg.Acc[2]);
 
-	// note, bias is removed in dynamics function
-	m_InputVec = _R_att * a;
+	/* Note: bias is removed in dynamics function */
+	m_InputVec = m_RotationMat * a;
 	m_InputVec[U_az] += 9.81f; // add g
 
-	// update state space based on new states
+	/* Update state space based on new states */
 	updateStateSpace();
 
-	// continuous time kalman filter prediction
-	// integrate runge kutta 4th order
-	// TODO move rk4 algorithm to matrixlib
-	// https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
+	/* Continuous time Kalman filter prediction. Integrate runge kutta 4th order.
+	 * https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods */
 	math::Vector10F k1, k2, k3, k4;
 	k1 = dynamics(m_StateVec, m_InputVec);
 	k2 = dynamics(m_StateVec + k1 * dt / 2, m_InputVec);
@@ -1018,7 +1232,7 @@ void PE::Predict(float dt)
 	k4 = dynamics(m_StateVec + k3 * dt, m_InputVec);
 	math::Vector10F dx = (k1 + k2 * 2 + k3 * 2 + k4) * (dt / 6);
 
-	// don't integrate position if no valid xy data
+	/* Don't integrate position if no valid xy data */
 	if (!m_XyEstValid)
 	{
 		dx[X_x] = 0;
@@ -1027,19 +1241,19 @@ void PE::Predict(float dt)
 		dx[X_vy] = 0;
 	}
 
-	// don't integrate z if no valid z data
+	/* Don't integrate z if no valid z data */
 	if (!m_ZEstValid)
 	{
 		dx[X_z] = 0;
 	}
 
-	// don't integrate tz if no valid tz data
+	/* Don't integrate tz if no valid tz data */
 	if (!m_TzEstValid)
 	{
 		dx[X_tz] = 0;
 	}
 
-	// saturate bias
+	/* Saturate bias */
 	float bx = dx[X_bx] + m_StateVec[X_bx];
 	float by = dx[X_by] + m_StateVec[X_by];
 	float bz = dx[X_bz] + m_StateVec[X_bz];
@@ -1062,19 +1276,20 @@ void PE::Predict(float dt)
 		dx[X_bz] = bz - m_StateVec[X_bz];
 	}
 
-	// propagate
+	/* Propagate */
 	m_StateVec += dx;
 	math::Matrix10F10 dP = (m_DynamicsMat * m_StateCov + m_StateCov * m_DynamicsMat.Transpose() +
 			m_InputMat * m_InputCov * m_InputMat.Transpose() + m_NoiseCov) * dt;
 
-	OS_printf("PRE\n");
-	m_StateCov.Print();
+//	OS_printf("PRE\n");
+//	m_StateCov.Print();
 
-	// covariance propagation logic
+	//
+	/* Covariance propagation logic */
 	for (int i = 0; i < n_x; i++) {
 		if (m_StateCov[i][i] > P_MAX)
 		{
-			// if diagonal element greater than max, stop propagating
+			/* If diagonal element greater than max stop propagating */
 			dP[i][i] = 0;
 
 			for (int j = 0; j < n_x; j++)
@@ -1085,11 +1300,12 @@ void PE::Predict(float dt)
 		}
 	}
 
+	/* Update state */
 	m_StateCov += dP;
 
-	OS_printf("m_StateCov\n");
-	m_StateCov.Print();
-
+//	OS_printf("m_StateCov\n");
+//	m_StateCov.Print();
+	m_XLowPass.Update(m_StateVec, dt, LOW_PASS_CUTOFF);
 //	_xLowPass.update(_x);
 //	_aglLowPass.update(agl());
 
@@ -1137,26 +1353,26 @@ void PE::UpdateLocalParams()
 
 int PE::getDelayPeriods(float delay, uint8 *periods)
 {
-    float t_delay = 0;
-    uint8 i_hist = 0;
-    
-    for(i_hist = 1; i_hist < HIST_LEN; i_hist++)
-    {
-        t_delay = 1.0e-6f * (m_Timestamp - m_TDelay.Get(i_hist));
-        if(t_delay > delay)
-        {
-            break;
-        }
-    }
-    
-    *periods = i_hist;
-    
-    if(t_delay > DELAY_MAX)
-    {
-        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
-                "LPE delayed data old: %8.4f", t_delay);
-        return -1;
-    }
+//    float t_delay = 0;
+//    uint8 i_hist = 0;
+//
+//    for(i_hist = 1; i_hist < HIST_LEN; i_hist++)
+//    {
+//        t_delay = 1.0e-6f * (m_Timestamp - m_TDelay.Get(i_hist));
+//        if(t_delay > delay)
+//        {
+//            break;
+//        }
+//    }
+//
+//    *periods = i_hist;
+//
+//    if(t_delay > DELAY_MAX)
+//    {
+//        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+//                "LPE delayed data old: %8.4f", t_delay);
+//        return -1;
+//    }
     
     return CFE_SUCCESS;
 }

@@ -64,6 +64,7 @@ extern "C" {
 #include "math/Matrix10F10.hpp"
 #include "math/Matrix10F3.hpp"
 #include "math/Matrix3F3.hpp"
+#include "math/Matrix1F3.hpp"
 #include "math/LowPass.hpp"
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
@@ -182,6 +183,7 @@ public:
     uint32 	EST_STDDEV_TZ_VALID; // 2.0 m
     float 	P_MAX; // max allowed value in state covariance
     float 	LAND_RATE; // rate of land detector correction
+    float	LOW_PASS_CUTOFF;
 
     /**\brief Scheduling Pipe ID */
     CFE_SB_PipeId_t SchPipeId;
@@ -252,9 +254,14 @@ public:
 	uint64 m_TimeLastBaro;
 	uint64 m_TimeLastGps;
 	uint64 m_TimeLastLand;
+
 	bool   m_BaroTimeout;
 	bool   m_GpsTimeout;
 	bool   m_LandTimeout;
+
+	bool   m_BaroFault;
+	bool   m_GpsFault;
+	bool   m_LandFault;
 
 	// reference altitudes
 	float m_AltOrigin;
@@ -276,7 +283,7 @@ public:
 	math::Vector3F  m_InputVec; // input vector
 	math::Matrix10F10  m_StateCov; // state covariance matrix
 
-	math::Matrix3F3 _R_att;
+	math::Matrix3F3 m_RotationMat;
 	math::Vector3F m_Euler;
 
 	math::Matrix10F10 m_DynamicsMat; // dynamics matrix
@@ -456,6 +463,8 @@ public:
      **       None
      **
      *************************************************************************/
+    void UpdateVehicleLocalPositionMsg(void);
+
     void SendVehicleLocalPositionMsg(void);
     /************************************************************************/
     /** \brief Sends the EstimatorStatusMsg message.
@@ -480,6 +489,8 @@ public:
      **       None
      **
      *************************************************************************/
+    void UpdateVehicleGlobalPositionMsg(void);
+
     void SendVehicleGlobalPositionMsg(void);
     /************************************************************************/
     /** \brief Sends the Ekf2InnovationsMsg message.
