@@ -67,7 +67,8 @@ void PE::landCorrect()
 	m_Ekf2InnovationsMsg.HaglInnovVar = R[Y_land_agl][Y_land_agl];
 
 	// fault detection
-	float beta = (r.Transpose() * (S_I * r))[0][0];
+	float beta = (r.Transpose() * (S_I * r)); // TODO: Removed [0][0] index here. This should be a dot product right?
+	OS_printf("Land beta: %f", beta);
 
 	// artifically increase beta threshhold to prevent fault during landing
 	float beta_thresh = 1e2f;

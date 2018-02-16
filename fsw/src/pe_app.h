@@ -64,6 +64,7 @@ extern "C" {
 #include "math/Matrix10F10.hpp"
 #include "math/Matrix10F3.hpp"
 #include "math/Matrix3F3.hpp"
+#include "math/Matrix1F3.hpp"
 #include "math/LowPass.hpp"
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
