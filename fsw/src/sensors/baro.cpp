@@ -7,6 +7,7 @@
 /* 0.1 s */
 #define BARO_TIMEOUT          (100000)
 
+/* TODO move to single fault bool */
 /* Move to PE.h enum */
 #define SENSOR_BARO           (1 << 0)
 
@@ -100,16 +101,20 @@ void PE::baroCorrect()
 
     if (beta > BETA_TABLE[n_y_baro])
     {
+        /* TODO move to single fault bool */
         if (!(m_SensorFault & SENSOR_BARO))
         {
             (void) CFE_EVS_SendEvent(PE_BARO_FAULT_ERR_EID, CFE_EVS_ERROR,
                     "baro fault, r %5.2f m, beta %5.2f", r[0], beta);
+            /* TODO move to single fault bool */
             m_SensorFault |= SENSOR_BARO;
         }
 
     } 
+    /* TODO move to single fault bool */
     else if (m_SensorFault & SENSOR_BARO) 
     {
+        /* TODO move to single fault bool */
         m_SensorFault &= ~SENSOR_BARO;
         (void) CFE_EVS_SendEvent(PE_BARO_OK_ERR_EID, CFE_EVS_INFORMATION,
                 "baro OK");
