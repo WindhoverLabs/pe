@@ -1208,7 +1208,6 @@ void PE::Update()
 }
 
 
-
 void PE::Predict(float dt)
 {
 	/* Get acceleration */
@@ -1316,10 +1315,12 @@ void PE::Predict(float dt)
 
 }
 
+
 math::Vector10F PE::dynamics(const math::Vector10F &x, const math::Vector3F &u)
 {
 	return (m_DynamicsMat * x) + (m_InputMat * u);
 }
+
 
 void PE::UpdateLocalParams()
 {

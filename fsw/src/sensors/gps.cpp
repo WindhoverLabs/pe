@@ -10,6 +10,7 @@
 /* 1.0 s */
 #define GPS_TIMEOUT         (1000000)
 
+
 void PE::gpsInit()
 {
     /* check for good gps signal */
@@ -90,6 +91,7 @@ void PE::gpsInit()
     }
 }
 
+
 int PE::gpsMeasure(math::Vector6F &y)
 {
     /* gps measurement */
@@ -106,6 +108,7 @@ int PE::gpsMeasure(math::Vector6F &y)
     m_TimeLastGps = m_Timestamp;
     return CFE_SUCCESS;
 }
+
 
 void PE::gpsCorrect()
 {
@@ -149,8 +152,8 @@ void PE::gpsCorrect()
     C[Y_gps_vz][X_vz] = 1;
 
     /* gps covariance matrix */
-//	SquareMatrix<float, n_y_gps> R;
-//	R.setZero();
+    //	SquareMatrix<float, n_y_gps> R;
+    //	R.setZero();
     math::Matrix6F6 R;
     R.Zero();
     /* default to parameter, use gps cov if provided */
@@ -249,7 +252,7 @@ void PE::gpsCorrect()
     S_I = S_I.Inversed();
 
     /* fault detection */
-//	float beta = (r.transpose() * (S_I * r))(0, 0);
+    //	float beta = (r.transpose() * (S_I * r))(0, 0);
     /* 6x6 * 6x1 */
     
     math::Matrix1F6 rTranspose;
@@ -261,28 +264,48 @@ void PE::gpsCorrect()
     rTranspose[0][5] = r[5];
     
     float beta = (rTranspose * (S_I * r))[0][0];
-//	// artifically increase beta threshhold to prevent fault during landing
-//	float beta_thresh = 1e2f;
-//
-//	if (beta / BETA_TABLE[n_y_gps] > beta_thresh) {
-//		if (!(_sensorFault & SENSOR_GPS)) {
-//			mavlink_log_critical(&mavlink_log_pub, "[lpe] gps fault %3g %3g %3g %3g %3g %3g",
-//					     double(r(0)*r(0) / S_I(0, 0)),  double(r(1)*r(1) / S_I(1, 1)), double(r(2)*r(2) / S_I(2, 2)),
-//					     double(r(3)*r(3) / S_I(3, 3)),  double(r(4)*r(4) / S_I(4, 4)), double(r(5)*r(5) / S_I(5, 5)));
-//			_sensorFault |= SENSOR_GPS;
-//		}
-//
-//	} else if (_sensorFault & SENSOR_GPS) {
-//		_sensorFault &= ~SENSOR_GPS;
-//		mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] GPS OK");
-//	}
-//
-//	// kalman filter correction always for GPS
-//	Matrix<float, n_x, n_y_gps> K = _P * C.transpose() * S_I;
-//	Vector<float, n_x> dx = K * r;
-//	_x += dx;
-//	_P -= K * C * _P;
+    /* artifically increase beta threshhold to prevent fault during 
+     * landing
+     **/ 
+    float beta_thresh = 1e2f;
+
+    if (beta / BETA_TABLE[n_y_gps] > beta_thresh) 
+    {
+        if (!m_SensorFault)
+        {
+            (void) CFE_EVS_SendEvent(PE_GPS_FAULT_ERR_EID, CFE_EVS_ERROR,
+                    "gps fault, %3g %3g %3g %3g %3g %3g", 
+                    double(r[0]*r[0] / S_I[0][0]),  double(r[1]*r[1] / S_I[1][1]), double(r[2]*r[2] / S_I[2][2]),
+                    double(r[3]*r[3] / S_I[3][3]),  double(r[4]*r[4] / S_I[4][4]), double(r[5]*r[5] / S_I[5][5]));
+            /* TODO move to single fault bool */
+            m_SensorFault = true;
+        }
+    }
+    else if (m_SensorFault)
+    {
+        m_SensorFault = false;
+        (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
+                "GPS OK");
+    }
+
+    /* kalman filter correction always for GPS */
+    //	Matrix<float, n_x, n_y_gps> K = _P * C.transpose() * S_I;
+    math::Matrix10F6 K;
+    K.Zero();
+    /* 10x10 * 6x10' (10x6) * 6x6 */
+    K = m_StateCov * C.Transpose() * S_I;
+    //	Vector<float, n_x> dx = K * r;
+    math::Vector10F dx;
+    dx.Zero();
+    dx = K * r;
+    //	_x += dx;
+    /* 10F * 10F */
+    m_StateVec = m_StateVec + dx;
+    //	_P -= K * C * _P;
+    /* 10x10 - (10x6 * 6x10 * 10x10)*/
+    m_StateCov = m_StateCov - K * C * m_StateCov;
 }
+
 
 void PE::gpsCheckTimeout()
 {

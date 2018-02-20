@@ -326,6 +326,31 @@ typedef enum {
 */
 	PE_GPS_TIMEOUT_ERR_EID,
 
+/** \brief gps fault, %3g %3g %3g %3g %3g %3g
+**  \event gps fault, %3g %3g %3g %3g %3g %3g
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the GPS fails a validity check.
+**  GPS will reinitialize after this event is broadcast.
+**
+*/
+	PE_GPS_FAULT_ERR_EID,
+
+/** \brief GPS OK
+**  \event GPS OK
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when GPS has (re)initialized successfully.
+**
+*/
+    PE_GPS_OK_INF_EID,
+
 /** \brief Land fault, beta %5.2f
 **  \event Land fault, beta %5.2f
 **

@@ -7,9 +7,6 @@
 /* 0.1 s */
 #define BARO_TIMEOUT          (100000)
 
-/* Move to PE.h enum */
-#define SENSOR_BARO           (1 << 0)
-
 void PE::baroInit()
 {
     /* measure */
