@@ -318,7 +318,8 @@ void PE::InitData()
 	m_SensorTimeout         = 255;
 	m_SensorFault           = 0;
 	m_EstimatorInitialized  = 0;
-
+    
+    m_Timestamp_Hist        = 0;
 	// state space
 	m_StateVec.Zero();
 	m_InputVec.Zero();
@@ -376,6 +377,7 @@ void PE::InitStateSpace()
 	updateStateSpaceParams();
 }
 
+
 void PE::updateStateSpace()
 {
 	/* Derivative of velocity is accelerometer acceleration
@@ -392,6 +394,7 @@ void PE::updateStateSpace()
 	m_DynamicsMat[X_vz][X_by] = -m_RotationMat[2][1];
 	m_DynamicsMat[X_vz][X_bz] = -m_RotationMat[2][2];
 }
+
 
 void PE::updateStateSpaceParams()
 {
@@ -1238,7 +1241,17 @@ void PE::Update()
 		}
 	}
 
+    /* Propagate delayed state, no matter what if state is frozen, 
+     * delayed state still needs to be propagated with frozen state.
+     */
+    float dt_hist = 1.0e-6f * (m_Timestamp - m_Timestamp_Hist);
 
+    if (m_Timestamp_Hist == 0 || (dt_hist > HIST_STEP)) 
+    {
+        m_TDelay.Update(m_Timestamp);
+        m_XDelay.Update(m_StateVec);
+        m_Timestamp_Hist = m_Timestamp;
+    }
 
 }
 

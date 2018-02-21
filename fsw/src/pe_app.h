@@ -250,6 +250,7 @@ public:
 	// Time
     pollfd m_Polls[3]; // don't think needed
 	uint64 m_Timestamp;
+    uint64 m_Timestamp_Hist;
 	uint64 m_TimestampLastBaro;
 	uint64 m_TimeLastBaro;
 	uint64 m_TimeLastGps;
