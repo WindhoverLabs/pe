@@ -329,8 +329,8 @@ void PE::InitData()
 	m_MapRef.init_done      = false;
 
     /* Initialize delay blocks */
-//    m_XDelay.Initialize();
-//    m_TDelay.Initialize();
+    m_XDelay.Initialize();
+    m_TDelay.Initialize();
 
 }
 
@@ -543,11 +543,11 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleLandDetectedMsg, MsgPtr, sizeof(m_VehicleLandDetectedMsg));
                 if(m_LandTimeout)
                 {
-                	landInit();
+                	//landInit();
                 }
                 else
                 {
-                	landCorrect();
+                	//landCorrect();
                 }
 
                 break;
@@ -568,11 +568,11 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_SensorCombinedMsg, MsgPtr, sizeof(m_SensorCombinedMsg));
                 if(m_BaroTimeout)
                 {
-                	baroInit();
+                	//baroInit();
                 }
                 else
                 {
-                	baroCorrect();
+                	//baroCorrect();
                 }
                 break;
 
