@@ -533,6 +533,173 @@ void Test_PE_AppMain_Land_Nominal_3(void)
 }
 
 
+
+/**
+ * Test PE Baro
+ */
+void Test_PE_Baro_Correct_Nominal(void)
+{
+    PE oPE;
+    /* Setup initial conditions */
+    oPE.UpdateLocalParams();
+    oPE.InitData();
+
+    oPE.m_BaroAltOrigin = 0.2648827434f;
+    
+    oPE.m_StateCov[0][0] = 0.0519067831f;
+    oPE.m_StateCov[0][1] = -0.0f;
+    oPE.m_StateCov[0][2] = 0.0f;
+    oPE.m_StateCov[0][3] = 0.0002360904f;
+    oPE.m_StateCov[0][4] = -0.0000000002f;
+    oPE.m_StateCov[0][5] = 0.0000000001f;
+    oPE.m_StateCov[0][6] = -0.0000000005f;
+    oPE.m_StateCov[0][7] = 0.0000001333f;
+    oPE.m_StateCov[0][8] = 0.0000000032f;
+    oPE.m_StateCov[0][9] = 0.0f;
+    
+    oPE.m_StateCov[1][0] = -0.0f;
+    oPE.m_StateCov[1][1] = 0.0519067831f;
+    oPE.m_StateCov[1][2] = 0.0f;
+    oPE.m_StateCov[1][3] = 0.0f;
+    oPE.m_StateCov[1][4] = 0.0002360904f;
+    oPE.m_StateCov[1][5] = 0.0000000002f;
+    oPE.m_StateCov[1][6] = -0.0000001333f;
+    oPE.m_StateCov[1][7] = -0.0000000006f;
+    oPE.m_StateCov[1][8] = 0.0000000039f;
+    oPE.m_StateCov[1][9] = 0.0f;
+    
+    oPE.m_StateCov[2][0] = 0.0f;
+    oPE.m_StateCov[2][1] = 0.0f;
+    oPE.m_StateCov[2][2] = 0.0354095176f;
+    oPE.m_StateCov[2][3] = -0.0f;
+    oPE.m_StateCov[2][4] = -0.0f;
+    oPE.m_StateCov[2][5] = 0.0007252924f;
+    oPE.m_StateCov[2][6] = -0.0000000168f;
+    oPE.m_StateCov[2][7] = 0.0000000128f;
+    oPE.m_StateCov[2][8] = -0.0000005278;
+    oPE.m_StateCov[2][9] = 0.0343233831f;
+    
+    oPE.m_StateCov[3][0] = 0.0002360904f;
+    oPE.m_StateCov[3][1] = 0.0000000002f;
+    oPE.m_StateCov[3][2] = -0.0f;
+    oPE.m_StateCov[3][3] = 0.0016303370f;
+    oPE.m_StateCov[3][4] = -0.0f;
+    oPE.m_StateCov[3][5] = -0.0000000001f;
+    oPE.m_StateCov[3][6] = -0.0000000145f;
+    oPE.m_StateCov[3][7] = 0.0000013262f;
+    oPE.m_StateCov[3][8] = 0.0000000328f;
+    oPE.m_StateCov[3][9] = 0.0f;
+
+    oPE.m_StateCov[4][0] = -0.0000000002f;
+    oPE.m_StateCov[4][1] = 0.0002360904f;
+    oPE.m_StateCov[4][2] = -0.0f;
+    oPE.m_StateCov[4][3] = -0.0f;
+    oPE.m_StateCov[4][4] = 0.0016303370f;
+    oPE.m_StateCov[4][5] = -0.0000000004f;
+    oPE.m_StateCov[4][6] = -0.0000013259f;
+    oPE.m_StateCov[4][7] = -0.0000000155f;
+    oPE.m_StateCov[4][8] = 0.0000000424f;
+    oPE.m_StateCov[4][9] = 0.0f;
+
+    oPE.m_StateCov[5][0] = 0.0000000001f;
+    oPE.m_StateCov[5][1] = 0.0000000002f;
+    oPE.m_StateCov[5][2] = 0.0007252924f;
+    oPE.m_StateCov[5][3] = -0.0000000001f;
+    oPE.m_StateCov[5][4] = -0.0000000004f;
+    oPE.m_StateCov[5][5] = 0.0079122623f;
+    oPE.m_StateCov[5][6] = -0.0000001861f;
+    oPE.m_StateCov[5][7] = 0.0000001420f;
+    oPE.m_StateCov[5][8] = -0.0000058463f;
+    oPE.m_StateCov[5][9] = 0.0000023954f;
+
+    oPE.m_StateCov[6][0] = -0.0000000005f;
+    oPE.m_StateCov[6][1] = -0.0000001333f;
+    oPE.m_StateCov[6][2] = -0.0000000168f;
+    oPE.m_StateCov[6][3] = -0.0000000145f;
+    oPE.m_StateCov[6][4] = -0.0000013259f;
+    oPE.m_StateCov[6][5] = -0.0000001861f;
+    oPE.m_StateCov[6][6] = 0.0000084227f;
+    oPE.m_StateCov[6][7] = -0.0f;
+    oPE.m_StateCov[6][8] = 0.0000000001f;
+    oPE.m_StateCov[6][9] = -0.0000000001f;
+
+    oPE.m_StateCov[7][0] = 0.0000001333f;
+    oPE.m_StateCov[7][1] = -0.0000000006f;
+    oPE.m_StateCov[7][2] = 0.0000000128f;
+    oPE.m_StateCov[7][3] = 0.0000013262f;
+    oPE.m_StateCov[7][4] = -0.0000000155f;
+    oPE.m_StateCov[7][5] = 0.0000001420f;
+    oPE.m_StateCov[7][6] = -0.0f;
+    oPE.m_StateCov[7][7] = 0.0000084227f;
+    oPE.m_StateCov[7][8] = -0.0000000001f;
+    oPE.m_StateCov[7][9] = 0.0f;
+
+    oPE.m_StateCov[8][0] = 0.0f;
+    oPE.m_StateCov[8][1] = 0.0000000039f;
+    oPE.m_StateCov[8][2] = -0.0000005278f;
+    oPE.m_StateCov[8][3] = 0.0000000328f;
+    oPE.m_StateCov[8][4] = 0.0000000424f;
+    oPE.m_StateCov[8][5] = -0.0000058463f;
+    oPE.m_StateCov[8][6] = 0.0000000001f;
+    oPE.m_StateCov[8][7] = -0.0000000001f;
+    oPE.m_StateCov[8][8] = 0.0000084271f;
+    oPE.m_StateCov[8][9] = -0.0000000007f;
+
+    oPE.m_StateCov[9][0] = 0.0f;
+    oPE.m_StateCov[9][1] = 0.0f;
+    oPE.m_StateCov[9][2] = 0.0343233831f;
+    oPE.m_StateCov[9][3] = 0.0f;
+    oPE.m_StateCov[9][4] = 0.0f;
+    oPE.m_StateCov[9][5] = 0.0000023954f;
+    oPE.m_StateCov[9][6] = -0.0000000001f;
+    oPE.m_StateCov[9][7] = 0.0f;
+    oPE.m_StateCov[9][8] = -0.0000000007f;
+    oPE.m_StateCov[9][9] = 0.0343402736f;
+
+    oPE.m_StateVec[0] = 0.0028564720f;
+    oPE.m_StateVec[1] = 0.0077679274f;
+    oPE.m_StateVec[2] = -0.0000669884f;
+    oPE.m_StateVec[3] = 0.0075708791f;
+    oPE.m_StateVec[4] = 0.0291821100f;
+    oPE.m_StateVec[5] = -0.0886378586f;
+    oPE.m_StateVec[6] = 0.0004460731f;
+    oPE.m_StateVec[7] = -0.0001312319f;
+    oPE.m_StateVec[8] = -0.0003727875f;
+    oPE.m_StateVec[9] = 0.0085765012f;
+
+    oPE.baroCorrect();
+    
+    /* Execute the function being tested */
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][2], 0.0352707505f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][5], 0.0007224500f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][6], -0.0000000167f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][8], -0.0000005258f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][9], 0.0341888703f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][2], 0.0007224500f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][5], 0.0079122037f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][8], -0.0000058462f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][9], -0.0000003598f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][2], -0.0000000167f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][9], 0.0f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][9], -0.0f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][2], -0.0000005258f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][5], -0.0000058462f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][9], 0.0000000013f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][2], 0.0341888703f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][5], -0.0000003598f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][6], 0.0f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][7], -0.0f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][8], 0.0000000013f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][9], 0.0342098884f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[2], -0.0001536398f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[5], -0.0886396319f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[8], -0.0003727862f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[9], 0.0084925080f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+
+}
+
 /**************************************************************************
  * Rollup Test Cases
  **************************************************************************/
@@ -580,6 +747,10 @@ void PE_App_Test_AddTestCases(void)
                "Test_PE_AppMain_Nominal_SendHK");
     UtTest_Add(Test_PE_AppMain_Nominal_Wakeup, PE_Test_Setup, PE_Test_TearDown,
                "Test_PE_AppMain_Nominal_Wakeup");
+
+    UtTest_Add(Test_PE_Baro_Correct_Nominal, PE_Test_Setup, PE_Test_TearDown,
+               "Test_PE_Baro_Correct_Nominal");
+
 
 }
 
