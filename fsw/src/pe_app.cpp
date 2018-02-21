@@ -44,9 +44,44 @@ PE::~PE()
 int32 PE::InitEvent()
 {
     int32  iStatus=CFE_SUCCESS;
+    int32  ind = 0;
+
+    CFE_EVS_BinFilter_t   EventTbl[CFE_EVS_MAX_EVENT_FILTERS];
+
+    /* Initialize the event filter table.
+     * Note: 0 is the CFE_EVS_NO_FILTER mask and event 0 is reserved (not used) */
+    memset(EventTbl, 0x00, sizeof(EventTbl));
+    
+    /* TODO: Choose the events you want to filter.  CFE_EVS_MAX_EVENT_FILTERS
+     * limits the number of filters per app.  An explicit CFE_EVS_NO_FILTER 
+     * (the default) has been provided as an example. */
+    EventTbl[  ind].EventID = PE_RESERVED_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_ESTIMATOR_INF_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_ESTIMATOR_ERR_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_BARO_FAULT_ERR_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_BARO_OK_INF_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_BARO_TIMEOUT_ERR_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_GPS_TIMEOUT_ERR_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_GPS_FAULT_ERR_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_GPS_OK_INF_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_LAND_FAULT_ERR_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_LAND_OK_INF_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_LAND_TIMEOUT_ERR_EID;
+    EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
 
     /* Register the table with CFE */
-    iStatus = CFE_EVS_Register(0, 0, CFE_EVS_BINARY_FILTER);
+    iStatus = CFE_EVS_Register(EventTbl, ind, CFE_EVS_BINARY_FILTER);
     if (iStatus != CFE_SUCCESS)
     {
         (void) CFE_ES_WriteToSysLog("PE - Failed to register with EVS (0x%08lX)\n", iStatus);
@@ -221,24 +256,24 @@ void PE::InitData()
 			PX4_EKF2_INNOVATIONS_MID, sizeof(PX4_Ekf2InnovationsMsg_t), TRUE);
 
 	/* Set constants */
-	DELAY_MAX = 0.5f; // seconds
-	HIST_STEP = 0.05f; // 20 hz
-	BIAS_MAX = 1e-1f;
-	HIST_LEN = 10; // DELAY_MAX / HIST_STEP;
-	N_DIST_SUBS = 4;
-	BETA_TABLE[0] = 0;
-	BETA_TABLE[1] = 8.82050518214;
-	BETA_TABLE[2] = 12.094592431;
-	BETA_TABLE[3] = 13.9876612368;
-	BETA_TABLE[4] = 16.0875642296;
-	BETA_TABLE[5] = 17.8797700658;
-	BETA_TABLE[6] = 19.6465647819;
-	EST_STDDEV_XY_VALID = 2.0;
-	EST_STDDEV_Z_VALID = 2.0;
-	EST_STDDEV_TZ_VALID = 2.0;
-	P_MAX = 1.0e6f;
-	LAND_RATE = 10.0f;
-	LOW_PASS_CUTOFF = 5.0f;
+	DELAY_MAX           = 0.5f; // seconds
+	HIST_STEP           = 0.05f; // 20 hz
+	BIAS_MAX            = 1e-1f;
+	HIST_LEN            = 10; // DELAY_MAX / HIST_STEP;
+	N_DIST_SUBS         = 4;
+	BETA_TABLE[0]       = 0.0f;
+	BETA_TABLE[1]       = 8.82050518214f;
+	BETA_TABLE[2]       = 12.094592431f;
+	BETA_TABLE[3]       = 13.9876612368f;
+	BETA_TABLE[4]       = 16.0875642296f;
+	BETA_TABLE[5]       = 17.8797700658f;
+	BETA_TABLE[6]       = 19.6465647819f;
+	EST_STDDEV_XY_VALID = 2.0f;
+	EST_STDDEV_Z_VALID  = 2.0f;
+	EST_STDDEV_TZ_VALID = 2.0f;
+	P_MAX               = 1.0e6f;
+	LAND_RATE           = 10.0f;
+	LOW_PASS_CUTOFF     = 5.0f;
 
 	UpdateLocalParams();
 
@@ -254,35 +289,35 @@ void PE::InitData()
 	//mTDelay(this, "");
 
 	/* Timestamps */
-	m_Timestamp = PX4LIB_GetPX4TimeUs();
-	m_TimeLastBaro = PX4LIB_GetPX4TimeUs();
-	m_TimeLastGps = 0;
-	m_TimeLastLand = 0;
+	m_Timestamp             = PX4LIB_GetPX4TimeUs();
+	m_TimeLastBaro          = PX4LIB_GetPX4TimeUs();
+	m_TimeLastGps           = 0;
+	m_TimeLastLand          = 0;
 
 	/* Timeouts */
-	m_BaroTimeout = true;
-	m_GpsTimeout = true;
-	m_LandTimeout = true;
+	m_BaroTimeout           = true;
+	m_GpsTimeout            = true;
+	m_LandTimeout           = true;
 
 	/* Faults */
-	m_BaroFault = false;
-	m_GpsFault = false;
-	m_LandFault = false;
+	m_BaroFault             = false;
+	m_GpsFault              = false;
+	m_LandFault             = false;
 
 	// reference altitudes
-	m_AltOrigin = 0.0;
-	m_AltOriginInitialized = FALSE;
-	m_BaroAltOrigin = 0.0;
-	m_GpsAltOrigin = 0.0;
+	m_AltOrigin             = 0.0f;
+	m_AltOriginInitialized  = FALSE;
+	m_BaroAltOrigin         = 0.0f;
+	m_GpsAltOrigin          = 0.0f;
 
 	// status
-	m_ReceivedGps = FALSE;
-	m_LastArmedState = FALSE;
+	m_ReceivedGps           = FALSE;
+	m_LastArmedState        = FALSE;
 
 	// masks todo
-	m_SensorTimeout = 255;
-	m_SensorFault = 0;
-	m_EstimatorInitialized = 0;
+	m_SensorTimeout         = 255;
+	m_SensorFault           = 0;
+	m_EstimatorInitialized  = 0;
 
 	// state space
 	m_StateVec.Zero();
@@ -291,7 +326,7 @@ void PE::InitData()
 	InitStateSpace();
 
 	/* Map */
-	m_MapRef.init_done = false;
+	m_MapRef.init_done      = false;
 
     /* Initialize delay blocks */
 //    m_XDelay.Initialize();
@@ -386,9 +421,9 @@ void PE::updateStateSpaceParams()
 	m_NoiseCov[X_bz][X_bz] = pn_b_sq;
 
 	/* Terrain random walk noise ((m/s)/sqrt(hz)), scales with velocity */
-	float pn_t_noise_density =
-		m_Params.PN_T_NOISE_DENSITY +
-		(m_Params.T_MAX_GRADE / 100.0f) * sqrtf(m_StateVec[X_vx] * m_StateVec[X_vx] + m_StateVec[X_vy] * m_StateVec[X_vy]);
+	float pn_t_noise_density = m_Params.PN_T_NOISE_DENSITY +
+		(m_Params.T_MAX_GRADE / 100.0f) * sqrtf(m_StateVec[X_vx] * 
+        m_StateVec[X_vx] + m_StateVec[X_vy] * m_StateVec[X_vy]);
 	m_NoiseCov[X_tz][X_tz] = pn_t_noise_density * pn_t_noise_density;
 }
 
@@ -1218,7 +1253,9 @@ void PE::Predict(float dt)
 
 	m_RotationMat = math::Dcm(q);
 	m_Euler = math::Euler(m_RotationMat);
-	math::Vector3F a(m_SensorCombinedMsg.Acc[0], m_SensorCombinedMsg.Acc[1], m_SensorCombinedMsg.Acc[2]);
+	math::Vector3F a(m_SensorCombinedMsg.Acc[0], 
+                     m_SensorCombinedMsg.Acc[1], 
+                     m_SensorCombinedMsg.Acc[2]);
 
 	/* Note: bias is removed in dynamics function */
 	m_InputVec = m_RotationMat * a;
@@ -1239,9 +1276,9 @@ void PE::Predict(float dt)
 	/* Don't integrate position if no valid xy data */
 	if (!m_XyEstValid)
 	{
-		dx[X_x] = 0;
+		dx[X_x]  = 0;
 		dx[X_vx] = 0;
-		dx[X_y] = 0;
+		dx[X_y]  = 0;
 		dx[X_vy] = 0;
 	}
 
@@ -1282,15 +1319,16 @@ void PE::Predict(float dt)
 
 	/* Propagate */
 	m_StateVec += dx;
-	math::Matrix10F10 dP = (m_DynamicsMat * m_StateCov + m_StateCov * m_DynamicsMat.Transpose() +
-			m_InputMat * m_InputCov * m_InputMat.Transpose() + m_NoiseCov) * dt;
+	math::Matrix10F10 dP = (m_DynamicsMat * m_StateCov + m_StateCov * 
+            m_DynamicsMat.Transpose() + m_InputMat * m_InputCov * 
+            m_InputMat.Transpose() + m_NoiseCov) * dt;
 
 //	OS_printf("PRE\n");
 //	m_StateCov.Print();
 
-	//
 	/* Covariance propagation logic */
-	for (int i = 0; i < n_x; i++) {
+	for (int i = 0; i < n_x; i++) 
+    {
 		if (m_StateCov[i][i] > P_MAX)
 		{
 			/* If diagonal element greater than max stop propagating */
@@ -1328,29 +1366,29 @@ void PE::UpdateLocalParams()
 	OS_MutSemTake(ConfigMutex);
 
 	/* Update all locally stored params with the up to date value in the table */
-	m_Params.FUSION = ConfigTblPtr->FUSION;
-	m_Params.VXY_PUB_THRESH = ConfigTblPtr->VXY_PUB_THRESH;
-	m_Params.Z_PUB_THRESH = ConfigTblPtr->Z_PUB_THRESH;
-	m_Params.ACCEL_XY_STDDEV = ConfigTblPtr->ACCEL_XY_STDDEV;
-	m_Params.ACCEL_Z_STDDEV = ConfigTblPtr->ACCEL_Z_STDDEV;
-	m_Params.BARO_STDDEV = ConfigTblPtr->BARO_STDDEV;
-	m_Params.GPS_DELAY = ConfigTblPtr->GPS_DELAY;
-	m_Params.GPS_XY_STDDEV = ConfigTblPtr->GPS_XY_STDDEV;
-	m_Params.GPS_Z_STDDEV = ConfigTblPtr->GPS_Z_STDDEV;
-	m_Params.GPS_VXY_STDDEV = ConfigTblPtr->GPS_VXY_STDDEV;
-	m_Params.GPS_VZ_STDDEV = ConfigTblPtr->GPS_VZ_STDDEV;
-	m_Params.GPS_EPH_MAX = ConfigTblPtr->GPS_EPH_MAX;
-	m_Params.GPS_EPV_MAX = ConfigTblPtr->GPS_EPV_MAX;
-	m_Params.LAND_Z_STDDEV = ConfigTblPtr->LAND_Z_STDDEV;
-	m_Params.LAND_VXY_STDDEV = ConfigTblPtr->LAND_VXY_STDDEV;
+	m_Params.FUSION             = ConfigTblPtr->FUSION;
+	m_Params.VXY_PUB_THRESH     = ConfigTblPtr->VXY_PUB_THRESH;
+	m_Params.Z_PUB_THRESH       = ConfigTblPtr->Z_PUB_THRESH;
+	m_Params.ACCEL_XY_STDDEV    = ConfigTblPtr->ACCEL_XY_STDDEV;
+	m_Params.ACCEL_Z_STDDEV     = ConfigTblPtr->ACCEL_Z_STDDEV;
+	m_Params.BARO_STDDEV        = ConfigTblPtr->BARO_STDDEV;
+	m_Params.GPS_DELAY          = ConfigTblPtr->GPS_DELAY;
+	m_Params.GPS_XY_STDDEV      = ConfigTblPtr->GPS_XY_STDDEV;
+	m_Params.GPS_Z_STDDEV       = ConfigTblPtr->GPS_Z_STDDEV;
+	m_Params.GPS_VXY_STDDEV     = ConfigTblPtr->GPS_VXY_STDDEV;
+	m_Params.GPS_VZ_STDDEV      = ConfigTblPtr->GPS_VZ_STDDEV;
+	m_Params.GPS_EPH_MAX        = ConfigTblPtr->GPS_EPH_MAX;
+	m_Params.GPS_EPV_MAX        = ConfigTblPtr->GPS_EPV_MAX;
+	m_Params.LAND_Z_STDDEV      = ConfigTblPtr->LAND_Z_STDDEV;
+	m_Params.LAND_VXY_STDDEV    = ConfigTblPtr->LAND_VXY_STDDEV;
 	m_Params.PN_P_NOISE_DENSITY = ConfigTblPtr->PN_P_NOISE_DENSITY;
 	m_Params.PN_V_NOISE_DENSITY = ConfigTblPtr->PN_V_NOISE_DENSITY;
 	m_Params.PN_B_NOISE_DENSITY = ConfigTblPtr->PN_B_NOISE_DENSITY;
 	m_Params.PN_T_NOISE_DENSITY = ConfigTblPtr->PN_T_NOISE_DENSITY;
-	m_Params.T_MAX_GRADE = ConfigTblPtr->T_MAX_GRADE;
-	m_Params.FAKE_ORIGIN = ConfigTblPtr->FAKE_ORIGIN;
-	m_Params.INIT_ORIGIN_LAT = ConfigTblPtr->INIT_ORIGIN_LAT;
-	m_Params.INIT_ORIGIN_LON = ConfigTblPtr->INIT_ORIGIN_LON;
+	m_Params.T_MAX_GRADE        = ConfigTblPtr->T_MAX_GRADE;
+	m_Params.FAKE_ORIGIN        = ConfigTblPtr->FAKE_ORIGIN;
+	m_Params.INIT_ORIGIN_LAT    = ConfigTblPtr->INIT_ORIGIN_LAT;
+	m_Params.INIT_ORIGIN_LON    = ConfigTblPtr->INIT_ORIGIN_LON;
 
 	/* Unlock the mutex */
 	OS_MutSemGive(ConfigMutex);
@@ -1359,26 +1397,26 @@ void PE::UpdateLocalParams()
 
 int PE::getDelayPeriods(float delay, uint8 *periods)
 {
-//    float t_delay = 0;
-//    uint8 i_hist = 0;
-//
-//    for(i_hist = 1; i_hist < HIST_LEN; i_hist++)
-//    {
-//        t_delay = 1.0e-6f * (m_Timestamp - m_TDelay.Get(i_hist));
-//        if(t_delay > delay)
-//        {
-//            break;
-//        }
-//    }
-//
-//    *periods = i_hist;
-//
-//    if(t_delay > DELAY_MAX)
-//    {
-//        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
-//                "LPE delayed data old: %8.4f", t_delay);
-//        return -1;
-//    }
+    float t_delay = 0;
+    uint8 i_hist = 0;
+
+    for(i_hist = 1; i_hist < HIST_LEN; i_hist++)
+    {
+        t_delay = 1.0e-6f * (m_Timestamp - m_TDelay.Get(i_hist));
+        if(t_delay > delay)
+        {
+            break;
+        }
+    }
+
+    *periods = i_hist;
+
+    if(t_delay > DELAY_MAX)
+    {
+        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+                "LPE delayed data old: %8.4f", t_delay);
+        return -1;
+    }
     
     return CFE_SUCCESS;
 }
