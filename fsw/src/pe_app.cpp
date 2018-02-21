@@ -529,11 +529,11 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleGpsPositionMsg, MsgPtr, sizeof(m_VehicleGpsPositionMsg));
                 if(m_GpsTimeout)
                 {
-                	gpsInit();
+                	//gpsInit();
                 }
                 else
                 {
-                	gpsCorrect();
+                	//gpsCorrect();
                 }
 
                 break;
@@ -546,11 +546,11 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleLandDetectedMsg, MsgPtr, sizeof(m_VehicleLandDetectedMsg));
                 if(m_LandTimeout)
                 {
-                	//landInit();
+                	landInit();
                 }
                 else
                 {
-                	//landCorrect();
+                	landCorrect();
                 }
 
                 break;

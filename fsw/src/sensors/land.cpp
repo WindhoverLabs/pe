@@ -10,6 +10,7 @@ void PE::landInit()
 {
 	// measure
 	math::Vector3F y;
+	y.Zero();
 
 	if (landMeasure(y) != CFE_SUCCESS)
 	{
@@ -38,6 +39,7 @@ void PE::landCorrect()
 {
 	// measure land
 	math::Vector3F y;
+	y.Zero();
 
 	if (landMeasure(y) != CFE_SUCCESS)
 	{
@@ -53,6 +55,17 @@ void PE::landCorrect()
 	C[Y_land_agl][X_z] = -1; // measured altitude, negative down dir.
 	C[Y_land_agl][X_tz] = 1; // measured altitude, negative down dir.
 
+	OS_printf("C\n");
+    for(int i = 0; i < 3; i++)
+	{
+		for(int j = 0; j < 10; j++)
+		{
+			OS_printf("%f, ", C[i][j]);
+		}
+		OS_printf("\n");
+	}
+    OS_printf("\n");
+
 	// use parameter covariance
 	math::Matrix3F3 R;
 	R.Zero();
@@ -60,11 +73,58 @@ void PE::landCorrect()
 	R[Y_land_vy][Y_land_vy] = m_Params.LAND_VXY_STDDEV * m_Params.LAND_VXY_STDDEV;
 	R[Y_land_agl][Y_land_agl] = m_Params.LAND_Z_STDDEV * m_Params.LAND_Z_STDDEV;
 
+	OS_printf("R\n");
+    for(int i = 0; i < 3; i++)
+	{
+		for(int j = 0; j < 3; j++)
+		{
+			OS_printf("%f, ", R[i][j]);
+		}
+		OS_printf("\n");
+	}
+    OS_printf("\n");
+
 	// residual
 	//math::Matrix3F3 S_I = inv<float, n_y_land>((C * m_StateCov * C.Transpose()) + R);
-	math::Matrix3F3 S_I = (C * (m_StateCov * C.Transpose())) + R;
+	math::Matrix3F3 S_I;
+	S_I.Zero();
+	S_I = (C * (m_StateCov * C.Transpose())) + R;
+
+	OS_printf("sp\n");
+	    for(int i = 0; i < 3; i++)
+		{
+			for(int j = 0; j < 3; j++)
+			{
+				OS_printf("%f, ", S_I[i][j]);
+			}
+			OS_printf("\n");
+		}
+	OS_printf("\n");
+
 	S_I = S_I.Inversed();
-	math::Vector3F r = y - C * m_StateVec;
+
+	OS_printf("S_I\n");
+    for(int i = 0; i < 3; i++)
+	{
+		for(int j = 0; j < 3; j++)
+		{
+			OS_printf("%f, ", S_I[i][j]);
+		}
+		OS_printf("\n");
+	}
+    OS_printf("\n");
+
+	math::Vector3F r;
+	r.Zero();
+	r = y - C * m_StateVec;
+
+	OS_printf("r\n");
+	for(int i = 0; i < 3; i++)
+	{
+		OS_printf("%f, ", r[i]);
+	}
+	OS_printf("\n");
+
 	m_Ekf2InnovationsMsg.HaglInnov = r[Y_land_agl];
 	m_Ekf2InnovationsMsg.HaglInnovVar = R[Y_land_agl][Y_land_agl];
 
@@ -94,10 +154,40 @@ void PE::landCorrect()
 	}
 
 	// kalman filter correction always for land detector
-	math::Matrix10F3 K = m_StateCov * C.Transpose() * S_I;
-	math::Vector10F dx = K * r;
+	math::Matrix10F3 K;
+	K.Zero();
+	K = m_StateCov * C.Transpose() * S_I;
+
+	OS_printf("K\n");
+    for(int i = 0; i < 10; i++)
+	{
+		for(int j = 0; j < 3; j++)
+		{
+			OS_printf("%f, ", K[i][j]);
+		}
+		OS_printf("\n");
+	}
+    OS_printf("\n");
+
+	math::Vector10F dx;
+	dx.Zero();
+	dx = K * r;
+
+	OS_printf("dx\n");
+	for(int i = 0; i < 10; i++)
+	{
+		OS_printf("%f, ", dx[i]);
+	}
+	OS_printf("\n");
+
 	m_StateVec += dx;
-	m_StateCov -= K * C * m_StateCov;
+	math::Matrix10F10 res;
+	res.Zero();
+	res = K * C * m_StateCov;
+	OS_printf("res\n");
+	res.Print();
+	OS_printf("\n");
+	//m_StateCov -= K * C * m_StateCov;
 }
 
 void PE::landCheckTimeout()

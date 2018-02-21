@@ -590,6 +590,7 @@ private:
 	void updateStateSpace();
 	void updateStateSpaceParams();
 
+public:
 	// predict the next state
 	void predict();
 
