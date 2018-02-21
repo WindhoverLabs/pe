@@ -337,62 +337,63 @@ void PE::InitData()
 
 void PE::initStateCov()
 {
-	m_StateCov.Zero();
+    m_StateCov.Zero();
 
-	/* Initialize to twice valid condition */
-	m_StateCov[X_x][X_x] = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
-	m_StateCov[X_y][X_y] = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
-	m_StateCov[X_z][X_z] = 2 * EST_STDDEV_Z_VALID * EST_STDDEV_Z_VALID;
-	m_StateCov[X_vx][X_vx] = 2 * m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH;
-	m_StateCov[X_vy][X_vy] = 2 * m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH;
+    /* Initialize to twice valid condition */
+    m_StateCov[X_x][X_x] = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
+    m_StateCov[X_y][X_y] = 2 * EST_STDDEV_XY_VALID * EST_STDDEV_XY_VALID;
+    m_StateCov[X_z][X_z] = 2 * EST_STDDEV_Z_VALID * EST_STDDEV_Z_VALID;
+    m_StateCov[X_vx][X_vx] = 2 * m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH;
+    m_StateCov[X_vy][X_vy] = 2 * m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH;
 
-	/* Use vxy threshold for vz init as well */
-	m_StateCov[X_vz][X_vz] = 2 * m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH;
+    /* Use vxy threshold for vz init as well */
+    m_StateCov[X_vz][X_vz] = 2 * m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH;
 
-	/* Initialize bias uncertainty to small values to keep them stable */
-	m_StateCov[X_bx][X_bx] = 1e-6;
-	m_StateCov[X_by][X_by] = 1e-6;
-	m_StateCov[X_bz][X_bz] = 1e-6;
-	m_StateCov[X_tz][X_tz] = 2 * EST_STDDEV_TZ_VALID * EST_STDDEV_TZ_VALID;
+    /* Initialize bias uncertainty to small values to keep them stable */
+    m_StateCov[X_bx][X_bx] = 1e-6;
+    m_StateCov[X_by][X_by] = 1e-6;
+    m_StateCov[X_bz][X_bz] = 1e-6;
+    m_StateCov[X_tz][X_tz] = 2 * EST_STDDEV_TZ_VALID * EST_STDDEV_TZ_VALID;
 }
+
 
 void PE::InitStateSpace()
 {
-	initStateCov();
+    initStateCov();
 
-	/* Derivative of position is velocity */
-	m_DynamicsMat.Zero();
-	m_DynamicsMat[X_x][X_vx] = 1;
-	m_DynamicsMat[X_y][X_vy] = 1;
-	m_DynamicsMat[X_z][X_vz] = 1;
+    /* Derivative of position is velocity */
+    m_DynamicsMat.Zero();
+    m_DynamicsMat[X_x][X_vx] = 1;
+    m_DynamicsMat[X_y][X_vy] = 1;
+    m_DynamicsMat[X_z][X_vz] = 1;
 
-	/* Input matrix */
-	m_InputMat.Zero();
-	m_InputMat[X_vx][U_ax] = 1;
-	m_InputMat[X_vy][U_ay] = 1;
-	m_InputMat[X_vz][U_az] = 1;
+    /* Input matrix */
+    m_InputMat.Zero();
+    m_InputMat[X_vx][U_ax] = 1;
+    m_InputMat[X_vy][U_ay] = 1;
+    m_InputMat[X_vz][U_az] = 1;
 
-	/* Update components that depend on current state */
-	updateStateSpace();
-	updateStateSpaceParams();
+    /* Update components that depend on current state */
+    updateStateSpace();
+    updateStateSpaceParams();
 }
 
 
 void PE::updateStateSpace()
 {
-	/* Derivative of velocity is accelerometer acceleration
-	 * (in input matrix) - bias (in body frame) */
-	m_DynamicsMat[X_vx][X_bx] = -m_RotationMat[0][0];
-	m_DynamicsMat[X_vx][X_by] = -m_RotationMat[0][1];
-	m_DynamicsMat[X_vx][X_bz] = -m_RotationMat[0][2];
+    /* Derivative of velocity is accelerometer acceleration
+     * (in input matrix) - bias (in body frame) */
+    m_DynamicsMat[X_vx][X_bx] = -m_RotationMat[0][0];
+    m_DynamicsMat[X_vx][X_by] = -m_RotationMat[0][1];
+    m_DynamicsMat[X_vx][X_bz] = -m_RotationMat[0][2];
 
-	m_DynamicsMat[X_vy][X_bx] = -m_RotationMat[1][0];
-	m_DynamicsMat[X_vy][X_by] = -m_RotationMat[1][1];
-	m_DynamicsMat[X_vy][X_bz] = -m_RotationMat[1][2];
+    m_DynamicsMat[X_vy][X_bx] = -m_RotationMat[1][0];
+    m_DynamicsMat[X_vy][X_by] = -m_RotationMat[1][1];
+    m_DynamicsMat[X_vy][X_bz] = -m_RotationMat[1][2];
 
-	m_DynamicsMat[X_vz][X_bx] = -m_RotationMat[2][0];
-	m_DynamicsMat[X_vz][X_by] = -m_RotationMat[2][1];
-	m_DynamicsMat[X_vz][X_bz] = -m_RotationMat[2][2];
+    m_DynamicsMat[X_vz][X_bx] = -m_RotationMat[2][0];
+    m_DynamicsMat[X_vz][X_by] = -m_RotationMat[2][1];
+    m_DynamicsMat[X_vz][X_bz] = -m_RotationMat[2][2];
 }
 
 
@@ -571,11 +572,11 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_SensorCombinedMsg, MsgPtr, sizeof(m_SensorCombinedMsg));
                 if(m_BaroTimeout)
                 {
-                	//baroInit();
+                	baroInit();
                 }
                 else
                 {
-                	//baroCorrect();
+                	baroCorrect();
                 }
                 break;
 
@@ -1046,6 +1047,7 @@ void PE::AppMain()
     CFE_ES_ExitApp(uiRunStatus);
 }
 
+
 void PE::CheckTimeouts()
 {
 	baroCheckTimeout();
@@ -1053,193 +1055,196 @@ void PE::CheckTimeouts()
 	landCheckTimeout();
 }
 
+
 void PE::Update()
 {
-	/* Update timestamps */
-	float dt = 0.0f;
-	uint64 newTimestamp = PX4LIB_GetPX4TimeUs();
-	dt = (newTimestamp - m_Timestamp) / 1.0e6f;
-	m_Timestamp = newTimestamp;
-	CheckTimeouts();
+    /* Update timestamps */
+    float dt = 0.0f;
+    uint64 newTimestamp = PX4LIB_GetPX4TimeUs();
+    dt = (newTimestamp - m_Timestamp) / 1.0e6f;
+    m_Timestamp = newTimestamp;
+    CheckTimeouts();
 
-	/* Check if params are updated */
-	if(m_ParamsUpdated)
-	{
-		updateStateSpaceParams();
-		m_ParamsUpdated = false;
-	}
+    /* Check if params are updated */
+    if(m_ParamsUpdated)
+    {
+        updateStateSpaceParams();
+        m_ParamsUpdated = false;
+    }
 
-	/* Check if xy is valid */
-	bool VxyStdDevValid = false;
-	if (fmax(m_StateCov[X_vx][X_vx], m_StateCov[X_vy][X_vy]) <
-		m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH)
-	{
-		VxyStdDevValid = true;
-	}
+    /* Check if xy is valid */
+    bool VxyStdDevValid = false;
+    if (fmax(m_StateCov[X_vx][X_vx], m_StateCov[X_vy][X_vy]) <
+        m_Params.VXY_PUB_THRESH * m_Params.VXY_PUB_THRESH)
+    {
+        VxyStdDevValid = true;
+    }
 
-	/* Update current validity if needed */
-	if(m_XyEstValid)
-	{
-		if(!VxyStdDevValid && m_GpsTimeout) // TODO: Should this really be AND?
-		{
-			m_XyEstValid = false;
-		}
-	}
-	else
-	{
-		if(VxyStdDevValid && !m_GpsTimeout)
-		{
-			m_XyEstValid = true;
-		}
-	}
+    /* Update current validity if needed */
+    if(m_XyEstValid)
+    {
+        if(!VxyStdDevValid && m_GpsTimeout) // TODO: Should this really be AND?
+        {
+            m_XyEstValid = false;
+        }
+    }
+    else
+    {
+        if(VxyStdDevValid && !m_GpsTimeout && !m_LandTimeout)
+        {
+            m_XyEstValid = true;
+        }
+    }
 
-	/* Check if z is valid */
-	bool ZStdDevValid = false;
-	if(sqrtf(m_StateCov[X_z][X_z]) < m_Params.Z_PUB_THRESH)
-	{
-		ZStdDevValid = true;
-	}
+    /* Check if z is valid */
+    bool ZStdDevValid = false;
+    if(sqrtf(m_StateCov[X_z][X_z]) < m_Params.Z_PUB_THRESH)
+    {
+        ZStdDevValid = true;
+    }
 
-	/* Update current validity if needed */
-	if(m_ZEstValid)
-	{
-		if(!ZStdDevValid && m_BaroTimeout) // TODO: Should this really be AND?
-		{
-			m_ZEstValid = false;
-		}
-	}
-	else
-	{
-		if(ZStdDevValid && !m_BaroTimeout)
-		{
-			m_ZEstValid = true;
-		}
-	}
+    /* Update current validity if needed */
+    if(m_ZEstValid)
+    {
+        if(!ZStdDevValid && m_BaroTimeout) // TODO: Should this really be AND?
+        {
+            m_ZEstValid = false;
+        }
+    }
+    else
+    {
+        if(ZStdDevValid && !m_BaroTimeout)
+        {
+            m_ZEstValid = true;
+        }
+    }
 
-	/* Check if terrain is valid */
-	bool TzStdDevValid = false;
-	if(sqrtf(m_StateCov[X_tz][X_tz]) < m_Params.Z_PUB_THRESH)
-	{
-		TzStdDevValid = true;
-	}
+    /* Check if terrain is valid */
+    bool TzStdDevValid = false;
+    if(sqrtf(m_StateCov[X_tz][X_tz]) < m_Params.Z_PUB_THRESH)
+    {
+        TzStdDevValid = true;
+    }
 
-	/* Update current validity if needed */
-	if(m_TzEstValid)
-	{
-		if(!TzStdDevValid)
-		{
-			m_TzEstValid = false;
-		}
-	}
-	else
-	{
-		if(TzStdDevValid)
-		{
-			m_TzEstValid = true;
-		}
-	}
+    /* Update current validity if needed */
+    if(m_TzEstValid)
+    {
+        if(!TzStdDevValid)
+        {
+            m_TzEstValid = false;
+        }
+    }
+    else
+    {
+        if(TzStdDevValid)
+        {
+            m_TzEstValid = true;
+        }
+    }
 
-	/* Initialize map projection to INIT_ORIGIN_LAT, INIT_ORIGIN_LON if we don't
-	 * have lat, lon data and allowing fake origin */
-	if (!m_MapRef.init_done && m_XyEstValid && m_Params.FAKE_ORIGIN)
-	{
-		map_projection_init(&m_MapRef,
-							m_Params.INIT_ORIGIN_LAT,
-							m_Params.INIT_ORIGIN_LON,
-							m_Timestamp); //TODO: Verify correct time
 
-		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION, //TODO update to gps eid
-								 "GPS fake origin init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
-								 m_Params.INIT_ORIGIN_LAT,
-								 m_Params.INIT_ORIGIN_LON,
-								 double(m_AltOrigin));
-	}
+    /* Initialize map projection to INIT_ORIGIN_LAT, INIT_ORIGIN_LON if we don't
+     * have lat, lon data and allowing fake origin */
+    if (!m_MapRef.init_done && m_XyEstValid && m_Params.FAKE_ORIGIN)
+    {
+        map_projection_init(&m_MapRef,
+                            m_Params.INIT_ORIGIN_LAT,
+                            m_Params.INIT_ORIGIN_LON,
+                            m_Timestamp); //TODO: Verify correct time
 
-	/* Check if state vector needs to be reinitialized  */
-	bool ReinitStateVec = false;
-	for (int i = 0; i < n_x; i++)
-	{
-		if (!isfinite(m_StateVec[i]))
-		{
-			ReinitStateVec = true;
-			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
-									 "Reinit state vector. Index (%i) not finite", i);
-			break;
-		}
-	}
+        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION, //TODO update to gps eid
+                                "GPS fake origin init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+                                m_Params.INIT_ORIGIN_LAT,
+                                m_Params.INIT_ORIGIN_LON,
+                                double(m_AltOrigin));
+    }
 
-	if (ReinitStateVec)
-	{
-		m_StateVec.Zero();
-		/* TODO: Decide if we want to reinit sensors here. PX4 didn't */
-	}
+    /* Check if state vector needs to be reinitialized  */
+    bool ReinitStateVec = false;
 
-	/* Force state covariance symmetry and reinitialize matrix if necessary */
-	bool ReinitStateCov = false;
-	for (int i = 0; i < n_x; i++)
-	{
-		for (int j = 0; j <= i; j++)
-		{
-			if (!isfinite(m_StateCov[i][j]))
-			{
-				(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
-										 "Reinit state covariance. Index (%i, %i) not finite", i, j);
-				ReinitStateCov = true;
-				break;
-			}
-			if (i == j)
-			{
-				/* Ensure diagonal elements are positive */
-				if (m_StateCov[i][i] <= 0)
-				{
-					(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
-											 "Reinit state covariance. Index (%i, %i) negative", i, j);
-					ReinitStateCov = true;
-					break;
-				}
-			}
-			else
-			{
-				/* Copy element from upper triangle to force symmetry */
-				m_StateCov[j][i] = m_StateCov[i][j];
-			}
-		}
-	}
+    for (int i = 0; i < n_x; i++)
+    {
+        if (!isfinite(m_StateVec[i]))
+        {
+            ReinitStateVec = true;
+            (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+                        "Reinit state vector. Index (%i) not finite", i);
+            break;
+        }
+    }
 
-	if (ReinitStateCov)
-	{
-		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
-								 "State covariance matrix reinitialized");
-		m_StateCov.Print();
-		initStateCov();
-	}
+    if(ReinitStateVec)
+    {
+        m_StateVec.Zero();
+        /* TODO: Decide if we want to reinit sensors here. PX4 didn't */
+    }
 
-	Predict(dt);
+    /* Force state covariance symmetry and reinitialize matrix if necessary */
+    bool ReinitStateCov = false;
+    for (int i = 0; i < n_x; i++)
+    {
+        for (int j = 0; j <= i; j++)
+        {
+            if (!isfinite(m_StateCov[i][j]))
+            {
+                (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
+                            "Reinit state covariance. Index (%i, %i) not finite", i, j);
+                ReinitStateCov = true;
+                break;
+            }
+            if (i == j)
+            {
+                /* Ensure diagonal elements are positive */
+                if (m_StateCov[i][i] <= 0)
+                {
+                    (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
+                            "Reinit state covariance. Index (%i, %i) negative", i, j);
+                    ReinitStateCov = true;
+                    break;
+                }
+            }
+            else
+            {
+                /* Copy element from upper triangle to force symmetry */
+                m_StateCov[j][i] = m_StateCov[i][j];
+            }
+        }
+    }
 
-	/* Publish updated data if initialized */
-	if(m_AltOriginInitialized)
-	{
-		if(!m_EstimatorInitialized)
-		{
-			m_EstimatorInitialized = true;
-			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
-									 "Estimator initialized");
-		}
+    if (ReinitStateCov)
+    {
+        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+                "State covariance matrix reinitialized");
+        //m_StateCov.Print();
+        initStateCov();
+    }
 
-		UpdateVehicleLocalPositionMsg();
-		SendVehicleLocalPositionMsg();
-		SendEstimatorStatusMsg();
+    Predict(dt);
 
-		if(m_XyEstValid && (m_MapRef.init_done || m_Params.FAKE_ORIGIN))
-		{
-			UpdateVehicleGlobalPositionMsg();
-			SendVehicleGlobalPositionMsg();
-		}
-		else
-		{
-			//OS_printf("XyEst invalid\n");
-		}
-	}
+    /* Publish updated data if initialized */
+    if(m_AltOriginInitialized)
+    {
+        if(!m_EstimatorInitialized)
+        {
+            m_EstimatorInitialized = true;
+            (void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+                    "Estimator initialized");
+        }
+
+        UpdateVehicleLocalPositionMsg();
+        SendVehicleLocalPositionMsg();
+        SendEstimatorStatusMsg();
+
+        if(m_XyEstValid && (m_MapRef.init_done || m_Params.FAKE_ORIGIN))
+        {
+            UpdateVehicleGlobalPositionMsg();
+            SendVehicleGlobalPositionMsg();
+        }
+        else
+        {
+            //OS_printf("XyEst invalid\n");
+        }
+    }
 
     /* Propagate delayed state, no matter what if state is frozen, 
      * delayed state still needs to be propagated with frozen state.
@@ -1252,87 +1257,86 @@ void PE::Update()
         m_XDelay.Update(m_StateVec);
         m_Timestamp_Hist = m_Timestamp;
     }
-
 }
 
 
 void PE::Predict(float dt)
 {
-	/* Get acceleration */
-	math::Quaternion q(m_VehicleAttitudeMsg.Q[0],
-					   m_VehicleAttitudeMsg.Q[1],
-					   m_VehicleAttitudeMsg.Q[2],
-					   m_VehicleAttitudeMsg.Q[3]);
+    /* Get acceleration */
+    math::Quaternion q(m_VehicleAttitudeMsg.Q[0],
+                       m_VehicleAttitudeMsg.Q[1],
+                       m_VehicleAttitudeMsg.Q[2],
+                       m_VehicleAttitudeMsg.Q[3]);
 
-	m_RotationMat = math::Dcm(q);
-	m_Euler = math::Euler(m_RotationMat);
-	math::Vector3F a(m_SensorCombinedMsg.Acc[0], 
+    m_RotationMat = math::Dcm(q);
+    m_Euler = math::Euler(m_RotationMat);
+    math::Vector3F a(m_SensorCombinedMsg.Acc[0], 
                      m_SensorCombinedMsg.Acc[1], 
                      m_SensorCombinedMsg.Acc[2]);
 
-	/* Note: bias is removed in dynamics function */
-	m_InputVec = m_RotationMat * a;
-	m_InputVec[U_az] += 9.81f; // add g
+    /* Note: bias is removed in dynamics function */
+    m_InputVec = m_RotationMat * a;
+    m_InputVec[U_az] += 9.81f; // add g
 
-	/* Update state space based on new states */
-	updateStateSpace();
+    /* Update state space based on new states */
+    updateStateSpace();
 
-	/* Continuous time Kalman filter prediction. Integrate runge kutta 4th order.
-	 * https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods */
-	math::Vector10F k1, k2, k3, k4;
-	k1 = dynamics(m_StateVec, m_InputVec);
-	k2 = dynamics(m_StateVec + k1 * dt / 2, m_InputVec);
-	k3 = dynamics(m_StateVec + k2 * dt / 2, m_InputVec);
-	k4 = dynamics(m_StateVec + k3 * dt, m_InputVec);
-	math::Vector10F dx = (k1 + k2 * 2 + k3 * 2 + k4) * (dt / 6);
+    /* Continuous time Kalman filter prediction. Integrate runge kutta 4th order.
+     * https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods */
+    math::Vector10F k1, k2, k3, k4;
+    k1 = dynamics(m_StateVec, m_InputVec);
+    k2 = dynamics(m_StateVec + k1 * dt / 2, m_InputVec);
+    k3 = dynamics(m_StateVec + k2 * dt / 2, m_InputVec);
+    k4 = dynamics(m_StateVec + k3 * dt,     m_InputVec);
+    math::Vector10F dx = (k1 + k2 * 2 + k3 * 2 + k4) * (dt / 6);
 
-	/* Don't integrate position if no valid xy data */
-	if (!m_XyEstValid)
-	{
-		dx[X_x]  = 0;
-		dx[X_vx] = 0;
-		dx[X_y]  = 0;
-		dx[X_vy] = 0;
-	}
+    /* Don't integrate position if no valid xy data */
+    if (!m_XyEstValid)
+    {
+        dx[X_x]  = 0;
+        dx[X_vx] = 0;
+        dx[X_y]  = 0;
+        dx[X_vy] = 0;
+    }
 
-	/* Don't integrate z if no valid z data */
-	if (!m_ZEstValid)
-	{
-		dx[X_z] = 0;
-	}
+    /* Don't integrate z if no valid z data */
+    if (!m_ZEstValid)
+    {
+        dx[X_z] = 0;
+    }
 
-	/* Don't integrate tz if no valid tz data */
-	if (!m_TzEstValid)
-	{
-		dx[X_tz] = 0;
-	}
+    /* Don't integrate tz if no valid tz data */
+    if (!m_TzEstValid)
+    {
+        dx[X_tz] = 0;
+    }
 
-	/* Saturate bias */
-	float bx = dx[X_bx] + m_StateVec[X_bx];
-	float by = dx[X_by] + m_StateVec[X_by];
-	float bz = dx[X_bz] + m_StateVec[X_bz];
+    /* Saturate bias */
+    float bx = dx[X_bx] + m_StateVec[X_bx];
+    float by = dx[X_by] + m_StateVec[X_by];
+    float bz = dx[X_bz] + m_StateVec[X_bz];
 
-	if (::abs(bx) > BIAS_MAX)
-	{
-		bx = BIAS_MAX * bx / ::abs(bx);
-		dx[X_bx] = bx - m_StateVec[X_bx];
-	}
+    if (::abs(bx) > BIAS_MAX)
+    {
+        bx = BIAS_MAX * bx / ::abs(bx);
+        dx[X_bx] = bx - m_StateVec[X_bx];
+    }
 
-	if (::abs(by) > BIAS_MAX)
-	{
-		by = BIAS_MAX * by / ::abs(by);
-		dx[X_by] = by - m_StateVec[X_by];
-	}
+    if (::abs(by) > BIAS_MAX)
+    {
+        by = BIAS_MAX * by / ::abs(by);
+        dx[X_by] = by - m_StateVec[X_by];
+    }
 
-	if (::abs(bz) > BIAS_MAX)
-	{
-		bz = BIAS_MAX * bz / ::abs(bz);
-		dx[X_bz] = bz - m_StateVec[X_bz];
-	}
+    if (::abs(bz) > BIAS_MAX)
+    {
+        bz = BIAS_MAX * bz / ::abs(bz);
+        dx[X_bz] = bz - m_StateVec[X_bz];
+    }
 
-	/* Propagate */
-	m_StateVec += dx;
-	math::Matrix10F10 dP = (m_DynamicsMat * m_StateCov + m_StateCov * 
+    /* Propagate */
+    m_StateVec += dx;
+    math::Matrix10F10 dP = (m_DynamicsMat * m_StateCov + m_StateCov * 
             m_DynamicsMat.Transpose() + m_InputMat * m_InputCov * 
             m_InputMat.Transpose() + m_NoiseCov) * dt;
 
@@ -1433,8 +1437,6 @@ int PE::getDelayPeriods(float delay, uint8 *periods)
     
     return CFE_SUCCESS;
 }
-
-
 
 
 /************************/
