@@ -46,8 +46,9 @@ int32 PE::InitEvent()
     int32  iStatus=CFE_SUCCESS;
     int32  ind = 0;
 
-    CFE_EVS_BinFilter_t   EventTbl[CFE_EVS_MAX_EVENT_FILTERS];
-
+    /* TODO update max event filter */
+    //CFE_EVS_BinFilter_t   EventTbl[CFE_EVS_MAX_EVENT_FILTERS];
+    CFE_EVS_BinFilter_t   EventTbl[16];
     /* Initialize the event filter table.
      * Note: 0 is the CFE_EVS_NO_FILTER mask and event 0 is reserved (not used) */
     memset(EventTbl, 0x00, sizeof(EventTbl));
@@ -498,6 +499,7 @@ PE_InitApp_Exit_Tag:
 int32 PE::RcvSchPipeMsg(int32 iBlocking)
 {
     int32           iStatus=CFE_SUCCESS;
+    uint64          baroTimestamp;
     CFE_SB_Msg_t*   MsgPtr=NULL;
     CFE_SB_MsgId_t  MsgId;
 
@@ -529,11 +531,11 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleGpsPositionMsg, MsgPtr, sizeof(m_VehicleGpsPositionMsg));
                 if(m_GpsTimeout)
                 {
-                	gpsInit();
+                    gpsInit();
                 }
                 else
                 {
-                	gpsCorrect();
+                    gpsCorrect();
                 }
 
                 break;
@@ -569,13 +571,29 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
 
             case PX4_SENSOR_COMBINED_MID:
                 memcpy(&m_SensorCombinedMsg, MsgPtr, sizeof(m_SensorCombinedMsg));
-                if(m_BaroTimeout)
+                /* If baro is valid */
+                if(m_SensorCombinedMsg.BaroTimestampRelative != PX4_RELATIVE_TIMESTAMP_INVALID)
                 {
-                	//baroInit();
-                }
-                else
-                {
-                	//baroCorrect();
+                    /* Get the baro timestamp from the sensor combined timestamp
+                     * (which is the gyro timestamp) plus the baro relative timestamp.
+                     * Baro relative is the difference between the gyro and baro 
+                     * when received by the sensors application. If baro is fresh.
+                     */
+                    if((m_SensorCombinedMsg.Timestamp + 
+                       m_SensorCombinedMsg.BaroTimestampRelative) 
+                       != m_TimeLastBaro)
+                    {
+                        if(m_BaroTimeout)
+                        {
+                            //baroInit();
+                        }
+                        else
+                        {
+                            //baroCorrect();
+                        }
+                        /* Save the last valid timestamp */
+                        m_TimeLastBaro = baroTimestamp;
+                    }
                 }
                 break;
 
@@ -1046,28 +1064,30 @@ void PE::AppMain()
     CFE_ES_ExitApp(uiRunStatus);
 }
 
+
 void PE::CheckTimeouts()
 {
-	baroCheckTimeout();
-	gpsCheckTimeout();
-	landCheckTimeout();
+    baroCheckTimeout();
+    gpsCheckTimeout();
+    landCheckTimeout();
 }
+
 
 void PE::Update()
 {
-	/* Update timestamps */
-	float dt = 0.0f;
-	uint64 newTimestamp = PX4LIB_GetPX4TimeUs();
-	dt = (newTimestamp - m_Timestamp) / 1.0e6f;
-	m_Timestamp = newTimestamp;
-	CheckTimeouts();
+    /* Update timestamps */
+    float dt = 0.0f;
+    uint64 newTimestamp = PX4LIB_GetPX4TimeUs();
+    dt = (newTimestamp - m_Timestamp) / 1.0e6f;
+    m_Timestamp = newTimestamp;
+    CheckTimeouts();
 
-	/* Check if params are updated */
-	if(m_ParamsUpdated)
-	{
-		updateStateSpaceParams();
-		m_ParamsUpdated = false;
-	}
+    /* Check if params are updated */
+    if(m_ParamsUpdated)
+    {
+        updateStateSpaceParams();
+        m_ParamsUpdated = false;
+    }
 
 	/* Check if xy is valid */
 	bool VxyStdDevValid = false;
@@ -1258,8 +1278,8 @@ void PE::Update()
 
 void PE::Predict(float dt)
 {
-	/* Get acceleration */
-	math::Quaternion q(m_VehicleAttitudeMsg.Q[0],
+    /* Get acceleration */
+    math::Quaternion q(m_VehicleAttitudeMsg.Q[0],
 					   m_VehicleAttitudeMsg.Q[1],
 					   m_VehicleAttitudeMsg.Q[2],
 					   m_VehicleAttitudeMsg.Q[3]);
@@ -1278,7 +1298,8 @@ void PE::Predict(float dt)
 	updateStateSpace();
 
 	/* Continuous time Kalman filter prediction. Integrate runge kutta 4th order.
-	 * https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods */
+	 * https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods 
+     */
 	math::Vector10F k1, k2, k3, k4;
 	k1 = dynamics(m_StateVec, m_InputVec);
 	k2 = dynamics(m_StateVec + k1 * dt / 2, m_InputVec);
@@ -1358,18 +1379,18 @@ void PE::Predict(float dt)
 	/* Update state */
 	m_StateCov += dP;
 
-//	OS_printf("m_StateCov\n");
-//	m_StateCov.Print();
-	m_XLowPass.Update(m_StateVec, dt, LOW_PASS_CUTOFF);
-//	_xLowPass.update(_x);
-//	_aglLowPass.update(agl());
+    //	OS_printf("m_StateCov\n");
+    //	m_StateCov.Print();
+    m_XLowPass.Update(m_StateVec, dt, LOW_PASS_CUTOFF);
+    //	_xLowPass.update(_x);
+    //	_aglLowPass.update(agl());
 
 }
 
 
 math::Vector10F PE::dynamics(const math::Vector10F &x, const math::Vector3F &u)
 {
-	return (m_DynamicsMat * x) + (m_InputMat * u);
+    return (m_DynamicsMat * x) + (m_InputMat * u);
 }
 
 
