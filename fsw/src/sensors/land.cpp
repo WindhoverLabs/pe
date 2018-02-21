@@ -116,7 +116,16 @@ void PE::landCorrect()
 
 	math::Vector3F r;
 	r.Zero();
-	r = y - C * m_StateVec;
+	r = C * m_StateVec;
+
+	OS_printf("PRE r\n");
+	for(int i = 0; i < 3; i++)
+	{
+		OS_printf("%f, ", r[i]);
+	}
+	OS_printf("\n");
+
+	r = y - r;
 
 	OS_printf("r\n");
 	for(int i = 0; i < 3; i++)
@@ -190,6 +199,12 @@ void PE::landCorrect()
 	m_StateCov -= K * C * m_StateCov;
 	OS_printf("STATECOV\n");
 	m_StateCov.Print();
+	OS_printf("STATE VEC\n");
+	for(int i = 0; i < 10; i++)
+	{
+		OS_printf("%f, ", m_StateVec[i]);
+	}
+	OS_printf("\n");
 }
 
 void PE::landCheckTimeout()
