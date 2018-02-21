@@ -90,7 +90,7 @@ typedef struct
 
 	float  LAND_Z_STDDEV;
 
-	float  LAND_VXY_STDDEV;// TODO TODO TODO XXX Check what this is supposed to be
+	float  LAND_VXY_STDDEV;
 
 	float  PN_P_NOISE_DENSITY;
 

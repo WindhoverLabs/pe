@@ -105,7 +105,7 @@ typedef struct
 	float  GPS_EPH_MAX;
 	float  GPS_EPV_MAX;
 	float  LAND_Z_STDDEV;
-	float  LAND_VXY_STDDEV;// TODO TODO TODO XXX Check what this is supposed to be
+	float  LAND_VXY_STDDEV;
 	float  PN_P_NOISE_DENSITY;
 	float  PN_V_NOISE_DENSITY;
 	float  PN_B_NOISE_DENSITY;
