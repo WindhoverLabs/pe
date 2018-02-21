@@ -136,9 +136,9 @@ void PE::landCorrect()
 
 	if (beta / BETA_TABLE[n_y_land] > beta_thresh)
 	{
-		if (!m_BaroFault)
+		if (!m_LandFault)
 		{
-			m_BaroFault = true;
+			m_LandFault = true;
 			(void) CFE_EVS_SendEvent(PE_LAND_FAULT_ERR_EID, CFE_EVS_ERROR,
 									 "Land detector fault, beta %5.2f", double(beta));
 		}
@@ -146,9 +146,9 @@ void PE::landCorrect()
 		// abort correction
 		return;
 	}
-	else if (m_BaroFault)
+	else if (m_LandFault)
 	{
-		m_BaroFault = false;
+		m_LandFault = false;
 		(void) CFE_EVS_SendEvent(PE_LAND_OK_INF_EID, CFE_EVS_ERROR,
 								 "Land detector OK");
 	}
@@ -187,7 +187,9 @@ void PE::landCorrect()
 	OS_printf("res\n");
 	res.Print();
 	OS_printf("\n");
-	//m_StateCov -= K * C * m_StateCov;
+	m_StateCov -= K * C * m_StateCov;
+	OS_printf("STATECOV\n");
+	m_StateCov.Print();
 }
 
 void PE::landCheckTimeout()
