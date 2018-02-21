@@ -51,9 +51,9 @@ int32 PE::InitEvent()
     /* Initialize the event filter table.
      * Note: 0 is the CFE_EVS_NO_FILTER mask and event 0 is reserved (not used) */
     memset(EventTbl, 0x00, sizeof(EventTbl));
-
+    
     /* TODO: Choose the events you want to filter.  CFE_EVS_MAX_EVENT_FILTERS
-     * limits the number of filters per app.  An explicit CFE_EVS_NO_FILTER
+     * limits the number of filters per app.  An explicit CFE_EVS_NO_FILTER 
      * (the default) has been provided as an example. */
     EventTbl[  ind].EventID = PE_RESERVED_EID;
     EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
@@ -1413,23 +1413,23 @@ int PE::getDelayPeriods(float delay, uint8 *periods)
     float t_delay = 0;
     uint8 i_hist = 0;
 
-//    for(i_hist = 1; i_hist < HIST_LEN; i_hist++)
-//    {
-//        t_delay = 1.0e-6f * (m_Timestamp - m_TDelay.Get(i_hist));
-//        if(t_delay > delay)
-//        {
-//            break;
-//        }
-//    }
-//
-//    *periods = i_hist;
-//
-//    if(t_delay > DELAY_MAX)
-//    {
-//        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
-//                "LPE delayed data old: %8.4f", t_delay);
-//        return -1;
-//    }
+    for(i_hist = 1; i_hist < HIST_LEN; i_hist++)
+    {
+        t_delay = 1.0e-6f * (m_Timestamp - m_TDelay.Get(i_hist));
+        if(t_delay > delay)
+        {
+            break;
+        }
+    }
+
+    *periods = i_hist;
+
+    if(t_delay > DELAY_MAX)
+    {
+        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+                "LPE delayed data old: %8.4f", t_delay);
+        return -1;
+    }
     
     return CFE_SUCCESS;
 }
