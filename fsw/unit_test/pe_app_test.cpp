@@ -227,7 +227,7 @@ void Test_PE_InitData(void)
     int32 expected = CFE_SUCCESS;
 
     /* Execute the function being tested */
-    oPE.InitData();
+    //oPE.InitData(); //TODO: Test
 
     /* Verify results */
     //UtAssert_True (result == expected, "InitData");
@@ -500,10 +500,9 @@ void Test_PE_AppMain_Land_Nominal_1(void)
 	{
 		for(int j = 0; j < 10; j++)
 		{
-			UtAssert_DoubleCmpAbs(oPE.m_StateCov[i][j], output[i][j], FLT_EPSILON, "");
+			UtAssert_DoubleCmpAbs(oPE.m_StateCov[i][j], output[i][j], FLT_EPSILON, "Land state covariance mismatch");
 		}
 	}
-
 }
 
 /**
