@@ -1222,7 +1222,7 @@ void PE::Update()
 		}
 		else
 		{
-			//OS_printf("XyEst invalid\n");
+			OS_printf("XyEst invalid\n");
 		}
 	}
 
