@@ -607,7 +607,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                             baroCorrect();
                         }
                         /* Save the last valid timestamp */
-                        m_TimeLastBaro = baroTimestamp;
+                        m_TimeLastBaro = m_SensorCombinedMsg.Timestamp; //TODO: Check if right time
                     }
                 }
                 break;
@@ -841,13 +841,13 @@ void PE::UpdateVehicleLocalPositionMsg()
 	}
 	else
 	{
-		OS_printf("VehicleLocalPositionMsg data invalid\n");
+		OS_printf("VehicleLocalPositionMsg data invalid\n"); //TODO Remove
 	}
 }
 
 void PE::SendVehicleLocalPositionMsg()
 {
-//	OS_printf("\nLocal Pos Msg:\n");
+//	OS_printf("\nSending Local Pos Msg:\n");
 //	OS_printf("Timestamp : %u\n", m_VehicleLocalPositionMsg.Timestamp);
 //	OS_printf("XY_Valid : %u\n", m_VehicleLocalPositionMsg.XY_Valid);
 //	OS_printf("Z_Valid : %u\n", m_VehicleLocalPositionMsg.Z_Valid);
@@ -945,7 +945,7 @@ void PE::UpdateVehicleGlobalPositionMsg()
 	}
 	else
 	{
-		OS_printf("VehicleGlobalPositionMsg data invalid\n");
+		OS_printf("VehicleGlobalPositionMsg data invalid\n"); //TODO Remove
 	}
 }
 
@@ -1245,7 +1245,7 @@ void PE::Update()
 	{
 		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
 								 "State covariance matrix reinitialized");
-		m_StateCov.Print();
+		//m_StateCov.Print();
 		initStateCov();
 	}
 
@@ -1263,7 +1263,7 @@ void PE::Update()
 
 		UpdateVehicleLocalPositionMsg();
 		SendVehicleLocalPositionMsg();
-		SendEstimatorStatusMsg();
+		//SendEstimatorStatusMsg(); //TODO: Is this needed?
 
 		if(m_XyEstValid && (m_MapRef.init_done || m_Params.FAKE_ORIGIN))
 		{
@@ -1272,7 +1272,7 @@ void PE::Update()
 		}
 		else
 		{
-			OS_printf("XyEst invalid\n");
+			//OS_printf("XyEst invalid\n");
 		}
 	}
 
