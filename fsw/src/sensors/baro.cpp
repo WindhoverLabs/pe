@@ -38,6 +38,7 @@ void PE::baroInit()
 	}
 }
 
+
 int32 PE::baroMeasure(math::Vector1F &y)
 {
 	//measure
@@ -48,10 +49,12 @@ int32 PE::baroMeasure(math::Vector1F &y)
 	return CFE_SUCCESS;
 }
 
+
 void PE::baroCorrect()
 {
     /* measure */
     math::Vector1F y;
+    y.Zero();
 
     if (baroMeasure(y) != CFE_SUCCESS)
     {
@@ -80,6 +83,7 @@ void PE::baroCorrect()
 
     /* ((1x10 * 10x10) * 10x1) + 1x1) */
     S_I = C * m_StateCov * C.Transpose() + R;
+    
     /* Take the inverse of a 1x1 matrix (reciprical of the single entry) */
     S_I[0][0] = 1 / S_I[0][0];
 
@@ -93,7 +97,6 @@ void PE::baroCorrect()
 //	float beta = (r.transpose() * (S_I * r))(0, 0);
     /* fault detection 1F * 1x1 * 1F */
     float beta = r[0] * S_I[0][0] * r[0];
-
 
     if (beta > BETA_TABLE[n_y_baro])
     {
@@ -121,6 +124,8 @@ void PE::baroCorrect()
     K.Zero();
     /* 10x10 * 10x1 * 1x1 */
     K = m_StateCov * C.Transpose() * S_I;
+
+    math::Matrix10F1 C_Test = C.Transpose();
 
     /* 10x1 * 1x1 */
     //dx = K * r;

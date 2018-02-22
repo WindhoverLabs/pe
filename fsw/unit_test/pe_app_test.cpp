@@ -50,6 +50,10 @@
 #include "ut_cfe_time_stubs.h"
 #include <float.h>
 
+#include <math/Matrix10F1.hpp>
+#include <math/Matrix1F10.hpp>
+#include <math/Matrix10F10.hpp>
+
 int32 hookCalledCount = 0;
 
 /**************************************************************************
@@ -534,16 +538,17 @@ void Test_PE_AppMain_Land_Nominal_3(void)
 
 
 /**
- * Test PE Baro
+ * Test PE Baro Correct
  */
 void Test_PE_Baro_Correct_Nominal(void)
 {
     PE oPE;
     /* Setup initial conditions */
-    oPE.UpdateLocalParams();
     oPE.InitData();
+    oPE.m_Params.BARO_STDDEV = 3.0f;
 
     oPE.m_BaroAltOrigin = 0.2648827434f;
+    oPE.m_SensorCombinedMsg.BaroAlt = 0.2870604694f;
     
     oPE.m_StateCov[0][0] = 0.0519067831f;
     oPE.m_StateCov[0][1] = -0.0f;
@@ -633,7 +638,7 @@ void Test_PE_Baro_Correct_Nominal(void)
     oPE.m_StateCov[7][8] = -0.0000000001f;
     oPE.m_StateCov[7][9] = 0.0f;
 
-    oPE.m_StateCov[8][0] = 0.0f;
+    oPE.m_StateCov[8][0] = 0.0000000032f;
     oPE.m_StateCov[8][1] = 0.0000000039f;
     oPE.m_StateCov[8][2] = -0.0000005278f;
     oPE.m_StateCov[8][3] = 0.0000000328f;
@@ -669,35 +674,297 @@ void Test_PE_Baro_Correct_Nominal(void)
     oPE.baroCorrect();
     
     /* Execute the function being tested */
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][0], 0.0519067831f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][1], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][2], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][3], 0.0002360904f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][4], -0.0000000002f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][5], 0.0000000001f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][6], -0.0000000005f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][7], 0.0000001333f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][8], 0.0000000032f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][9], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
 
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][2], 0.0352707505f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][5], 0.0007224500f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][6], -0.0000000167f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][8], -0.0000005258f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][9], 0.0341888703f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][2], 0.0007224500f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][5], 0.0079122037f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][8], -0.0000058462f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][9], -0.0000003598f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][2], -0.0000000167f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][9], 0.0f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][9], -0.0f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][2], -0.0000005258f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][5], -0.0000058462f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][9], 0.0000000013f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][2], 0.0341888703f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][5], -0.0000003598f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][6], 0.0f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][7], -0.0f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][8], 0.0000000013f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][9], 0.0342098884f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][0], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][1], 0.0519067831f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][2], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][3], 0.0000000002f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][4], 0.0002360904f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][5], 0.0000000002f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][6], -0.0000001333f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][7], -0.0000000006f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][8], 0.0000000039f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][9], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
 
-    UtAssert_DoubleCmpAbs(oPE.m_StateVec[2], -0.0001536398f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateVec[5], -0.0886396319f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateVec[8], -0.0003727862f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
-    UtAssert_DoubleCmpAbs(oPE.m_StateVec[9], 0.0084925080f, FLT_EPSILON, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][0], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][1], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    printf("oPE.m_StateCov[2][2] %0.10f\n", oPE.m_StateCov[2][2]);
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][2], 0.0352707505f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][3], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][4], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][5], 0.0007224500f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][6], -0.0000000167f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][7], 0.0000000128f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][8], -0.0000005258f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    printf("oPE.m_StateCov[2][9] %0.10f\n", oPE.m_StateCov[2][9]);
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][9], 0.0341888703f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][0], 0.0002360904f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][1], 0.0000000002f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][2], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][3], 0.0016303370f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][4], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][5], -0.0000000001f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][6], -0.0000000145f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][7], 0.0000013262f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][8], 0.0000000328f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][9], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][0], -0.0000000002f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][1], 0.0002360904f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][2], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][3], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][4], 0.0016303370f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][5], -0.0000000004f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][6], -0.0000013259f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][7], -0.0000000155f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][8], 0.0000000424f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][9], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][0], 0.0000000001f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][1], 0.0000000002f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][2], 0.0007224500f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][3], -0.0000000001f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][4], -0.0000000004f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][5], 0.0079122037f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][6], -0.0000001861f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][7], 0.0000001420f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][8], -0.0000058462f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][9], -0.0000003598f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][0], -0.0000000005f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][1], -0.0000001333f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][2], -0.0000000167f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][3], -0.0000000145f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][4], -0.0000013259f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][5], -0.0000001861f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][6], 0.0000084227f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][7], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][8], 0.0000000001f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][9], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][0], 0.0000001333f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][1], -0.0000000006f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][2], 0.0000000128f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][3], 0.0000013262f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][4], -0.0000000155f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][5], 0.0000001420f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][6], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][7], 0.0000084227f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][8], -0.0000000001f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][9], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][0], 0.0000000032f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][1], 0.0000000039f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][2], -0.0000005258f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][3], 0.0000000328f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][4], 0.0000000424f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][5], -0.0000058462f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][6], 0.0000000001f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][7], -0.0000000001f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][8], 0.0000084271f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][9], 0.0000000013f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][0], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][1], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+            printf("oPE.m_StateCov[9][2] %.10f\n", oPE.m_StateCov[9][2]);
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][2], 0.0341888703f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][3], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][4], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][5], -0.0000003598f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][6], 0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][7], -0.0f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][8], 0.0000000013f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+        printf("oPE.m_StateCov[9][9] %.10f\n", oPE.m_StateCov[9][9]);
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][9], 0.0342098884f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[0], 0.0028564720f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[1], 0.0077679274f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[2], -0.0001536398f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[3], 0.0075708791f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[4], 0.0291821100f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[5], -0.0886396319f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[6], 0.0004460731f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[7], -0.0001312319f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[8], -0.0003727862f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[9], 0.0084925080f, 0.00001f, "Test_PE_Baro_Correct_Nominal");
 
 }
+
+
+/**
+ * Test PE Baro Multiple Matrix Operations
+ */
+void Test_PE_Baro_Multiple_Matrix_Ops(void)
+{
+    math::Matrix10F10 matrix10f10(
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f},
+            {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f}
+    );
+    math::Matrix10F1 matrix10f1(
+                {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f}
+    );
+    math::Matrix1F10 matrix1f10(
+                {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f}
+    );
+
+    /* 1x10 * 10x10 = 
+     * 55 110 165 220 275 330 385 440 495 550
+     **/
+     
+    /* 10x1 * 1x10 = 
+        	1	2	3	4	5	6	7	8	9	10
+        	2	4	6	8	10	12	14	16	18	20
+        	3	6	9	12	15	18	21	24	27	30
+        	4	8	12	16	20	24	28	32	36	40
+        	5	10	15	20	25	30	35	40	45	50
+        	6	12	18	24	30	36	42	48	54	60
+        	7	14	21	28	35	42	49	56	63	70
+        	8	16	24	32	40	48	56	64	72	80
+        	9	18	27	36	45	54	63	72	81	90
+        	10	20	30	40	50	60	70	80	90	100
+     **/
+    matrix10f10 = matrix10f10 - (matrix10f1 * (matrix1f10 * matrix10f10));
+    
+    for(int i = 0; i<10; i++)
+    {
+        for(int j = 0; j< 10; j++)
+        {
+            printf("matrix10f10[i][j] %f\n", matrix10f10[i][j]);
+        }
+    }
+
+    UtAssert_True (matrix10f10[0][0] == 0.0f, "matrix10f10[0][0] == 0.0f");
+    UtAssert_True (matrix10f10[0][1] == 0.0f, "matrix10f10[0][1] == 0.0f");
+    UtAssert_True (matrix10f10[0][2] == 0.0f, "matrix10f10[0][2] == 0.0f");
+    UtAssert_True (matrix10f10[0][3] == 0.0f, "matrix10f10[0][3] == 0.0f");
+    UtAssert_True (matrix10f10[0][4] == 0.0f, "matrix10f10[0][4] == 0.0f");
+    UtAssert_True (matrix10f10[0][5] == 0.0f, "matrix10f10[0][5] == 0.0f");
+    UtAssert_True (matrix10f10[0][6] == 0.0f, "matrix10f10[0][6] == 0.0f");
+    UtAssert_True (matrix10f10[0][7] == 0.0f, "matrix10f10[0][7] == 0.0f");
+    UtAssert_True (matrix10f10[0][8] == 0.0f, "matrix10f10[0][8] == 0.0f");
+    UtAssert_True (matrix10f10[0][9] == 0.0f, "matrix10f10[0][9] == 0.0f");
+
+    UtAssert_True (matrix10f10[1][0] == -1.0f, "matrix10f10[1][0] == -1.0f");
+    UtAssert_True (matrix10f10[1][1] == -2.0f, "matrix10f10[1][1] == -2.0f");
+    UtAssert_True (matrix10f10[1][2] == -3.0f, "matrix10f10[1][2] == -3.0f");
+    UtAssert_True (matrix10f10[1][3] == -4.0f, "matrix10f10[1][3] == -4.0f");
+    UtAssert_True (matrix10f10[1][4] == -5.0f, "matrix10f10[1][4] == -5.0f");
+    UtAssert_True (matrix10f10[1][5] == -6.0f, "matrix10f10[1][5] == -6.0f");
+    UtAssert_True (matrix10f10[1][6] == -7.0f, "matrix10f10[1][6] == -7.0f");
+    UtAssert_True (matrix10f10[1][7] == -8.0f, "matrix10f10[1][7] == -8.0f");
+    UtAssert_True (matrix10f10[1][8] == -9.0f, "matrix10f10[1][8] == -9.0f");
+    UtAssert_True (matrix10f10[1][9] == -10.0f, "matrix10f10[1][9] == -10.0f");
+
+    UtAssert_True (matrix10f10[2][0] == -2.0f, "matrix10f10[2][0] == -2.0f");
+    UtAssert_True (matrix10f10[2][1] == -4.0f, "matrix10f10[2][1] == -4.0f");
+    UtAssert_True (matrix10f10[2][2] == -6.0f, "matrix10f10[2][2] == -6.0f");
+    UtAssert_True (matrix10f10[2][3] == -8.0f, "matrix10f10[2][3] == -8.0f");
+    UtAssert_True (matrix10f10[2][4] == -10.0f, "matrix10f10[2][4] == -10.0f");
+    UtAssert_True (matrix10f10[2][5] == -12.0f, "matrix10f10[2][5] == -12.0f");
+    UtAssert_True (matrix10f10[2][6] == -14.0f, "matrix10f10[2][6] == -14.0f");
+    UtAssert_True (matrix10f10[2][7] == -16.0f, "matrix10f10[2][7] == -16.0f");
+    UtAssert_True (matrix10f10[2][8] == -18.0f, "matrix10f10[2][8] == -18.0f");
+    UtAssert_True (matrix10f10[2][9] == -20.0f, "matrix10f10[2][9] == -20.0f");
+
+    UtAssert_True (matrix10f10[3][0] == -3.0f, "matrix10f10[3][0] == -3.0f");
+    UtAssert_True (matrix10f10[3][1] == -6.0f, "matrix10f10[3][1] == -6.0f");
+    UtAssert_True (matrix10f10[3][2] == -9.0f, "matrix10f10[3][2] == -9.0f");
+    UtAssert_True (matrix10f10[3][3] == -12.0f, "matrix10f10[3][3] == -12.0f");
+    UtAssert_True (matrix10f10[3][4] == -15.0f, "matrix10f10[3][4] == -15.0f");
+    UtAssert_True (matrix10f10[3][5] == -18.0f, "matrix10f10[3][5] == -18.0f");
+    UtAssert_True (matrix10f10[3][6] == -21.0f, "matrix10f10[3][6] == -21.0f");
+    UtAssert_True (matrix10f10[3][7] == -24.0f, "matrix10f10[3][7] == -24.0f");
+    UtAssert_True (matrix10f10[3][8] == -27.0f, "matrix10f10[3][8] == -27.0f");
+    UtAssert_True (matrix10f10[3][9] == -30.0f, "matrix10f10[3][9] == -30.0f");
+
+    UtAssert_True (matrix10f10[4][0] == -4.0f, "matrix10f10[4][0] == -4.0f");
+    UtAssert_True (matrix10f10[4][1] == -8.0f, "matrix10f10[4][1] == -8.0f");
+    UtAssert_True (matrix10f10[4][2] == -12.0f, "matrix10f10[4][2] == -12.0f");
+    UtAssert_True (matrix10f10[4][3] == -16.0f, "matrix10f10[4][3] == -16.0f");
+    UtAssert_True (matrix10f10[4][4] == -20.0f, "matrix10f10[4][4] == -20.0f");
+    UtAssert_True (matrix10f10[4][5] == -24.0f, "matrix10f10[4][5] == -24.0f");
+    UtAssert_True (matrix10f10[4][6] == -28.0f, "matrix10f10[4][6] == -28.0f");
+    UtAssert_True (matrix10f10[4][7] == -32.0f, "matrix10f10[4][7] == -32.0f");
+    UtAssert_True (matrix10f10[4][8] == -36.0f, "matrix10f10[4][8] == -36.0f");
+    UtAssert_True (matrix10f10[4][9] == -40.0f, "matrix10f10[4][9] == -40.0f");
+
+    UtAssert_True (matrix10f10[5][0] == -5.0f, "matrix10f10[5][0] == -5.0f");
+    UtAssert_True (matrix10f10[5][1] == -10.0f, "matrix10f10[5][1] == -10.0f");
+    UtAssert_True (matrix10f10[5][2] == -15.0f, "matrix10f10[5][2] == -15.0f");
+    UtAssert_True (matrix10f10[5][3] == -20.0f, "matrix10f10[5][3] == -20.0f");
+    UtAssert_True (matrix10f10[5][4] == -25.0f, "matrix10f10[5][4] == -25.0f");
+    UtAssert_True (matrix10f10[5][5] == -30.0f, "matrix10f10[5][5] == -30.0f");
+    UtAssert_True (matrix10f10[5][6] == -35.0f, "matrix10f10[5][6] == -35.0f");
+    UtAssert_True (matrix10f10[5][7] == -40.0f, "matrix10f10[5][7] == -40.0f");
+    UtAssert_True (matrix10f10[5][8] == -45.0f, "matrix10f10[5][8] == -45.0f");
+    UtAssert_True (matrix10f10[5][9] == -50.0f, "matrix10f10[5][9] == -50.0f");
+
+    UtAssert_True (matrix10f10[6][0] == -6.0f, "matrix10f10[6][0] == -6.0f");
+    UtAssert_True (matrix10f10[6][1] == -12.0f, "matrix10f10[6][1] == -12.0f");
+    UtAssert_True (matrix10f10[6][2] == -18.0f, "matrix10f10[6][2] == -18.0f");
+    UtAssert_True (matrix10f10[6][3] == -24.0f, "matrix10f10[6][3] == -24.0f");
+    UtAssert_True (matrix10f10[6][4] == -30.0f, "matrix10f10[6][4] == -30.0f");
+    UtAssert_True (matrix10f10[6][5] == -36.0f, "matrix10f10[6][5] == -36.0f");
+    UtAssert_True (matrix10f10[6][6] == -42.0f, "matrix10f10[6][6] == -42.0f");
+    UtAssert_True (matrix10f10[6][7] == -48.0f, "matrix10f10[6][7] == -48.0f");
+    UtAssert_True (matrix10f10[6][8] == -54.0f, "matrix10f10[6][8] == -54.0f");
+    UtAssert_True (matrix10f10[6][9] == -60.0f, "matrix10f10[6][9] == -60.0f");
+
+    UtAssert_True (matrix10f10[7][0] == -7.0f, "matrix10f10[7][0] == -7.0f");
+    UtAssert_True (matrix10f10[7][1] == -14.0f, "matrix10f10[7][1] == -14.0f");
+    UtAssert_True (matrix10f10[7][2] == -21.0f, "matrix10f10[7][2] == -21.0f");
+    UtAssert_True (matrix10f10[7][3] == -28.0f, "matrix10f10[7][3] == -28.0f");
+    UtAssert_True (matrix10f10[7][4] == -35.0f, "matrix10f10[7][4] == -35.0f");
+    UtAssert_True (matrix10f10[7][5] == -42.0f, "matrix10f10[7][5] == -42.0f");
+    UtAssert_True (matrix10f10[7][6] == -49.0f, "matrix10f10[7][6] == -49.0f");
+    UtAssert_True (matrix10f10[7][7] == -56.0f, "matrix10f10[7][7] == -56.0f");
+    UtAssert_True (matrix10f10[7][8] == -63.0f, "matrix10f10[7][8] == -63.0f");
+    UtAssert_True (matrix10f10[7][9] == -70.0f, "matrix10f10[7][9] == -70.0f");
+
+    UtAssert_True (matrix10f10[8][0] == -8.0f, "matrix10f10[8][0] == -8.0f");
+    UtAssert_True (matrix10f10[8][1] == -16.0f, "matrix10f10[8][1] == -16.0f");
+    UtAssert_True (matrix10f10[8][2] == -24.0f, "matrix10f10[8][2] == -24.0f");
+    UtAssert_True (matrix10f10[8][3] == -32.0f, "matrix10f10[8][3] == -32.0f");
+    UtAssert_True (matrix10f10[8][4] == -40.0f, "matrix10f10[8][4] == -40.0f");
+    UtAssert_True (matrix10f10[8][5] == -48.0f, "matrix10f10[8][5] == -48.0f");
+    UtAssert_True (matrix10f10[8][6] == -56.0f, "matrix10f10[8][6] == -56.0f");
+    UtAssert_True (matrix10f10[8][7] == -64.0f, "matrix10f10[8][7] == -64.0f");
+    UtAssert_True (matrix10f10[8][8] == -72.0f, "matrix10f10[8][8] == -72.0f");
+    UtAssert_True (matrix10f10[8][9] == -80.0f, "matrix10f10[8][9] == -80.0f");
+
+    UtAssert_True (matrix10f10[9][0] == -9.0f, "matrix10f10[9][0] == -9.0f");
+    UtAssert_True (matrix10f10[9][1] == -18.0f, "matrix10f10[9][1] == -18.0f");
+    UtAssert_True (matrix10f10[9][2] == -27.0f, "matrix10f10[9][2] == -27.0f");
+    UtAssert_True (matrix10f10[9][3] == -36.0f, "matrix10f10[9][3] == -36.0f");
+    UtAssert_True (matrix10f10[9][4] == -45.0f, "matrix10f10[9][4] == -45.0f");
+    UtAssert_True (matrix10f10[9][5] == -54.0f, "matrix10f10[9][5] == -54.0f");
+    UtAssert_True (matrix10f10[9][6] == -63.0f, "matrix10f10[9][6] == -63.0f");
+    UtAssert_True (matrix10f10[9][7] == -72.0f, "matrix10f10[9][7] == -72.0f");
+    UtAssert_True (matrix10f10[9][8] == -81.0f, "matrix10f10[9][8] == -81.0f");
+    UtAssert_True (matrix10f10[9][9] == -90.0f, "matrix10f10[9][9] == -90.0f");
+
+}
+
 
 /**************************************************************************
  * Rollup Test Cases
@@ -749,7 +1016,8 @@ void PE_App_Test_AddTestCases(void)
 
     UtTest_Add(Test_PE_Baro_Correct_Nominal, PE_Test_Setup, PE_Test_TearDown,
                "Test_PE_Baro_Correct_Nominal");
-
+    UtTest_Add(Test_PE_Baro_Multiple_Matrix_Ops, PE_Test_Setup, PE_Test_TearDown,
+               "Test_PE_Baro_Multiple_Matrix_Ops");
 
 }
 
