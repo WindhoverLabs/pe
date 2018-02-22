@@ -45,7 +45,7 @@ int32 PE::baroMeasure(math::Vector1F &y)
 	y.Zero();
 	y[0] = m_SensorCombinedMsg.BaroAlt;
 	m_BaroStats.update(y);
-	m_TimeLastBaro = m_Timestamp;
+	//m_TimeLastBaro = m_Timestamp;
 	return CFE_SUCCESS;
 }
 
