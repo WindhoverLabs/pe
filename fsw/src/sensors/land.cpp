@@ -50,10 +50,10 @@ void PE::landCorrect()
 	math::Matrix3F10 C;
 	C.Zero();
 	// y = -(z - tz)
-	C[Y_land_vx][X_vx] = 1;
-	C[Y_land_vy][X_vy] = 1;
-	C[Y_land_agl][X_z] = -1; // measured altitude, negative down dir.
-	C[Y_land_agl][X_tz] = 1; // measured altitude, negative down dir.
+	C[Y_land_vx][X_vx] = 1.0f;
+	C[Y_land_vy][X_vy] = 1.0f;
+	C[Y_land_agl][X_z] = -1.0f; // measured altitude, negative down dir.
+	C[Y_land_agl][X_tz] = 1.0f; // measured altitude, negative down dir.
 
 	// use parameter covariance
 	math::Matrix3F3 R;

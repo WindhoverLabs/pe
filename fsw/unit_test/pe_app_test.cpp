@@ -465,6 +465,8 @@ void Test_PE_AppMain_Nominal_Wakeup(void)
 void Test_PE_AppMain_Land_Nominal_1(void)
 {
     PE oPE;
+    oPE.InitApp();
+    oPE.landInit();
 	char desc[DESC_SIZE];
 
     math::Matrix10F10 input = {
@@ -518,6 +520,7 @@ void Test_PE_AppMain_Land_Nominal_1(void)
 void Test_PE_AppMain_Land_Nominal_2(void)
 {
     PE oPE;
+    oPE.InitApp();
     char desc[DESC_SIZE];
 
     math::Matrix10F10 input = {
@@ -561,6 +564,7 @@ void Test_PE_AppMain_Land_Nominal_2(void)
 		{
 			sprintf(desc, "Nominal land 2: State cov mismatch at index (%i, %i)", i, j);
 			UtAssert_True(fabs(oPE.m_StateCov[i][j] - output[i][j]) < 0.01f, desc);
+            printf("oPE.m_StateCov[%d][%d] %.10f\n", i, j, oPE.m_StateCov[i][j]);
 		}
 	}
 
@@ -572,6 +576,9 @@ void Test_PE_AppMain_Land_Nominal_2(void)
 void Test_PE_AppMain_Land_Nominal_3(void)
 {
 	PE oPE;
+    oPE.InitApp();
+    oPE.landInit();
+
 	char desc[DESC_SIZE];
 
 	math::Matrix10F10 input = {
@@ -627,8 +634,8 @@ void Test_PE_Baro_Correct_Nominal(void)
 {
     PE oPE;
     /* Setup initial conditions */
-    oPE.InitData();
-    oPE.m_Params.BARO_STDDEV = 3.0f;
+    oPE.InitApp();
+    oPE.baroInit();
 
     oPE.m_BaroAltOrigin = 0.2648827434f;
     oPE.m_SensorCombinedMsg.BaroAlt = 0.2870604694f;

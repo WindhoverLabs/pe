@@ -51,9 +51,56 @@
 /*
  * Config table for testing
  */
-PE_ConfigTbl_t ConfigTbl = {
-        /* TODO:  Define table */
-		0
+/* Default ULR config table data */
+PE_ConfigTbl_t PE_ConfigTbl =
+{
+	/* TODO:  Define table. */
+    //FUSION
+    145,
+	//VXY_PUB_THRESH
+    .3f,
+	//Z_PUB_THRESH
+    1.0f,
+	//ACCEL_XY_STDDEV
+    .012f,
+	//ACCEL_Z_STDDEV
+    .02f,
+	//BARO_STDDEV
+    3.0f,
+	//GPS_DELAY
+    .29f,
+	//GPS_XY_STDDEV
+    1.0f,
+	//GPS_Z_STDDEV
+    3.0f,
+	//GPS_VXY_STDDEV
+    .25f,
+	//GPS_VZ_STDDEV
+    .25f,
+	//GPS_EPH_MAX
+    3.0f,
+	//GPS_EPV_MAX
+    5.0f,
+	//LAND_Z_STDDEV
+    .03f,
+	//LAND_VXY_STDDEV
+    .05f,
+	//PN_P_NOISE_DENSITY
+    .1f,
+	//PN_V_NOISE_DENSITY
+    .1f,
+	//PN_B_NOISE_DENSITY
+    .001f,
+	//PN_T_NOISE_DENSITY
+    .001f,
+	//T_MAX_GRADE
+    1.0f,
+	//FAKE_ORIGIN
+    0,
+	//INIT_ORIGIN_LAT
+    29.562144f,
+	//INIT_ORIGIN_LON
+    -95.144554
 };
 
 /*
@@ -73,7 +120,7 @@ void PE_Test_Setup(void)
     Ut_OSAPI_Reset();
     Ut_OSFILEAPI_Reset();
 
-    Ut_CFE_TBL_AddTable(PE_CONFIG_TABLE_FILENAME, (void *) &ConfigTbl);
+    Ut_CFE_TBL_AddTable(PE_CONFIG_TABLE_FILENAME, (void *) &PE_ConfigTbl);
 }
 
 void PE_Test_TearDown(void) {

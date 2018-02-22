@@ -68,7 +68,7 @@ void PE::baroCorrect()
     math::Matrix1F10 C;
     C.Zero();
     /* measured altitude, negative down dir */
-    C[Y_baro_z][X_z] = -1;
+    C[Y_baro_z][X_z] = -1.0f;
 
     math::Matrix1F1 R;
     R.Zero();
