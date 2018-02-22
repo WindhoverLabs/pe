@@ -793,13 +793,13 @@ void PE::UpdateVehicleLocalPositionMsg()
 	}
 	else
 	{
-		OS_printf("VehicleLocalPositionMsg data invalid\n");
+		OS_printf("VehicleLocalPositionMsg data invalid\n"); //TODO Remove
 	}
 }
 
 void PE::SendVehicleLocalPositionMsg()
 {
-//	OS_printf("\nLocal Pos Msg:\n");
+//	OS_printf("\nSending Local Pos Msg:\n");
 //	OS_printf("Timestamp : %u\n", m_VehicleLocalPositionMsg.Timestamp);
 //	OS_printf("XY_Valid : %u\n", m_VehicleLocalPositionMsg.XY_Valid);
 //	OS_printf("Z_Valid : %u\n", m_VehicleLocalPositionMsg.Z_Valid);
@@ -897,7 +897,7 @@ void PE::UpdateVehicleGlobalPositionMsg()
 	}
 	else
 	{
-		OS_printf("VehicleGlobalPositionMsg data invalid\n");
+		OS_printf("VehicleGlobalPositionMsg data invalid\n"); //TODO Remove
 	}
 }
 
@@ -1213,7 +1213,7 @@ void PE::Update()
 
 		UpdateVehicleLocalPositionMsg();
 		SendVehicleLocalPositionMsg();
-		SendEstimatorStatusMsg();
+		//SendEstimatorStatusMsg(); //TODO: Is this needed?
 
 		if(m_XyEstValid && (m_MapRef.init_done || m_Params.FAKE_ORIGIN))
 		{
@@ -1222,7 +1222,7 @@ void PE::Update()
 		}
 		else
 		{
-			OS_printf("XyEst invalid\n");
+			//OS_printf("XyEst invalid\n");
 		}
 	}
 
