@@ -125,8 +125,6 @@ void PE::baroCorrect()
     /* 10x10 * 10x1 * 1x1 */
     K = m_StateCov * C.Transpose() * S_I;
 
-    math::Matrix10F1 C_Test = C.Transpose();
-
     /* 10x1 * 1x1 */
     //dx = K * r;
     math::Matrix10F1 temp;
