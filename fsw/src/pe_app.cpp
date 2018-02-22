@@ -277,22 +277,12 @@ void PE::InitData()
 
 	UpdateLocalParams();
 
-	/* Map projection */
-	// todo
-
-	/* Block stats? todo */
-//	m_BaroStats();
-//	m_GpsStats();
-
-	/* Block delays? todo */
-	//mXDelay(this, "");
-	//mTDelay(this, "");
-
 	/* Timestamps */
 	m_Timestamp             = PX4LIB_GetPX4TimeUs();
 	m_TimeLastBaro          = PX4LIB_GetPX4TimeUs();
 	m_TimeLastGps           = 0;
 	m_TimeLastLand          = 0;
+    m_Timestamp_Hist        = 0;
 
 	/* Timeouts */
 	m_BaroTimeout           = true;
@@ -304,26 +294,21 @@ void PE::InitData()
 	m_GpsFault              = false;
 	m_LandFault             = false;
 
-	// reference altitudes
+	/* Reference altitudes */
 	m_AltOrigin             = 0.0f;
 	m_AltOriginInitialized  = FALSE;
 	m_BaroAltOrigin         = 0.0f;
 	m_GpsAltOrigin          = 0.0f;
 
-	// status
+	/* Status */
+	m_EstimatorInitialized  = 0;
 	m_ReceivedGps           = FALSE;
 	m_LastArmedState        = FALSE;
 
-	// masks todo
-	m_SensorTimeout         = 255;
-	m_SensorFault           = 0;
-	m_EstimatorInitialized  = 0;
     
-    m_Timestamp_Hist        = 0;
-	// state space
+	/* State Space */
 	m_StateVec.Zero();
 	m_InputVec.Zero();
-
 	InitStateSpace();
 
 	/* Map */
@@ -529,11 +514,11 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleGpsPositionMsg, MsgPtr, sizeof(m_VehicleGpsPositionMsg));
                 if(m_GpsTimeout)
                 {
-                	//gpsInit();
+                	gpsInit();
                 }
                 else
                 {
-                	//gpsCorrect();
+                	gpsCorrect();
                 }
 
                 break;
@@ -571,11 +556,11 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_SensorCombinedMsg, MsgPtr, sizeof(m_SensorCombinedMsg));
                 if(m_BaroTimeout)
                 {
-                	//baroInit();
+                	baroInit();
                 }
                 else
                 {
-                	//baroCorrect();
+                	baroCorrect();
                 }
                 break;
 
@@ -906,7 +891,7 @@ void PE::UpdateVehicleGlobalPositionMsg()
 		m_VehicleGlobalPositionMsg.EpH = eph;
 		m_VehicleGlobalPositionMsg.EpV = epv;
 		m_VehicleGlobalPositionMsg.TerrainAlt = m_AltOrigin - m_XLowPass[X_tz];
-		m_VehicleGlobalPositionMsg.TerrainAltValid = m_TzEstValid; //todo check - bool to boolean
+		m_VehicleGlobalPositionMsg.TerrainAltValid = m_TzEstValid;
 		m_VehicleGlobalPositionMsg.DeadReckoning = !m_XyEstValid;
 		m_VehicleGlobalPositionMsg.PressureAlt = m_SensorCombinedMsg.BaroAlt;
 	}
