@@ -79,12 +79,12 @@ void PE::gpsInit()
                 m_AltOrigin = m_GpsAltOrigin;
                 m_AltOriginInitialized = true;
 
-                (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,//todo eid
+                (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
                         "GPS init origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
                         gpsLatOrigin, gpsLonOrigin, double(m_GpsAltOrigin));
             }
 
-            (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,//todo eid
+            (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
                     "GPS init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
                     gpsLat, gpsLon, double(gpsAlt));
         }

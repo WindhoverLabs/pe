@@ -1133,7 +1133,7 @@ void PE::Update()
 							m_Params.INIT_ORIGIN_LON,
 							m_Timestamp); //TODO: Verify correct time
 
-		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION, //TODO update to gps eid
+		(void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
 								 "GPS fake origin init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
 								 m_Params.INIT_ORIGIN_LAT,
 								 m_Params.INIT_ORIGIN_LON,
