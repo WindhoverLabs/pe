@@ -1195,7 +1195,7 @@ void PE::Update()
 	{
 		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
 								 "State covariance matrix reinitialized");
-		m_StateCov.Print();
+		//m_StateCov.Print();
 		initStateCov();
 	}
 
