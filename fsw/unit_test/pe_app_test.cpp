@@ -910,10 +910,6 @@ void Test_PE_Baro_Multiple_Matrix_Ops(void)
                 {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f}
     );
 
-    /* 1x10 * 10x10 = 
-     * 55 110 165 220 275 330 385 440 495 550
-     **/
-     
     /* 10x1 * 1x10 = 
         	1	2	3	4	5	6	7	8	9	10
         	2	4	6	8	10	12	14	16	18	20
@@ -926,125 +922,143 @@ void Test_PE_Baro_Multiple_Matrix_Ops(void)
         	9	18	27	36	45	54	63	72	81	90
         	10	20	30	40	50	60	70	80	90	100
      **/
-    matrix10f10 = matrix10f10 - (matrix10f1 * (matrix1f10 * matrix10f10));
-    
-    for(int i = 0; i<10; i++)
-    {
-        for(int j = 0; j< 10; j++)
-        {
-            printf("matrix10f10[i][j] %f\n", matrix10f10[i][j]);
-        }
-    }
+     
+    /* 10x10 * 10x10 = 
+    55	110	165	220	275	330	385	440	495	550
+    110	220	330	440	550	660	770	880	990	1100
+    165	330	495	660	825	990	1155 1320 1485 1650
+    220	440	660	880	1100 1320 1540 1760	1980 2200
+    275	550	825	1100 1375 1650 1925	2200 2475 2750
+    330	660	990	1320 1650 1980 2310 2640 2970 3300
+    385	770	1155 1540 1925 2310	2695 3080 3465 3850
+    440	880	1320 1760 2200 2640	3080 3520 3960 4400
+    495	990	1485 1980 2475 2970 3465 3960 4455 4950
+    550	1100 1650 2200 2750 3300 3850 4400 4950 5500
+     **/
+     /* 10x10 - 10x10 = 
+    -54	    -108	-162	-216	-270	-324	-378	-432	-486	-540
+    -109	-218	-327	-436	-545	-654	-763	-872	-981	-1090
+    -164	-328	-492	-656	-820	-984	-1148	-1312	-1476	-1640
+    -219	-438	-657	-876	-1095	-1314	-1533	-1752	-1971	-2190
+    -274	-548	-822	-1096	-1370	-1644	-1918	-2192	-2466	-2740
+    -329	-658	-987	-1316	-1645	-1974	-2303	-2632	-2961	-3290
+    -384	-768	-1152	-1536	-1920	-2304	-2688	-3072	-3456	-3840
+    -439	-878	-1317	-1756	-2195	-2634	-3073	-3512	-3951	-4390
+    -494	-988	-1482	-1976	-2470	-2964	-3458	-3952	-4446	-4940
+    -549	-1098	-1647	-2196	-2745	-3294	-3843	-4392	-4941	-5490
+     **/
+    matrix10f10 = matrix10f10 - matrix10f1 * matrix1f10 * matrix10f10;
 
-    UtAssert_True (matrix10f10[0][0] == 0.0f, "matrix10f10[0][0] == 0.0f");
-    UtAssert_True (matrix10f10[0][1] == 0.0f, "matrix10f10[0][1] == 0.0f");
-    UtAssert_True (matrix10f10[0][2] == 0.0f, "matrix10f10[0][2] == 0.0f");
-    UtAssert_True (matrix10f10[0][3] == 0.0f, "matrix10f10[0][3] == 0.0f");
-    UtAssert_True (matrix10f10[0][4] == 0.0f, "matrix10f10[0][4] == 0.0f");
-    UtAssert_True (matrix10f10[0][5] == 0.0f, "matrix10f10[0][5] == 0.0f");
-    UtAssert_True (matrix10f10[0][6] == 0.0f, "matrix10f10[0][6] == 0.0f");
-    UtAssert_True (matrix10f10[0][7] == 0.0f, "matrix10f10[0][7] == 0.0f");
-    UtAssert_True (matrix10f10[0][8] == 0.0f, "matrix10f10[0][8] == 0.0f");
-    UtAssert_True (matrix10f10[0][9] == 0.0f, "matrix10f10[0][9] == 0.0f");
 
-    UtAssert_True (matrix10f10[1][0] == -1.0f, "matrix10f10[1][0] == -1.0f");
-    UtAssert_True (matrix10f10[1][1] == -2.0f, "matrix10f10[1][1] == -2.0f");
-    UtAssert_True (matrix10f10[1][2] == -3.0f, "matrix10f10[1][2] == -3.0f");
-    UtAssert_True (matrix10f10[1][3] == -4.0f, "matrix10f10[1][3] == -4.0f");
-    UtAssert_True (matrix10f10[1][4] == -5.0f, "matrix10f10[1][4] == -5.0f");
-    UtAssert_True (matrix10f10[1][5] == -6.0f, "matrix10f10[1][5] == -6.0f");
-    UtAssert_True (matrix10f10[1][6] == -7.0f, "matrix10f10[1][6] == -7.0f");
-    UtAssert_True (matrix10f10[1][7] == -8.0f, "matrix10f10[1][7] == -8.0f");
-    UtAssert_True (matrix10f10[1][8] == -9.0f, "matrix10f10[1][8] == -9.0f");
-    UtAssert_True (matrix10f10[1][9] == -10.0f, "matrix10f10[1][9] == -10.0f");
+    UtAssert_True (matrix10f10[0][0] == -54.0f, "matrix10f10[0][0] == -54.0f");
+    UtAssert_True (matrix10f10[1][0] == -109.0f, "matrix10f10[1][0] == -109.0f");
+    UtAssert_True (matrix10f10[2][0] == -164.0f, "matrix10f10[2][0] == -164.0f");
+    UtAssert_True (matrix10f10[3][0] == -219.0f, "matrix10f10[3][0] == -219.0f");
+    UtAssert_True (matrix10f10[4][0] == -274.0f, "matrix10f10[4][0] == -274.0f");
+    UtAssert_True (matrix10f10[5][0] == -329.0f, "matrix10f10[5][0] == -329.0f");
+    UtAssert_True (matrix10f10[6][0] == -384.0f, "matrix10f10[6][0] == -384.0f");
+    UtAssert_True (matrix10f10[7][0] == -439.0f, "matrix10f10[7][0] == -439.0f");
+    UtAssert_True (matrix10f10[8][0] == -494.0f, "matrix10f10[8][0] == -494.0f");
+    UtAssert_True (matrix10f10[9][0] == -549.0f, "matrix10f10[9][0] == -549.0f");
 
-    UtAssert_True (matrix10f10[2][0] == -2.0f, "matrix10f10[2][0] == -2.0f");
-    UtAssert_True (matrix10f10[2][1] == -4.0f, "matrix10f10[2][1] == -4.0f");
-    UtAssert_True (matrix10f10[2][2] == -6.0f, "matrix10f10[2][2] == -6.0f");
-    UtAssert_True (matrix10f10[2][3] == -8.0f, "matrix10f10[2][3] == -8.0f");
-    UtAssert_True (matrix10f10[2][4] == -10.0f, "matrix10f10[2][4] == -10.0f");
-    UtAssert_True (matrix10f10[2][5] == -12.0f, "matrix10f10[2][5] == -12.0f");
-    UtAssert_True (matrix10f10[2][6] == -14.0f, "matrix10f10[2][6] == -14.0f");
-    UtAssert_True (matrix10f10[2][7] == -16.0f, "matrix10f10[2][7] == -16.0f");
-    UtAssert_True (matrix10f10[2][8] == -18.0f, "matrix10f10[2][8] == -18.0f");
-    UtAssert_True (matrix10f10[2][9] == -20.0f, "matrix10f10[2][9] == -20.0f");
+    UtAssert_True (matrix10f10[0][1] == -108.0f, "matrix10f10[0][1] == -108.0f");
+    UtAssert_True (matrix10f10[1][1] == -218.0f, "matrix10f10[1][1] == -218.0f");
+    UtAssert_True (matrix10f10[2][1] == -328.0f, "matrix10f10[2][1] == -328.0f");
+    UtAssert_True (matrix10f10[3][1] == -438.0f, "matrix10f10[3][1] == -438.0f");
+    UtAssert_True (matrix10f10[4][1] == -548.0f, "matrix10f10[4][1] == -548.0f");
+    UtAssert_True (matrix10f10[5][1] == -658.0f, "matrix10f10[5][1] == -658.0f");
+    UtAssert_True (matrix10f10[6][1] == -768.0f, "matrix10f10[6][1] == -768.0f");
+    UtAssert_True (matrix10f10[7][1] == -878.0f, "matrix10f10[7][1] == -878.0f");
+    UtAssert_True (matrix10f10[8][1] == -988.0f, "matrix10f10[8][1] == -988.0f");
+    UtAssert_True (matrix10f10[9][1] == -1098.0f, "matrix10f10[9][1] == -1098.0f");
 
-    UtAssert_True (matrix10f10[3][0] == -3.0f, "matrix10f10[3][0] == -3.0f");
-    UtAssert_True (matrix10f10[3][1] == -6.0f, "matrix10f10[3][1] == -6.0f");
-    UtAssert_True (matrix10f10[3][2] == -9.0f, "matrix10f10[3][2] == -9.0f");
-    UtAssert_True (matrix10f10[3][3] == -12.0f, "matrix10f10[3][3] == -12.0f");
-    UtAssert_True (matrix10f10[3][4] == -15.0f, "matrix10f10[3][4] == -15.0f");
-    UtAssert_True (matrix10f10[3][5] == -18.0f, "matrix10f10[3][5] == -18.0f");
-    UtAssert_True (matrix10f10[3][6] == -21.0f, "matrix10f10[3][6] == -21.0f");
-    UtAssert_True (matrix10f10[3][7] == -24.0f, "matrix10f10[3][7] == -24.0f");
-    UtAssert_True (matrix10f10[3][8] == -27.0f, "matrix10f10[3][8] == -27.0f");
-    UtAssert_True (matrix10f10[3][9] == -30.0f, "matrix10f10[3][9] == -30.0f");
+    UtAssert_True (matrix10f10[0][2] == -162.0f, "matrix10f10[0][2] == -162.0f");
+    UtAssert_True (matrix10f10[1][2] == -327.0f, "matrix10f10[1][2] == -327.0f");
+    UtAssert_True (matrix10f10[2][2] == -492.0f, "matrix10f10[2][2] == -492.0f");
+    UtAssert_True (matrix10f10[3][2] == -657.0f, "matrix10f10[3][2] == -657.0f");
+    UtAssert_True (matrix10f10[4][2] == -822.0f, "matrix10f10[4][2] == -822.0f");
+    UtAssert_True (matrix10f10[5][2] == -987.0f, "matrix10f10[5][2] == -987.0f");
+    UtAssert_True (matrix10f10[6][2] == -1152.0f, "matrix10f10[6][2] == -1152.0f");
+    UtAssert_True (matrix10f10[7][2] == -1317.0f, "matrix10f10[7][2] == -1317.0f");
+    UtAssert_True (matrix10f10[8][2] == -1482.0f, "matrix10f10[8][2] == -1482.0f");
+    UtAssert_True (matrix10f10[9][2] == -1647.0f, "matrix10f10[9][2] == -1647.0f");
 
-    UtAssert_True (matrix10f10[4][0] == -4.0f, "matrix10f10[4][0] == -4.0f");
-    UtAssert_True (matrix10f10[4][1] == -8.0f, "matrix10f10[4][1] == -8.0f");
-    UtAssert_True (matrix10f10[4][2] == -12.0f, "matrix10f10[4][2] == -12.0f");
-    UtAssert_True (matrix10f10[4][3] == -16.0f, "matrix10f10[4][3] == -16.0f");
-    UtAssert_True (matrix10f10[4][4] == -20.0f, "matrix10f10[4][4] == -20.0f");
-    UtAssert_True (matrix10f10[4][5] == -24.0f, "matrix10f10[4][5] == -24.0f");
-    UtAssert_True (matrix10f10[4][6] == -28.0f, "matrix10f10[4][6] == -28.0f");
-    UtAssert_True (matrix10f10[4][7] == -32.0f, "matrix10f10[4][7] == -32.0f");
-    UtAssert_True (matrix10f10[4][8] == -36.0f, "matrix10f10[4][8] == -36.0f");
-    UtAssert_True (matrix10f10[4][9] == -40.0f, "matrix10f10[4][9] == -40.0f");
+    UtAssert_True (matrix10f10[0][3] == -216.0f, "matrix10f10[0][3] == -216.0f");
+    UtAssert_True (matrix10f10[1][3] == -436.0f, "matrix10f10[1][3] == -436.0f");
+    UtAssert_True (matrix10f10[2][3] == -656.0f, "matrix10f10[2][3] == -656.0f");
+    UtAssert_True (matrix10f10[3][3] == -876.0f, "matrix10f10[3][3] == -876.0f");
+    UtAssert_True (matrix10f10[4][3] == -1096.0f, "matrix10f10[4][3] == -1096.0f");
+    UtAssert_True (matrix10f10[5][3] == -1316.0f, "matrix10f10[5][3] == -1316.0f");
+    UtAssert_True (matrix10f10[6][3] == -1536.0f, "matrix10f10[6][3] == -1536.0f");
+    UtAssert_True (matrix10f10[7][3] == -1756.0f, "matrix10f10[7][3] == -1756.0f");
+    UtAssert_True (matrix10f10[8][3] == -1976.0f, "matrix10f10[8][3] == -1976.0f");
+    UtAssert_True (matrix10f10[9][3] == -2196.0f, "matrix10f10[9][3] == -2196.0f");
 
-    UtAssert_True (matrix10f10[5][0] == -5.0f, "matrix10f10[5][0] == -5.0f");
-    UtAssert_True (matrix10f10[5][1] == -10.0f, "matrix10f10[5][1] == -10.0f");
-    UtAssert_True (matrix10f10[5][2] == -15.0f, "matrix10f10[5][2] == -15.0f");
-    UtAssert_True (matrix10f10[5][3] == -20.0f, "matrix10f10[5][3] == -20.0f");
-    UtAssert_True (matrix10f10[5][4] == -25.0f, "matrix10f10[5][4] == -25.0f");
-    UtAssert_True (matrix10f10[5][5] == -30.0f, "matrix10f10[5][5] == -30.0f");
-    UtAssert_True (matrix10f10[5][6] == -35.0f, "matrix10f10[5][6] == -35.0f");
-    UtAssert_True (matrix10f10[5][7] == -40.0f, "matrix10f10[5][7] == -40.0f");
-    UtAssert_True (matrix10f10[5][8] == -45.0f, "matrix10f10[5][8] == -45.0f");
-    UtAssert_True (matrix10f10[5][9] == -50.0f, "matrix10f10[5][9] == -50.0f");
+    UtAssert_True (matrix10f10[0][4] == -270.0f, "matrix10f10[0][4] == -270.0f");
+    UtAssert_True (matrix10f10[1][4] == -545.0f, "matrix10f10[1][4] == -545.0f");
+    UtAssert_True (matrix10f10[2][4] == -820.0f, "matrix10f10[2][4] == -820.0f");
+    UtAssert_True (matrix10f10[3][4] == -1095.0f, "matrix10f10[3][4] == -1095.0f");
+    UtAssert_True (matrix10f10[4][4] == -1370.0f, "matrix10f10[4][4] == -1370.0f");
+    UtAssert_True (matrix10f10[5][4] == -1645.0f, "matrix10f10[5][4] == -1645.0f");
+    UtAssert_True (matrix10f10[6][4] == -1920.0f, "matrix10f10[6][4] == -1920.0f");
+    UtAssert_True (matrix10f10[7][4] == -2195.0f, "matrix10f10[7][4] == -2195.0f");
+    UtAssert_True (matrix10f10[8][4] == -2470.0f, "matrix10f10[8][4] == -2470.0f");
+    UtAssert_True (matrix10f10[9][4] == -2745.0f, "matrix10f10[9][4] == -2745.0f");
 
-    UtAssert_True (matrix10f10[6][0] == -6.0f, "matrix10f10[6][0] == -6.0f");
-    UtAssert_True (matrix10f10[6][1] == -12.0f, "matrix10f10[6][1] == -12.0f");
-    UtAssert_True (matrix10f10[6][2] == -18.0f, "matrix10f10[6][2] == -18.0f");
-    UtAssert_True (matrix10f10[6][3] == -24.0f, "matrix10f10[6][3] == -24.0f");
-    UtAssert_True (matrix10f10[6][4] == -30.0f, "matrix10f10[6][4] == -30.0f");
-    UtAssert_True (matrix10f10[6][5] == -36.0f, "matrix10f10[6][5] == -36.0f");
-    UtAssert_True (matrix10f10[6][6] == -42.0f, "matrix10f10[6][6] == -42.0f");
-    UtAssert_True (matrix10f10[6][7] == -48.0f, "matrix10f10[6][7] == -48.0f");
-    UtAssert_True (matrix10f10[6][8] == -54.0f, "matrix10f10[6][8] == -54.0f");
-    UtAssert_True (matrix10f10[6][9] == -60.0f, "matrix10f10[6][9] == -60.0f");
+    UtAssert_True (matrix10f10[0][5] == -324.0f, "matrix10f10[0][5] == -324.0f");
+    UtAssert_True (matrix10f10[1][5] == -654.0f, "matrix10f10[1][5] == -654.0f");
+    UtAssert_True (matrix10f10[2][5] == -984.0f, "matrix10f10[2][5] == -984.0f");
+    UtAssert_True (matrix10f10[3][5] == -1314.0f, "matrix10f10[3][5] == -1314.0f");
+    UtAssert_True (matrix10f10[4][5] == -1644.0f, "matrix10f10[4][5] == -1644.0f");
+    UtAssert_True (matrix10f10[5][5] == -1974.0f, "matrix10f10[5][5] == -1974.0f");
+    UtAssert_True (matrix10f10[6][5] == -2304.0f, "matrix10f10[6][5] == -2304.0f");
+    UtAssert_True (matrix10f10[7][5] == -2634.0f, "matrix10f10[7][5] == -2634.0f");
+    UtAssert_True (matrix10f10[8][5] == -2964.0f, "matrix10f10[8][5] == -2964.0f");
+    UtAssert_True (matrix10f10[9][5] == -3294.0f, "matrix10f10[9][5] == -3294.0f");
 
-    UtAssert_True (matrix10f10[7][0] == -7.0f, "matrix10f10[7][0] == -7.0f");
-    UtAssert_True (matrix10f10[7][1] == -14.0f, "matrix10f10[7][1] == -14.0f");
-    UtAssert_True (matrix10f10[7][2] == -21.0f, "matrix10f10[7][2] == -21.0f");
-    UtAssert_True (matrix10f10[7][3] == -28.0f, "matrix10f10[7][3] == -28.0f");
-    UtAssert_True (matrix10f10[7][4] == -35.0f, "matrix10f10[7][4] == -35.0f");
-    UtAssert_True (matrix10f10[7][5] == -42.0f, "matrix10f10[7][5] == -42.0f");
-    UtAssert_True (matrix10f10[7][6] == -49.0f, "matrix10f10[7][6] == -49.0f");
-    UtAssert_True (matrix10f10[7][7] == -56.0f, "matrix10f10[7][7] == -56.0f");
-    UtAssert_True (matrix10f10[7][8] == -63.0f, "matrix10f10[7][8] == -63.0f");
-    UtAssert_True (matrix10f10[7][9] == -70.0f, "matrix10f10[7][9] == -70.0f");
+    UtAssert_True (matrix10f10[0][6] == -378.0f, "matrix10f10[0][6] == -378.0f");
+    UtAssert_True (matrix10f10[1][6] == -763.0f, "matrix10f10[1][6] == -763.0f");
+    UtAssert_True (matrix10f10[2][6] == -1148.0f, "matrix10f10[2][6] == -1148.0f");
+    UtAssert_True (matrix10f10[3][6] == -1533.0f, "matrix10f10[3][6] == -1533.0f");
+    UtAssert_True (matrix10f10[4][6] == -1918.0f, "matrix10f10[4][6] == -1918.0f");
+    UtAssert_True (matrix10f10[5][6] == -2303.0f, "matrix10f10[5][6] == -2303.0f");
+    UtAssert_True (matrix10f10[6][6] == -2688.0f, "matrix10f10[6][6] == -2688.0f");
+    UtAssert_True (matrix10f10[7][6] == -3073.0f, "matrix10f10[7][6] == -3073.0f");
+    UtAssert_True (matrix10f10[8][6] == -3458.0f, "matrix10f10[8][6] == -3458.0f");
+    UtAssert_True (matrix10f10[9][6] == -3843.0f, "matrix10f10[9][6] == -3843.0f");
 
-    UtAssert_True (matrix10f10[8][0] == -8.0f, "matrix10f10[8][0] == -8.0f");
-    UtAssert_True (matrix10f10[8][1] == -16.0f, "matrix10f10[8][1] == -16.0f");
-    UtAssert_True (matrix10f10[8][2] == -24.0f, "matrix10f10[8][2] == -24.0f");
-    UtAssert_True (matrix10f10[8][3] == -32.0f, "matrix10f10[8][3] == -32.0f");
-    UtAssert_True (matrix10f10[8][4] == -40.0f, "matrix10f10[8][4] == -40.0f");
-    UtAssert_True (matrix10f10[8][5] == -48.0f, "matrix10f10[8][5] == -48.0f");
-    UtAssert_True (matrix10f10[8][6] == -56.0f, "matrix10f10[8][6] == -56.0f");
-    UtAssert_True (matrix10f10[8][7] == -64.0f, "matrix10f10[8][7] == -64.0f");
-    UtAssert_True (matrix10f10[8][8] == -72.0f, "matrix10f10[8][8] == -72.0f");
-    UtAssert_True (matrix10f10[8][9] == -80.0f, "matrix10f10[8][9] == -80.0f");
+    UtAssert_True (matrix10f10[0][7] == -432.0f, "matrix10f10[0][7] == -432.0f");
+    UtAssert_True (matrix10f10[1][7] == -872.0f, "matrix10f10[1][7] == -872.0f");
+    UtAssert_True (matrix10f10[2][7] == -1312.0f, "matrix10f10[2][7] == -1312.0f");
+    UtAssert_True (matrix10f10[3][7] == -1752.0f, "matrix10f10[3][7] == -1752.0f");
+    UtAssert_True (matrix10f10[4][7] == -2192.0f, "matrix10f10[4][7] == -2192.0f");
+    UtAssert_True (matrix10f10[5][7] == -2632.0f, "matrix10f10[5][7] == -2632.0f");
+    UtAssert_True (matrix10f10[6][7] == -3072.0f, "matrix10f10[6][7] == -3072.0f");
+    UtAssert_True (matrix10f10[7][7] == -3512.0f, "matrix10f10[7][7] == -3512.0f");
+    UtAssert_True (matrix10f10[8][7] == -3952.0f, "matrix10f10[8][7] == -3952.0f");
+    UtAssert_True (matrix10f10[9][7] == -4392.0f, "matrix10f10[9][7] == -4392.0f");
 
-    UtAssert_True (matrix10f10[9][0] == -9.0f, "matrix10f10[9][0] == -9.0f");
-    UtAssert_True (matrix10f10[9][1] == -18.0f, "matrix10f10[9][1] == -18.0f");
-    UtAssert_True (matrix10f10[9][2] == -27.0f, "matrix10f10[9][2] == -27.0f");
-    UtAssert_True (matrix10f10[9][3] == -36.0f, "matrix10f10[9][3] == -36.0f");
-    UtAssert_True (matrix10f10[9][4] == -45.0f, "matrix10f10[9][4] == -45.0f");
-    UtAssert_True (matrix10f10[9][5] == -54.0f, "matrix10f10[9][5] == -54.0f");
-    UtAssert_True (matrix10f10[9][6] == -63.0f, "matrix10f10[9][6] == -63.0f");
-    UtAssert_True (matrix10f10[9][7] == -72.0f, "matrix10f10[9][7] == -72.0f");
-    UtAssert_True (matrix10f10[9][8] == -81.0f, "matrix10f10[9][8] == -81.0f");
-    UtAssert_True (matrix10f10[9][9] == -90.0f, "matrix10f10[9][9] == -90.0f");
+    UtAssert_True (matrix10f10[0][8] == -486.0f, "matrix10f10[0][8] == -486.0f");
+    UtAssert_True (matrix10f10[1][8] == -981.0f, "matrix10f10[1][8] == -981.0f");
+    UtAssert_True (matrix10f10[2][8] == -1476.0f, "matrix10f10[2][8] == -1476.0f");
+    UtAssert_True (matrix10f10[3][8] == -1971.0f, "matrix10f10[3][8] == -1971.0f");
+    UtAssert_True (matrix10f10[4][8] == -2466.0f, "matrix10f10[4][8] == -2466.0f");
+    UtAssert_True (matrix10f10[5][8] == -2961.0f, "matrix10f10[5][8] == -2961.0f");
+    UtAssert_True (matrix10f10[6][8] == -3456.0f, "matrix10f10[6][8] == -3456.0f");
+    UtAssert_True (matrix10f10[7][8] == -3951.0f, "matrix10f10[7][8] == -3951.0f");
+    UtAssert_True (matrix10f10[8][8] == -4446.0f, "matrix10f10[8][8] == -4446.0f");
+    UtAssert_True (matrix10f10[9][8] == -4941.0f, "matrix10f10[9][8] == -4941.0f");
+
+    UtAssert_True (matrix10f10[0][9] == -540.0f, "matrix10f10[0][9] == -540.0f");
+    UtAssert_True (matrix10f10[1][9] == -1090.0f, "matrix10f10[1][9] == -1090.0f");
+    UtAssert_True (matrix10f10[2][9] == -1640.0f, "matrix10f10[2][9] == -1640.0f");
+    UtAssert_True (matrix10f10[3][9] == -2190.0f, "matrix10f10[3][9] == -2190.0f");
+    UtAssert_True (matrix10f10[4][9] == -2740.0f, "matrix10f10[4][9] == -2740.0f");
+    UtAssert_True (matrix10f10[5][9] == -3290.0f, "matrix10f10[5][9] == -3290.0f");
+    UtAssert_True (matrix10f10[6][9] == -3840.0f, "matrix10f10[6][9] == -3840.0f");
+    UtAssert_True (matrix10f10[7][9] == -4390.0f, "matrix10f10[7][9] == -4390.0f");
+    UtAssert_True (matrix10f10[8][9] == -4940.0f, "matrix10f10[8][9] == -4940.0f");
+    UtAssert_True (matrix10f10[9][9] == -5490.0f, "matrix10f10[9][9] == -5490.0f");
 
 }
 
