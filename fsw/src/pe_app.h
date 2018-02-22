@@ -84,6 +84,8 @@ extern "C" {
  *************************************************************************/
 
 #define PE_BETA_TABLE_SIZE	(7)
+/** \brief PE params mutex name. */
+#define PE_PARAMS_MUTEX                "PE_PARAMS_MUTEX"
 
 /************************************************************************
  ** Local Structure Definitions
@@ -204,7 +206,7 @@ public:
     /** \brief Config Table Pointer */
     PE_ConfigTbl_t* ConfigTblPtr;
 
-    int32 ConfigMutex;
+    uint32 ConfigMutex;
 
     /** \brief Ingest Data */
     PX4_VehicleGpsPositionMsg_t m_VehicleGpsPositionMsg;
@@ -223,32 +225,28 @@ public:
     PX4_VehicleGlobalPositionMsg_t m_VehicleGlobalPositionMsg;
     PX4_Ekf2InnovationsMsg_t m_Ekf2InnovationsMsg;
 
-    bool m_ParamsUpdated;
-
-    // Sensor stats
+    /* sensor stats */
     Stats1F m_BaroStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
 
+    /* Validity */
     bool m_XyEstValid;
     bool m_ZEstValid;
     bool m_TzEstValid;
 
-    // map
+    /* map */
     struct map_projection_reference_s m_MapRef;
 
-	// low pass
+	/* low pass filter */
 	LowPassVector10F m_XLowPass;
 	LowPass m_AglLowPass;
 
-	// delay blocks
-	//BlockDelay<float, n_x, 1, HIST_LEN> m_XDelay;
-	//BlockDelay<uint64_t, 1, 1, HIST_LEN> m_TDelay;
-    delay::BlockDelay10F1LEN10 m_XDelay;
+	/* delay blocks */
+    delay::BlockDelay10F1LEN10   m_XDelay;
     delay::BlockDelayUINT64LEN10 m_TDelay;
 
-	// Time
-    pollfd m_Polls[3]; // don't think needed
+	/* Timestamps */
 	uint64 m_Timestamp;
     uint64 m_Timestamp_Hist;
 	uint64 m_TimestampLastBaro;
@@ -256,41 +254,40 @@ public:
 	uint64 m_TimeLastGps;
 	uint64 m_TimeLastLand;
 
+    /* Timeouts */
 	bool   m_BaroTimeout;
 	bool   m_GpsTimeout;
 	bool   m_LandTimeout;
 
+    /* Faults */
 	bool   m_BaroFault;
 	bool   m_GpsFault;
 	bool   m_LandFault;
 
-	// reference altitudes
+	/* Reference altitudes */
 	float m_AltOrigin;
-	bool  m_AltOriginInitialized;
 	float m_BaroAltOrigin;
 	float m_GpsAltOrigin;
 
-	// status
+	/* status */
 	bool m_ReceivedGps;
 	bool m_LastArmedState;
-
-	// masks
-	uint8 m_SensorTimeout;
-	uint8 m_SensorFault;
 	bool m_EstimatorInitialized;
+	bool m_AltOriginInitialized;
+    bool m_ParamsUpdated;
 
-	// state space
-	math::Vector10F  m_StateVec; // state vector
-	math::Vector3F  m_InputVec; // input vector
-	math::Matrix10F10  m_StateCov; // state covariance matrix
+	/* state space */
+	math::Vector10F     m_StateVec; // state vector
+	math::Vector3F      m_InputVec; // input vector
+	math::Matrix10F10   m_StateCov; // state covariance matrix
 
-	math::Matrix3F3 m_RotationMat;
-	math::Vector3F m_Euler;
+	math::Matrix3F3     m_RotationMat;
+	math::Vector3F      m_Euler;
 
-	math::Matrix10F10 m_DynamicsMat; // dynamics matrix
-	math::Matrix10F3 m_InputMat; // input matrix
-	math::Matrix3F3 m_InputCov; // input covariance
-	math::Matrix10F10 m_NoiseCov; // process noise covariance
+	math::Matrix10F10   m_DynamicsMat; // dynamics matrix
+	math::Matrix10F3    m_InputMat; // input matrix
+	math::Matrix3F3     m_InputCov; // input covariance
+	math::Matrix10F10   m_NoiseCov; // process noise covariance
 
 	PE_Params_t m_Params;
 
@@ -626,11 +623,6 @@ public:
 	void Predict(float dt);
 
 	math::Vector10F dynamics(const math::Vector10F &x, const math::Vector3F &u);
-
-
-
-
-
 
 };
 

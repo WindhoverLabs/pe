@@ -389,6 +389,17 @@ typedef enum {
 */
 	PE_LAND_TIMEOUT_ERR_EID,
 
+/** \brief PE - mutex creation failed (0x%08lX)
+**  \event PE - mutex creation failed (0x%08lX)
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when mutex creation failed.
+**
+*/
+	PE_MUTEX_ERR_EID,
 
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT

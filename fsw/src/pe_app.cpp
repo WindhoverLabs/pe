@@ -275,6 +275,8 @@ void PE::InitData()
 	LAND_RATE           = 10.0f;
 	LOW_PASS_CUTOFF     = 5.0f;
 
+    /* Params */
+    memset(&m_Params, 0, sizeof(m_Params));
 	UpdateLocalParams();
 
 	/* Timestamps */
@@ -283,28 +285,47 @@ void PE::InitData()
 	m_TimeLastGps           = 0;
 	m_TimeLastLand          = 0;
     m_Timestamp_Hist        = 0;
+    m_TimestampLastBaro     = 0;
 
-	/* Timeouts */
-	m_BaroTimeout           = true;
-	m_GpsTimeout            = true;
-	m_LandTimeout           = true;
+    /* Timeouts */
+    m_BaroTimeout           = true;
+    m_GpsTimeout            = true;
+    m_LandTimeout           = true;
 
-	/* Faults */
-	m_BaroFault             = false;
-	m_GpsFault              = false;
-	m_LandFault             = false;
+    /* Faults */
+    m_BaroFault             = false;
+    m_GpsFault              = false;
+    m_LandFault             = false;
+
+    /* Validity */
+    m_XyEstValid            = false;
+    m_ZEstValid             = false;
+    m_TzEstValid            = false;
 
 	/* Reference altitudes */
 	m_AltOrigin             = 0.0f;
-	m_AltOriginInitialized  = FALSE;
 	m_BaroAltOrigin         = 0.0f;
 	m_GpsAltOrigin          = 0.0f;
 
 	/* Status */
-	m_EstimatorInitialized  = 0;
+	m_EstimatorInitialized  = FALSE;
 	m_ReceivedGps           = FALSE;
 	m_LastArmedState        = FALSE;
+	m_AltOriginInitialized  = FALSE;
+    m_ParamsUpdated         = FALSE;
 
+    /* Matrix/Vector Zero */
+    m_StateCov.Zero();
+    m_RotationMat.Zero();
+    m_Euler.Zero();
+    m_DynamicsMat.Zero();
+    m_InputMat.Zero();
+    m_InputCov.Zero();
+    m_NoiseCov.Zero();
+    
+    /* Stats Zero */
+    m_BaroStats.reset();
+    m_GpsStats.reset();
     
 	/* State Space */
 	m_StateVec.Zero();
@@ -319,6 +340,7 @@ void PE::InitData()
     m_TDelay.Initialize();
 
 }
+
 
 void PE::initStateCov()
 {
@@ -340,6 +362,7 @@ void PE::initStateCov()
 	m_StateCov[X_bz][X_bz] = 1e-6;
 	m_StateCov[X_tz][X_tz] = 2 * EST_STDDEV_TZ_VALID * EST_STDDEV_TZ_VALID;
 }
+
 
 void PE::InitStateSpace()
 {
@@ -437,6 +460,14 @@ int32 PE::InitApp()
         hasEvents = 1;
     }
 
+    iStatus = OS_MutSemCreate(&ConfigMutex, PE_PARAMS_MUTEX, 0);
+    if (iStatus != CFE_SUCCESS)
+    {
+        (void) CFE_EVS_SendEvent(PE_MUTEX_ERR_EID, CFE_EVS_ERROR,
+                                 "PE - mutex creation failed (0x%08lX)", iStatus);
+        goto PE_InitApp_Exit_Tag;
+    }
+
     iStatus = InitPipe();
     if (iStatus != CFE_SUCCESS)
     {
@@ -483,7 +514,7 @@ PE_InitApp_Exit_Tag:
 int32 PE::RcvSchPipeMsg(int32 iBlocking)
 {
     int32           iStatus=CFE_SUCCESS;
-    uint64          baroTimestamp;
+    uint64          baroTimestamp = 0;
     CFE_SB_Msg_t*   MsgPtr=NULL;
     CFE_SB_MsgId_t  MsgId;
 
@@ -1048,12 +1079,14 @@ void PE::AppMain()
     CFE_ES_ExitApp(uiRunStatus);
 }
 
+
 void PE::CheckTimeouts()
 {
 	baroCheckTimeout();
 	gpsCheckTimeout();
 	landCheckTimeout();
 }
+
 
 void PE::Update()
 {
