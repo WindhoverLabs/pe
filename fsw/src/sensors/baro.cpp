@@ -45,7 +45,7 @@ int32 PE::baroMeasure(math::Vector1F &y)
 	y.Zero();
 	y[0] = m_SensorCombinedMsg.BaroAlt;
 	m_BaroStats.update(y);
-	m_TimeLastBaro = m_Timestamp;
+	//m_TimeLastBaro = m_Timestamp;
 	return CFE_SUCCESS;
 }
 
@@ -68,7 +68,7 @@ void PE::baroCorrect()
     math::Matrix1F10 C;
     C.Zero();
     /* measured altitude, negative down dir */
-    C[Y_baro_z][X_z] = -1;
+    C[Y_baro_z][X_z] = -1.0f;
 
     math::Matrix1F1 R;
     R.Zero();
@@ -124,8 +124,6 @@ void PE::baroCorrect()
     K.Zero();
     /* 10x10 * 10x1 * 1x1 */
     K = m_StateCov * C.Transpose() * S_I;
-
-    math::Matrix10F1 C_Test = C.Transpose();
 
     /* 10x1 * 1x1 */
     //dx = K * r;

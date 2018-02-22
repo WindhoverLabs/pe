@@ -483,6 +483,7 @@ PE_InitApp_Exit_Tag:
 int32 PE::RcvSchPipeMsg(int32 iBlocking)
 {
     int32           iStatus=CFE_SUCCESS;
+    uint64          baroTimestamp;
     CFE_SB_Msg_t*   MsgPtr=NULL;
     CFE_SB_MsgId_t  MsgId;
 
@@ -554,13 +555,29 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
 
             case PX4_SENSOR_COMBINED_MID:
                 memcpy(&m_SensorCombinedMsg, MsgPtr, sizeof(m_SensorCombinedMsg));
-                if(m_BaroTimeout)
+                /* If baro is valid */
+                if(m_SensorCombinedMsg.BaroTimestampRelative != PX4_RELATIVE_TIMESTAMP_INVALID)
                 {
-                	baroInit();
-                }
-                else
-                {
-                	baroCorrect();
+                    /* Get the baro timestamp from the sensor combined timestamp
+                     * (which is the gyro timestamp) plus the baro relative timestamp.
+                     * Baro relative is the difference between the gyro and baro 
+                     * when received by the sensors application. If baro is fresh.
+                     */
+                    if((m_SensorCombinedMsg.Timestamp + 
+                       m_SensorCombinedMsg.BaroTimestampRelative) 
+                       != m_TimeLastBaro)
+                    {
+                        if(m_BaroTimeout)
+                        {
+                            baroInit();
+                        }
+                        else
+                        {
+                            baroCorrect();
+                        }
+                        /* Save the last valid timestamp */
+                        m_TimeLastBaro = baroTimestamp;
+                    }
                 }
                 break;
 
