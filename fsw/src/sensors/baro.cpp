@@ -151,7 +151,7 @@ void PE::baroCheckTimeout()
 			m_BaroTimeout = true;
 			m_BaroStats.reset();
 			(void) CFE_EVS_SendEvent(PE_BARO_TIMEOUT_ERR_EID, CFE_EVS_ERROR,
-									 "Baro timeout");
+									 "Baro timeout: %u us", m_Timestamp - m_TimeLastBaro);
 		}
 	}
 }
