@@ -98,9 +98,9 @@ PE_ConfigTbl_t PE_ConfigTbl =
 	//FAKE_ORIGIN
     0,
 	//INIT_ORIGIN_LAT
-    29.562144f,
+    47.397742f,
 	//INIT_ORIGIN_LON
-    -95.144554
+    8.545594
 };
 
 /*

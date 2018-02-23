@@ -1070,6 +1070,274 @@ void Test_PE_Baro_Multiple_Matrix_Ops(void)
 }
 
 
+/**
+ * Test PE GPS Correct
+ */
+void Test_PE_GPS_Correct_Nominal(void)
+{
+    PE oPE;
+    /* Setup initial conditions */
+    oPE.InitApp();
+    oPE.gpsInit();
+
+    oPE.m_VehicleGpsPositionMsg.Lat  = 47.3977419000f / 1e-7;
+    oPE.m_VehicleGpsPositionMsg.Lon = 8.5455939000f / 1e-7;
+    oPE.m_VehicleGpsPositionMsg.Alt  = 488.269f / 1e-3;
+    oPE.m_GpsAltOrigin               = 488.269f;
+
+    oPE.m_StateCov[0][0] = 0.1167470515f;
+    oPE.m_StateCov[0][1] = -0.0f;
+    oPE.m_StateCov[0][2] = 0.0f;
+    oPE.m_StateCov[0][3] = 0.0003476023f;
+    oPE.m_StateCov[0][4] = -0.0f;
+    oPE.m_StateCov[0][5] = 0.0f;
+    oPE.m_StateCov[0][6] = -0.0000000021f;
+    oPE.m_StateCov[0][7] = 0.0000001432f;
+    oPE.m_StateCov[0][8] = 0.0000000031f;
+    oPE.m_StateCov[0][9] = 0.0f;
+    
+    oPE.m_StateCov[1][0] = -0.0f;
+    oPE.m_StateCov[1][1] = 0.1167470515f;
+    oPE.m_StateCov[1][2] = 0.0f;
+    oPE.m_StateCov[1][3] = 0.0f;
+    oPE.m_StateCov[1][4] = 0.0003476023f;
+    oPE.m_StateCov[1][5] = 0.0f;
+    oPE.m_StateCov[1][6] = -0.0000001432f;
+    oPE.m_StateCov[1][7] = -0.0000000022f;
+    oPE.m_StateCov[1][8] = 0.0000000046f;
+    oPE.m_StateCov[1][9] = 0.0f;
+    
+    oPE.m_StateCov[2][0] = 0.0f;
+    oPE.m_StateCov[2][1] = 0.0f;
+    oPE.m_StateCov[2][2] = 0.1048574075f;
+    oPE.m_StateCov[2][3] = -0.0000000002f;
+    oPE.m_StateCov[2][4] = -0.0000000001f;
+    oPE.m_StateCov[2][5] = 0.0012594004f;
+    oPE.m_StateCov[2][6] = -0.0000000160f;
+    oPE.m_StateCov[2][7] = 0.0000000106f;
+    oPE.m_StateCov[2][8] = -0.0000004967;
+    oPE.m_StateCov[2][9] = 0.1031243429f;
+    
+    oPE.m_StateCov[3][0] = 0.0003476023f;
+    oPE.m_StateCov[3][1] = 0.0f;
+    oPE.m_StateCov[3][2] = -0.0000000002f;
+    oPE.m_StateCov[3][3] = 0.0022479671f;
+    oPE.m_StateCov[3][4] = -0.0f;
+    oPE.m_StateCov[3][5] = -0.0000000013f;
+    oPE.m_StateCov[3][6] = -0.0000000164f;
+    oPE.m_StateCov[3][7] = 0.0000010801f;
+    oPE.m_StateCov[3][8] = 0.0000000254f;
+    oPE.m_StateCov[3][9] = 0.0f;
+
+    oPE.m_StateCov[4][0] = -0.0f;
+    oPE.m_StateCov[4][1] = 0.0003476023f;
+    oPE.m_StateCov[4][2] = -0.0000000001f;
+    oPE.m_StateCov[4][3] = -0.0f;
+    oPE.m_StateCov[4][4] = 0.0022479671f;
+    oPE.m_StateCov[4][5] = -0.0000000006f;
+    oPE.m_StateCov[4][6] = -0.0000010798f;
+    oPE.m_StateCov[4][7] = -0.0000000172f;
+    oPE.m_StateCov[4][8] = 0.0000000354f;
+    oPE.m_StateCov[4][9] = 0.0f;
+
+    oPE.m_StateCov[5][0] = 0.0f;
+    oPE.m_StateCov[5][1] = 0.0f;
+    oPE.m_StateCov[5][2] = 0.0012594004f;
+    oPE.m_StateCov[5][3] = -0.0000000013f;
+    oPE.m_StateCov[5][4] = -0.0000000006f;
+    oPE.m_StateCov[5][5] = 0.0090089059f;
+    oPE.m_StateCov[5][6] = -0.0000001187f;
+    oPE.m_StateCov[5][7] = 0.0000000787f;
+    oPE.m_StateCov[5][8] = -0.0000036752f;
+    oPE.m_StateCov[5][9] = -0.0000229046f;
+
+    oPE.m_StateCov[6][0] = -0.0000000021f;
+    oPE.m_StateCov[6][1] = -0.0000001432f;
+    oPE.m_StateCov[6][2] = -0.0000000160f;
+    oPE.m_StateCov[6][3] = -0.0000000164f;
+    oPE.m_StateCov[6][4] = -0.0000010798f;
+    oPE.m_StateCov[6][5] = -0.0000001187f;
+    oPE.m_StateCov[6][6] = 0.0000050506f;
+    oPE.m_StateCov[6][7] = -0.0f;
+    oPE.m_StateCov[6][8] = 0.0f;
+    oPE.m_StateCov[6][9] = 0.0000000004f;
+
+    oPE.m_StateCov[7][0] = 0.0000001432f;
+    oPE.m_StateCov[7][1] = -0.0000000022f;
+    oPE.m_StateCov[7][2] = 0.0000000106f;
+    oPE.m_StateCov[7][3] = 0.0000010801f;
+    oPE.m_StateCov[7][4] = -0.0000000172f;
+    oPE.m_StateCov[7][5] = 0.0000000787f;
+    oPE.m_StateCov[7][6] = -0.0f;
+    oPE.m_StateCov[7][7] = 0.0000050506f;
+    oPE.m_StateCov[7][8] = -0.0f;
+    oPE.m_StateCov[7][9] = -0.0000000002f;
+
+    oPE.m_StateCov[8][0] = 0.0000000031f;
+    oPE.m_StateCov[8][1] = 0.0000000046f;
+    oPE.m_StateCov[8][2] = -0.0000004967f;
+    oPE.m_StateCov[8][3] = 0.0000000254f;
+    oPE.m_StateCov[8][4] = 0.0000000354f;
+    oPE.m_StateCov[8][5] = -0.0000036752f;
+    oPE.m_StateCov[8][6] = 0.0f;
+    oPE.m_StateCov[8][7] = -0.0f;
+    oPE.m_StateCov[8][8] = 0.0000050522f;
+    oPE.m_StateCov[8][9] = 0.0000000129f;
+
+    oPE.m_StateCov[9][0] = 0.0f;
+    oPE.m_StateCov[9][1] = 0.0f;
+    oPE.m_StateCov[9][2] = 0.1031243429f;
+    oPE.m_StateCov[9][3] = 0.0f;
+    oPE.m_StateCov[9][4] = 0.0f;
+    oPE.m_StateCov[9][5] = -0.0000229046f;
+    oPE.m_StateCov[9][6] = 0.0000000004f;
+    oPE.m_StateCov[9][7] = -0.0000000002f;
+    oPE.m_StateCov[9][8] = 0.0000000129f;
+    oPE.m_StateCov[9][9] = 0.1032095775f;
+
+    oPE.m_StateVec[0] = -0.0012873627f;
+    oPE.m_StateVec[1] = 0.0056172162f;
+    oPE.m_StateVec[2] = -0.0272677485f;
+    oPE.m_StateVec[3] = -0.0115405656f;
+    oPE.m_StateVec[4] = 0.0234553255f;
+    oPE.m_StateVec[5] = -0.1457849443f;
+    oPE.m_StateVec[6] = 0.0000791429f;
+    oPE.m_StateVec[7] = 0.0001489287f;
+    oPE.m_StateVec[8] = -0.0001150155f;
+    oPE.m_StateVec[9] = -0.0078740399f;
+
+    oPE.gpsCorrect();
+    
+    /* Execute the function being tested */
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][0], 0.1045405716f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][1], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][2], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][3], 0.0003004571f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][4], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][5], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][6], -0.0000000018f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][7], 0.0000001230f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][8], 0.0000000026f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[0][9], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][0], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][1], 0.1045405716f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][2], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][3], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][4], 0.0003004571f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][5], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][6], -0.0000001230f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][7], -0.0000000019f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][8], 0.0000000039f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[1][9], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][0], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][1], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    printf("oPE.m_StateCov[2][2] %0.10f\n", oPE.m_StateCov[2][2]);
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][2], 0.1036281288f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][3], -0.0000000002f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][4], -0.0000000001f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][5], 0.0010880632f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][6], -0.0000000138f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][7], 0.0000000091f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][8], -0.0000004270f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    printf("oPE.m_StateCov[2][9] %0.10f\n", oPE.m_StateCov[2][9]);
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[2][9], 0.1019373462f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][0], 0.0003004571f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][1], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][2], -0.0000000002f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][3], 0.0021698198f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][4], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][5], -0.0000000011f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][6], -0.0000000158f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][7], 0.0000010426f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][8], 0.0000000246f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[3][9], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][0], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][1], 0.0003004571f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][2], -0.0000000001f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][3], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][4], 0.0021698198f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][5], -0.0000000005f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][6], -0.0000010423f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][7], -0.0000000166f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][8], 0.0000000341f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[4][9], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][0], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][1], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][2], 0.0010880632f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][3], -0.0000000011f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][4], -0.0000000005f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][5], 0.0078738034f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][6], -0.0000001038f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][7], 0.0000000688f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][8], -0.0000032122f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[5][9], -0.0000324864f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][0], -0.0000000018f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][1], -0.0000001230f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][2], -0.0000000138f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][3], -0.0000000158f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][4], -0.0000010423f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][5], -0.0000001038f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][6], 0.0000050506f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][7], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][8], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[6][9], 0.0000000005f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][0], 0.0000001230f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][1], -0.0000000019f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][2], 0.0000000091f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][3], 0.0000010426f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][4], -0.0000000166f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][5], 0.0000000688f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][6], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][7], 0.0000050506f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][8], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[7][9], -0.0000000002f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][0], 0.0000000026f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][1], 0.0000000039f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][2], -0.0000004270f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][3], 0.0000000246f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][4], 0.0000000341f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][5], -0.0000032122f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][6], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][7], -0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][8], 0.0000050520f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[8][9], 0.0000000166f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][0], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][1], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+            printf("oPE.m_StateCov[9][2] %.10f\n", oPE.m_StateCov[9][2]);
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][2], 0.1019373462f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][3], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][4], 0.0f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][5], -0.0000324864f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][6], 0.0000000005f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][7], -0.0000000002f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][8], 0.0000000166f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+        printf("oPE.m_StateCov[9][9] %.10f\n", oPE.m_StateCov[9][9]);
+    UtAssert_DoubleCmpAbs(oPE.m_StateCov[9][9], 0.1020415425f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[0], -0.0007268604f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[1], 0.0050545540f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[2], -0.0248246994f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[3], -0.0109766051f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[4], 0.0226728693f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[5], -0.1300093085f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[6], 0.0000793067f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[7], 0.0001493434f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[8], -0.0001214572f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+    UtAssert_DoubleCmpAbs(oPE.m_StateVec[9], -0.0076799835f, 0.00001f, "Test_PE_GPS_Correct_Nominal");
+
+}
+
+
 /**************************************************************************
  * Rollup Test Cases
  **************************************************************************/
@@ -1123,6 +1391,8 @@ void PE_App_Test_AddTestCases(void)
                "Test_PE_Baro_Correct_Nominal");
     UtTest_Add(Test_PE_Baro_Multiple_Matrix_Ops, PE_Test_Setup, PE_Test_TearDown,
                "Test_PE_Baro_Multiple_Matrix_Ops");
+    UtTest_Add(Test_PE_GPS_Correct_Nominal, PE_Test_Setup, PE_Test_TearDown,
+               "Test_PE_GPS_Correct_Nominal");
 //    UtTest_Add(, PE_Test_Setup, PE_Test_TearDown,
 //               "");
 //    UtTest_Add(, PE_Test_Setup, PE_Test_TearDown,

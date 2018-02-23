@@ -242,17 +242,19 @@ PE_InitPipe_Exit_Tag:
 void PE::InitData()
 {
     /* Init housekeeping message. */
-    CFE_SB_InitMsg(&HkTlm,
-    		PE_HK_TLM_MID, sizeof(HkTlm), TRUE);
-
+    CFE_SB_InitMsg(&HkTlm, PE_HK_TLM_MID, sizeof(HkTlm), TRUE);
     /* Init output messages */
+    /* Vehicle local position message*/
 	CFE_SB_InitMsg(&m_VehicleLocalPositionMsg,
 			PX4_VEHICLE_LOCAL_POSITION_MID, sizeof(PX4_VehicleLocalPositionMsg_t), TRUE);
-	CFE_SB_InitMsg(&m_EstimatorStatusMsg,
+    /* Estimator status message */
+    CFE_SB_InitMsg(&m_EstimatorStatusMsg,
 			PX4_ESTIMATOR_STATUS_MID, sizeof(PX4_EstimatorStatusMsg_t), TRUE);
-	CFE_SB_InitMsg(&m_VehicleGlobalPositionMsg,
+    /* Vehicle global position message */
+    CFE_SB_InitMsg(&m_VehicleGlobalPositionMsg,
 			PX4_VEHICLE_GLOBAL_POSITION_MID, sizeof(PX4_VehicleGlobalPositionMsg_t), TRUE);
-	CFE_SB_InitMsg(&m_Ekf2InnovationsMsg,
+    /* EKF2 innovations message  */
+    CFE_SB_InitMsg(&m_Ekf2InnovationsMsg,
 			PX4_EKF2_INNOVATIONS_MID, sizeof(PX4_Ekf2InnovationsMsg_t), TRUE);
 
 	/* Set constants */
@@ -315,13 +317,8 @@ void PE::InitData()
     m_ParamsUpdated         = FALSE;
 
     /* Matrix/Vector Zero */
-    m_StateCov.Zero();
     m_RotationMat.Zero();
     m_Euler.Zero();
-    m_DynamicsMat.Zero();
-    m_InputMat.Zero();
-    m_InputCov.Zero();
-    m_NoiseCov.Zero();
     
     /* Stats Zero */
     m_BaroStats.reset();
