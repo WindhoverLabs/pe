@@ -80,12 +80,12 @@ void PE::gpsInit()
                 m_AltOriginInitialized = true;
 
                 (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
-                        "GPS init origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+                        "GPS initialized origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
                         gpsLatOrigin, gpsLonOrigin, double(m_GpsAltOrigin));
             }
 
             (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
-                    "GPS init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+                    "GPS initialized. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
                     gpsLat, gpsLon, double(gpsAlt));
         }
     }
@@ -286,6 +286,8 @@ void PE::gpsCorrect()
     	m_GpsFault = false;
         (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
                 "GPS OK");
+
+        m_GpsInitialized = true;
     }
 
     /* kalman filter correction always for GPS */

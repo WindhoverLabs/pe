@@ -99,6 +99,7 @@ void PE::landCorrect()
 		m_LandFault = false;
 		(void) CFE_EVS_SendEvent(PE_LAND_OK_INF_EID, CFE_EVS_ERROR,
 								 "Land detector OK");
+		m_LandInitialized = true;
 	}
 
 	// kalman filter correction always for land detector

@@ -1217,8 +1217,11 @@ void PE::Update()
 		{
 			if (!isfinite(m_StateCov[i][j]))
 			{
-				(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
-										 "Reinit state covariance. Index (%i, %i) not finite", i, j);
+				if(Initialized())
+				{
+					(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
+										 "Reinitializing state covariance. Index (%i, %i) not finite", i, j);
+				}
 				ReinitStateCov = true;
 				break;
 			}
@@ -1227,8 +1230,11 @@ void PE::Update()
 				/* Ensure diagonal elements are positive */
 				if (m_StateCov[i][i] <= 0)
 				{
-					(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
-											 "Reinit state covariance. Index (%i, %i) negative", i, j);
+					if(Initialized())
+					{
+						(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
+												 "Reinitializing state covariance. Index (%i, %i) negative", i, j);
+					}
 					ReinitStateCov = true;
 					break;
 				}
@@ -1243,8 +1249,8 @@ void PE::Update()
 
 	if (ReinitStateCov)
 	{
-		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
-								 "State covariance matrix reinitialized");
+//		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+//								 "State covariance matrix reinitialized");
 		//m_StateCov.Print();
 		initStateCov();
 	}
@@ -1287,7 +1293,11 @@ void PE::Update()
         m_XDelay.Update(m_StateVec);
         m_Timestamp_Hist = m_Timestamp;
     }
+}
 
+bool PE::Initialized(void)
+{
+	return m_EstimatorInitialized && m_BaroInitialized && m_GpsInitialized && m_LandInitialized;
 }
 
 
@@ -1461,8 +1471,11 @@ int PE::getDelayPeriods(float delay, uint8 *periods)
 
     if(t_delay > DELAY_MAX)
     {
-        (void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
-                "LPE delayed data old: %8.4f", t_delay);
+    	if(Initialized())
+		{
+			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
+					"LPE delayed data old: %8.4f", t_delay);
+		}
         return -1;
     }
     

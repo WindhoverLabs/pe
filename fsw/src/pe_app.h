@@ -273,6 +273,9 @@ public:
 	bool m_ReceivedGps;
 	bool m_LastArmedState;
 	bool m_EstimatorInitialized;
+	bool m_BaroInitialized;
+	bool m_GpsInitialized;
+	bool m_LandInitialized;
 	bool m_AltOriginInitialized;
     bool m_ParamsUpdated;
 
@@ -623,6 +626,8 @@ public:
 	void Predict(float dt);
 
 	math::Vector10F dynamics(const math::Vector10F &x, const math::Vector3F &u);
+
+	bool Initialized(void);
 
 };
 
