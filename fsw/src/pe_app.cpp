@@ -283,7 +283,7 @@ void PE::InitData()
 
 	/* Timestamps */
 	m_Timestamp             = PX4LIB_GetPX4TimeUs();
-	m_TimeLastBaro          = PX4LIB_GetPX4TimeUs();
+	m_TimeLastBaro          = 0;
 	m_TimeLastGps           = 0;
 	m_TimeLastLand          = 0;
     m_Timestamp_Hist        = 0;

@@ -146,14 +146,25 @@ void PE::baroCorrect()
 
 void PE::baroCheckTimeout()
 {
-	if (m_Timestamp - m_TimeLastBaro > BARO_TIMEOUT)
+    uint64 Timestamp = 0;
+
+	if (m_Timestamp > m_TimeLastBaro)
+	{
+        Timestamp = m_Timestamp - m_TimeLastBaro;
+    }
+	else if (m_Timestamp < m_TimeLastBaro)
+	{
+        Timestamp = m_TimeLastBaro - m_Timestamp;
+    }
+
+	if (Timestamp > BARO_TIMEOUT)
 	{
 		if (!m_BaroTimeout)
 		{
 			m_BaroTimeout = true;
 			m_BaroStats.reset();
 			(void) CFE_EVS_SendEvent(PE_BARO_TIMEOUT_ERR_EID, CFE_EVS_ERROR,
-									 "Baro timeout: %u us", m_Timestamp - m_TimeLastBaro);
+									 "Baro timeout: %llu us", Timestamp);
 		}
 	}
 }
