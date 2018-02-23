@@ -63,7 +63,6 @@ void PE::landCorrect()
 	R[Y_land_agl][Y_land_agl] = m_Params.LAND_Z_STDDEV * m_Params.LAND_Z_STDDEV;
 
 	// residual
-	//math::Matrix3F3 S_I = inv<float, n_y_land>((C * m_StateCov * C.Transpose()) + R);
 	math::Matrix3F3 S_I;
 	S_I.Zero();
 	S_I = (C * (m_StateCov * C.Transpose())) + R;
@@ -77,7 +76,7 @@ void PE::landCorrect()
 	m_Ekf2InnovationsMsg.HaglInnovVar = R[Y_land_agl][Y_land_agl];
 
 	// fault detection
-	float beta = (r.Transpose() * (S_I * r)); // TODO: Removed [0][0] index here. This should be a dot product right?
+	float beta = (r.Transpose() * (S_I * r));
 
 	// artifically increase beta threshhold to prevent fault during landing
 	float beta_thresh = 1e2f;

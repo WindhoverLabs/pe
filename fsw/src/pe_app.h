@@ -453,6 +453,7 @@ public:
      **
      *************************************************************************/
     void ReportHousekeeping(void);
+
     /************************************************************************/
     /** \brief Sends the VehicleLocalPositionMsg message.
      **
@@ -464,21 +465,8 @@ public:
      **       None
      **
      *************************************************************************/
-    void UpdateVehicleLocalPositionMsg(void);
-
     void SendVehicleLocalPositionMsg(void);
-    /************************************************************************/
-    /** \brief Sends the EstimatorStatusMsg message.
-     **
-     **  \par Description
-     **       This function publishes the EstimatorStatusMsg message containing
-     **       <TODO>
-     **
-     **  \par Assumptions, External Events, and Notes:
-     **       None
-     **
-     *************************************************************************/
-    void SendEstimatorStatusMsg(void);
+
     /************************************************************************/
     /** \brief Sends the VehicleGlobalPositionMsg message.
      **
@@ -490,21 +478,8 @@ public:
      **       None
      **
      *************************************************************************/
-    void UpdateVehicleGlobalPositionMsg(void);
-
     void SendVehicleGlobalPositionMsg(void);
-    /************************************************************************/
-    /** \brief Sends the Ekf2InnovationsMsg message.
-     **
-     **  \par Description
-     **       This function publishes the Ekf2InnovationsMsg message containing
-     **       <TODO>
-     **
-     **  \par Assumptions, External Events, and Notes:
-     **       None
-     **
-     *************************************************************************/
-    void SendEkf2InnovationsMsg(void);
+
     /************************************************************************/
     /** \brief Verify Command Length
      **

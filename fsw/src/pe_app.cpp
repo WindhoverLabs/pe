@@ -309,6 +309,9 @@ void PE::InitData()
 
 	/* Status */
 	m_EstimatorInitialized  = FALSE;
+	m_BaroInitialized 		= FALSE;
+	m_GpsInitialized  		= FALSE;
+	m_LandInitialized  		= FALSE;
 	m_ReceivedGps           = FALSE;
 	m_LastArmedState        = FALSE;
 	m_AltOriginInitialized  = FALSE;
@@ -775,7 +778,7 @@ void PE::ReportHousekeeping()
 /* Publish Output Data                                             */
 /*                                                                 */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-void PE::UpdateVehicleLocalPositionMsg()
+void PE::SendVehicleLocalPositionMsg()
 {
 	float alt 			 = 0;
 	float vxy_stddev     = 0;
@@ -838,52 +841,18 @@ void PE::UpdateVehicleLocalPositionMsg()
 		m_VehicleLocalPositionMsg.DistBottomValid = m_ZEstValid;
 		m_VehicleLocalPositionMsg.EpH = eph;
 		m_VehicleLocalPositionMsg.EpV = epv;
+
+		CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
+		CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
 	}
 	else
 	{
-		OS_printf("VehicleLocalPositionMsg data invalid\n"); //TODO Remove
+		(void) CFE_EVS_SendEvent(PE_LOCAL_POS_MSG_ERR_EID, CFE_EVS_ERROR,
+								 "Local position message data invalid");
 	}
 }
 
-void PE::SendVehicleLocalPositionMsg()
-{
-//	OS_printf("\nSending Local Pos Msg:\n");
-//	OS_printf("Timestamp : %u\n", m_VehicleLocalPositionMsg.Timestamp);
-//	OS_printf("XY_Valid : %u\n", m_VehicleLocalPositionMsg.XY_Valid);
-//	OS_printf("Z_Valid : %u\n", m_VehicleLocalPositionMsg.Z_Valid);
-//	OS_printf("V_XY_Valid : %u\n", m_VehicleLocalPositionMsg.V_XY_Valid);
-//	OS_printf("V_Z_Valid : %u\n", m_VehicleLocalPositionMsg.V_Z_Valid);
-//	OS_printf("X : %f\n", m_VehicleLocalPositionMsg.X);
-//	OS_printf("Y : %f\n", m_VehicleLocalPositionMsg.Y);
-//	OS_printf("Z : %f\n", m_VehicleLocalPositionMsg.Z);
-//	OS_printf("VX : %f\n", m_VehicleLocalPositionMsg.VX);
-//	OS_printf("VY : %f\n", m_VehicleLocalPositionMsg.VY);
-//	OS_printf("VZ : %f\n", m_VehicleLocalPositionMsg.VZ);
-//	OS_printf("Yaw : %f\n", m_VehicleLocalPositionMsg.Yaw);
-//	OS_printf("XY_Global : %u\n", m_VehicleLocalPositionMsg.XY_Global);
-//	OS_printf("Z_Global : %u\n", m_VehicleLocalPositionMsg.Z_Global);
-//	OS_printf("RefTimestamp : %u\n", m_VehicleLocalPositionMsg.RefTimestamp);
-//	OS_printf("RefLat : %f\n", m_VehicleLocalPositionMsg.RefLat);
-//	OS_printf("RefLon : %f\n", m_VehicleLocalPositionMsg.RefLon);
-//	OS_printf("RefAlt : %f\n", m_VehicleLocalPositionMsg.RefAlt);
-//	//m_VehicleLocalPositionMsg.DistBottom = ; //TODO agl low pass
-//	OS_printf("DistBottomRate : %f\n", m_VehicleLocalPositionMsg.DistBottomRate);
-//	OS_printf("SurfaceBottomTimestamp : %u\n", m_VehicleLocalPositionMsg.SurfaceBottomTimestamp);
-//	OS_printf("DistBottomValid : %u\n", m_VehicleLocalPositionMsg.DistBottomValid);
-//	OS_printf("EpH : %f\n", m_VehicleLocalPositionMsg.EpH);
-//	OS_printf("EpV : %f\n", m_VehicleLocalPositionMsg.EpV);
-
-
-    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
-    CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleLocalPositionMsg);
-}
-void PE::SendEstimatorStatusMsg()
-{
-    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_EstimatorStatusMsg);
-    CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_EstimatorStatusMsg);
-}
-
-void PE::UpdateVehicleGlobalPositionMsg()
+void PE::SendVehicleGlobalPositionMsg()
 {
 	double lat			 = 0;
 	double lon 		  	 = 0;
@@ -942,41 +911,16 @@ void PE::UpdateVehicleGlobalPositionMsg()
 		m_VehicleGlobalPositionMsg.TerrainAltValid = m_TzEstValid;
 		m_VehicleGlobalPositionMsg.DeadReckoning = !m_XyEstValid;
 		m_VehicleGlobalPositionMsg.PressureAlt = m_SensorCombinedMsg.BaroAlt;
+
+		CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
+		CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
 	}
 	else
 	{
-		OS_printf("VehicleGlobalPositionMsg data invalid\n"); //TODO Remove
+		(void) CFE_EVS_SendEvent(PE_GLOBAL_POS_MSG_ERR_EID, CFE_EVS_ERROR,
+								 "Global position message data invalid");
 	}
 }
-
-void PE::SendVehicleGlobalPositionMsg()
-{
-//	OS_printf("\nGlobal Pos Msg:\n");
-//	OS_printf("Timestamp : %u\n", m_VehicleGlobalPositionMsg.Timestamp);
-//	OS_printf("TimeUtcUsec : %u\n", m_VehicleGlobalPositionMsg.TimeUtcUsec);
-//	OS_printf("Lat : %f\n", m_VehicleGlobalPositionMsg.Lat);
-//	OS_printf("Lon : %f\n", m_VehicleGlobalPositionMsg.Lon);
-//	OS_printf("Alt : %f\n", m_VehicleGlobalPositionMsg.Alt);
-//	OS_printf("VelN : %f\n", m_VehicleGlobalPositionMsg.VelN);
-//	OS_printf("VelE : %f\n", m_VehicleGlobalPositionMsg.VelE);
-//	OS_printf("VelD : %f\n", m_VehicleGlobalPositionMsg.VelD);
-//	OS_printf("Yaw : %f\n", m_VehicleGlobalPositionMsg.Yaw);
-//	OS_printf("EpH : %f\n", m_VehicleGlobalPositionMsg.EpH);
-//	OS_printf("EpV : %f\n", m_VehicleGlobalPositionMsg.EpV);
-//	OS_printf("TerrainAlt : %f\n", m_VehicleGlobalPositionMsg.TerrainAlt);
-//	OS_printf("PressureAlt : %f\n", m_VehicleGlobalPositionMsg.PressureAlt);
-//	OS_printf("TerrainAltValid : %u\n", m_VehicleGlobalPositionMsg.TerrainAltValid);
-//	OS_printf("DeadReckoning : %u\n", m_VehicleGlobalPositionMsg.DeadReckoning);
-
-    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
-    CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_VehicleGlobalPositionMsg);
-}
-//void PE::SendEkf2InnovationsMsg()
-//{
-//    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&Ekf2InnovationsMsg);
-//    CFE_SB_SendMsg((CFE_SB_Msg_t*)&Ekf2InnovationsMsg);
-//}
-
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*                                                                 */
@@ -1198,7 +1142,7 @@ void PE::Update()
 		{
 			ReinitStateVec = true;
 			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
-									 "Reinit state vector. Index (%i) not finite", i);
+									 "Reinitializing state vector. Index (%i) not finite", i);
 			break;
 		}
 	}
@@ -1249,9 +1193,6 @@ void PE::Update()
 
 	if (ReinitStateCov)
 	{
-//		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
-//								 "State covariance matrix reinitialized");
-		//m_StateCov.Print();
 		initStateCov();
 	}
 
@@ -1267,13 +1208,10 @@ void PE::Update()
 									 "Estimator initialized");
 		}
 
-		UpdateVehicleLocalPositionMsg();
 		SendVehicleLocalPositionMsg();
-		//SendEstimatorStatusMsg(); //TODO: Is this needed?
 
 		if(m_XyEstValid && (m_MapRef.init_done || m_Params.FAKE_ORIGIN))
 		{
-			UpdateVehicleGlobalPositionMsg();
 			SendVehicleGlobalPositionMsg();
 		}
 		else
@@ -1381,9 +1319,6 @@ void PE::Predict(float dt)
             m_DynamicsMat.Transpose() + m_InputMat * m_InputCov * 
             m_InputMat.Transpose() + m_NoiseCov) * dt;
 
-//	OS_printf("PRE\n");
-//	m_StateCov.Print();
-
 	/* Covariance propagation logic */
 	for (int i = 0; i < n_x; i++) 
     {
@@ -1402,13 +1337,7 @@ void PE::Predict(float dt)
 
 	/* Update state */
 	m_StateCov += dP;
-
-//	OS_printf("m_StateCov\n");
-//	m_StateCov.Print();
 	m_XLowPass.Update(m_StateVec, dt, LOW_PASS_CUTOFF);
-//	_xLowPass.update(_x);
-//	_aglLowPass.update(agl());
-
 }
 
 
@@ -1474,7 +1403,7 @@ int PE::getDelayPeriods(float delay, uint8 *periods)
     	if(Initialized())
 		{
 			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_INFORMATION,
-					"LPE delayed data old: %8.4f", t_delay);
+					"Delayed data old: %8.4f", t_delay);
 		}
         return -1;
     }
