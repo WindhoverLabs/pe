@@ -113,6 +113,8 @@ void PE::baroCorrect()
     	m_BaroFault = false;
         (void) CFE_EVS_SendEvent(PE_BARO_OK_INF_EID, CFE_EVS_INFORMATION,
                 "Baro OK");
+
+        m_BaroInitialized = true;
     }
 
 // kalman filter correction always

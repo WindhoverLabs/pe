@@ -80,12 +80,12 @@ void PE::gpsInit()
                 m_AltOriginInitialized = true;
 
                 (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
-                        "GPS init origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+                        "GPS initialized origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
                         gpsLatOrigin, gpsLonOrigin, double(m_GpsAltOrigin));
             }
 
             (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
-                    "GPS init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
+                    "GPS initialized. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
                     gpsLat, gpsLon, double(gpsAlt));
         }
     }
@@ -274,7 +274,7 @@ void PE::gpsCorrect()
         if (!m_GpsFault)
         {
             (void) CFE_EVS_SendEvent(PE_GPS_FAULT_ERR_EID, CFE_EVS_ERROR,
-                    "gps fault, %3g %3g %3g %3g %3g %3g", 
+                    "GPS fault, %3g %3g %3g %3g %3g %3g",
                     double(r[0]*r[0] / S_I[0][0]),  double(r[1]*r[1] / S_I[1][1]), double(r[2]*r[2] / S_I[2][2]),
                     double(r[3]*r[3] / S_I[3][3]),  double(r[4]*r[4] / S_I[4][4]), double(r[5]*r[5] / S_I[5][5]));
             /* TODO move to single fault bool */
@@ -286,6 +286,8 @@ void PE::gpsCorrect()
     	m_GpsFault = false;
         (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
                 "GPS OK");
+
+        m_GpsInitialized = true;
     }
 
     /* kalman filter correction always for GPS */

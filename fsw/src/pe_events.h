@@ -374,7 +374,6 @@ typedef enum {
 **  This event message is issued when land detector has (re)initialized successfully.
 **
 */
-
 	PE_LAND_OK_INF_EID,
 
 /** \brief Land detector timeout
@@ -400,6 +399,30 @@ typedef enum {
 **
 */
 	PE_MUTEX_ERR_EID,
+
+/** \brief Local position message data invalid
+**  \event Local position message data invalid
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the local position message data fails validity checks.
+**
+*/
+	PE_LOCAL_POS_MSG_ERR_EID,
+
+/** \brief Global position message data invalid
+**  \event Global position message data invalid
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the global position message data fails validity checks.
+**
+*/
+	PE_GLOBAL_POS_MSG_ERR_EID,
 
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT
