@@ -110,8 +110,8 @@ void PE::landCorrect()
 	dx.Zero();
 	dx = K * r;
 
-	m_StateVec += dx;
-	m_StateCov -= K * C * m_StateCov;
+	m_StateVec = m_StateVec + dx;
+	m_StateCov = m_StateCov - K * C * m_StateCov;
 }
 
 void PE::landCheckTimeout()
