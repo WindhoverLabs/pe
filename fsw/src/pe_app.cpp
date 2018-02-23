@@ -604,7 +604,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                             baroCorrect();
                         }
                         /* Save the last valid timestamp */
-                        m_TimeLastBaro = m_SensorCombinedMsg.Timestamp;
+                        m_TimeLastBaro = m_SensorCombinedMsg.Timestamp + m_SensorCombinedMsg.BaroTimestampRelative;
                     }
                 }
                 break;

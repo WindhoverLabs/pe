@@ -40,6 +40,14 @@ extern "C" {
 
 #include "cfe.h"
 
+typedef struct
+{
+    float x;
+    float y;
+} Geo_Project_Returns_t;
+
+
+extern Geo_Project_Returns_t Geo_Project_Returns;
 
 #ifdef __cplusplus
 }

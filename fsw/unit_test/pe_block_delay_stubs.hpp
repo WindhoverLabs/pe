@@ -12,8 +12,8 @@
 *    notice, this list of conditions and the following disclaimer in
 *    the documentation and/or other materials provided with the
 *    distribution.
-* 3. Neither the name Windhover Labs nor the names of its 
-*    contributors may be used to endorse or promote products derived 
+* 3. Neither the name Windhover Labs nor the names of its
+*    contributors may be used to endorse or promote products derived
 *    from this software without specific prior written permission.
 *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -31,48 +31,24 @@
 *
 *****************************************************************************/
 
-#include "pe_stubs.h"
-#include <stdbool.h>
+#ifndef PE_BLOCK_DELAY_STUBS_H
+#define PE_BLOCK_DELAY_STUBS_H
 
+#include "cfe.h"
+#include <math/Matrix10F1.hpp>
 
-Geo_Project_Returns_t Geo_Project_Returns = { 0,
-                                              0};
-
-
-uint64 PX4LIB_GetPX4TimeUs(void)
+namespace delay
 {
-    return 0;
+
+typedef struct
+{
+    math::Matrix10F1 matrixReturn;
+    uint64 arrayReturn;
+} Block_Delay_Returns_t;
+
+
+extern Block_Delay_Returns_t Block_Delay_Returns;
+
 }
 
-
-struct map_projection_reference_s {
-	double lat_rad;
-	double lon_rad;
-	double sin_lat;
-	double cos_lat;
-	bool init_done;
-	uint64 timestamp;
-};
-
-
-int map_projection_project(const struct map_projection_reference_s *ref, double lat, double lon, float *x,
-				    float *y)
-{
-    *x = Geo_Project_Returns.x;
-    *y = Geo_Project_Returns.y;
-
-    return -1;
-}
-
-
-int map_projection_init(struct map_projection_reference_s *ref, double lat_0, double lon_0, double time)
-{
-    return -1;
-}
-
-
-int map_projection_reproject(const struct map_projection_reference_s *ref, float x, float y, double *lat,
-				      double *lon)
-{
-    return -1;
-}
+#endif

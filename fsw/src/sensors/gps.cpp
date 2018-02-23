@@ -122,11 +122,6 @@ void PE::gpsCorrect()
         return; 
     }
 
-    for(int i = 0; i<6; i++)
-    {
-        printf("y_global %.10f\n", (double)y_global[i]);
-    }
-
     /* gps measurement in local frame */
     double  lat = y_global[0];
     double  lon = y_global[1];
@@ -134,12 +129,7 @@ void PE::gpsCorrect()
     float px = 0;
     float py = 0;
 
-    printf("alt %.10f\n", (double)alt);
-    printf("m_gpsAltOrigin %.10f\n", (double)m_GpsAltOrigin);
-
-
     float pz = -(alt - m_GpsAltOrigin);
-    printf("pz %.10f\n", pz);
     map_projection_project(&m_MapRef, lat, lon, &px, &py);
     math::Vector6F y;
     y.Zero();
@@ -150,13 +140,6 @@ void PE::gpsCorrect()
     y[4] = y_global[4];
     y[5] = y_global[5];
 
-
-    printf("px %.10f\n", px);
-    printf("py %.10f\n", py);
-    printf("pz %.10f\n", pz);
-    printf("y_global(3) %.10f\n", y_global[3]);
-    printf("y_global(4) %.10f\n", y_global[4]);
-    printf("y_global(5) %.10f\n", y_global[5]);
     /* gps measurement matrix, measures position and velocity */
     //	Matrix<float, n_y_gps, n_x> C;
     //	C.setZero();
@@ -168,15 +151,6 @@ void PE::gpsCorrect()
     C[Y_gps_vx][X_vx] = 1;
     C[Y_gps_vy][X_vy] = 1;
     C[Y_gps_vz][X_vz] = 1;
-
-
-    for(int i =0; i<10; i++)
-    {
-        for(int j =0; j<6; j++)
-        {
-            printf("C(j,i)) %.10f\n", C[j][i]);
-        }
-    }
 
     /* gps covariance matrix */
     //	SquareMatrix<float, n_y_gps> R;
@@ -192,12 +166,6 @@ void PE::gpsCorrect()
     float var_vxy = m_Params.GPS_VXY_STDDEV * m_Params.GPS_VXY_STDDEV;
     //	float var_vz = _gps_vz_stddev.get() * _gps_vz_stddev.get();
     float var_vz = m_Params.GPS_VZ_STDDEV * m_Params.GPS_VZ_STDDEV;
-
-
-    printf("var_xy %.10f\n", var_xy);
-    printf("var_z %.10f\n", var_z);
-    printf("var_vxy %.10f\n", var_vxy);
-    printf("var_vz %.10f\n", var_vz);
 
     /* if field is not below minimum, set it to the value provided */
     //	if (_sub_gps.get().eph > _gps_xy_stddev.get()) {
@@ -244,14 +212,6 @@ void PE::gpsCorrect()
     R[4][4] = var_vxy;
     R[5][5] = var_vz;
 
-
-    printf("R(0, 0) %.10f\n", (double)R[0][0]);
-    printf("R(1, 1) %.10f\n", (double)R[1][1]);
-    printf("R(2, 2) %.10f\n", (double)R[2][2]);
-    printf("R(3, 3) %.10f\n", (double)R[3][3]);
-    printf("R(4, 4) %.10f\n", (double)R[4][4]);
-    printf("R(5, 5) %.10f\n", (double)R[5][5]);
-
     /* get delayed x */
     uint8 i_hist = 0;
 
@@ -264,25 +224,15 @@ void PE::gpsCorrect()
     
     math::Matrix10F1 temp;
     temp = m_XDelay.Get(i_hist);
-    
     math::Vector10F x0;
-    for(int i = 0; i<10; i++)
-    {
-        printf("x0(%d) %.10f\n", i, x0[i]);
-    }
-    x0 = temp.ToVector();
 
+    x0 = temp.ToVector();
     /* residual */
     //	Vector<float, n_y_gps> r = y - C * x0;
     /* 6F - 6F10 * 10x1(10F)*/
     math::Vector6F r;
     r.Zero();
     r = y - C * x0;
-
-    for(int i = 0; i<6; i++)
-    {
-        printf("r(%d) %.10f\n", i, r[i]);
-    }
 
     //	for (int i = 0; i < 6; i ++) {
     //		_pub_innov.get().vel_pos_innov[i] = r(i);
@@ -301,13 +251,6 @@ void PE::gpsCorrect()
     S_I = C * m_StateCov * C.Transpose() + R;
     S_I = S_I.Inversed();
 
-    for(int i = 0; i<6; i++)
-    {    
-        for(int j = 0; j<6; j++)
-        {
-            printf("S_I(%d, %d) %.10f\n", i, j, (double)S_I[i][j]);
-        }
-    }
     /* fault detection */
     //	float beta = (r.transpose() * (S_I * r))(0, 0);
     /* 6x6 * 6x1 */
@@ -326,8 +269,6 @@ void PE::gpsCorrect()
      **/ 
     float beta_thresh = 1e2f;
 
-
-    printf("beta %.10f\n", beta);
     if (beta / BETA_TABLE[n_y_gps] > beta_thresh) 
     {
         if (!m_GpsFault)
@@ -351,40 +292,21 @@ void PE::gpsCorrect()
     //	Matrix<float, n_x, n_y_gps> K = _P * C.transpose() * S_I;
     math::Matrix10F6 K;
     K.Zero();
-    for(int i = 0; i<10; i++)
-    {
-        for(int j =0; j<6; j++)
-        {
-            printf("K(%d,%d) %.10f\n", i, j, K[i][j]);
-        }
-    }
+
     /* 10x10 * 6x10' (10x6) * 6x6 */
     K = m_StateCov * C.Transpose() * S_I;
     //	Vector<float, n_x> dx = K * r;
     math::Vector10F dx;
     dx.Zero();
     dx = K * r;
-    for(int i = 0; i<10; i++)
-    {
-        printf("dx(%d) %.10f\n", i, dx[i]);
-    }
+
     //	_x += dx;
     /* 10F * 10F */
     m_StateVec = m_StateVec + dx;
-    for(int n=0; n<10;n++)
-    {
-        printf("after _x(%d) %.10f\n", n, m_StateVec[n]);
-    }
+
     //	_P -= K * C * _P;
     /* 10x10 - (10x6 * 6x10 * 10x10)*/
     m_StateCov = m_StateCov - K * C * m_StateCov;
-    for(int z = 0; z<10; z++)
-    {
-        for(int n = 0; n<10; n++)
-        {
-            printf("after _P[%d][%d], = %.10f\n", z, n, m_StateCov[z][n]);
-        }
-	}
 }
 
 

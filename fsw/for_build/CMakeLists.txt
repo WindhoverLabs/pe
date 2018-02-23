@@ -9,8 +9,6 @@ add_airliner_app_def(pe
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_msg.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_tbldefs.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_version.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/BlockDelay.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/BlockDelay.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/baro.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/gps.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/land.cpp
@@ -36,6 +34,8 @@ add_airliner_app_unit_test(pe-ut
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/pe_test_utils.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/pe_stubs.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/pe_stubs.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/pe_block_delay_stubs.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/pe_block_delay_stubs.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_app.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_app.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_config_utils.cpp
@@ -43,12 +43,87 @@ add_airliner_app_unit_test(pe-ut
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_msg.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_tbldefs.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_version.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/BlockDelay.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/BlockDelay.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/baro.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/gps.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/land.cpp
-        ${PX4LIB_LIB_SOURCES}
+        #${PX4LIB_LIB_SOURCES}
+        # Adding lib sources individually so stubs can be used.
+        # Math
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Dcm.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Derivative.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Euler.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Expo.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Integrator.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Limits.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/LowPass.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/LowPassVector10F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix1F1.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix1F3.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix1F6.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix1F10.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix3F3.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix3F10.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix4F4.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix6F1.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix6F6.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix6F10.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix10F1.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix10F3.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix10F6.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix10F10.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Quaternion.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Stats1F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Stats6F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Vector1F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Vector2F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Vector3F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Vector4F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Vector6F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Vector10F.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/filters/LowPassFilter2p.hpp
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Dcm.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Derivative.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Euler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Expo.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Integrator.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Limits.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/LowPass.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/LowPassVector10F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix1F1.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix1F3.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix1F6.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix1F10.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix3F3.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix3F10.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix4F4.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix6F1.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix6F6.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix6F10.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix10F1.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix10F3.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix10F6.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix10F10.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Quaternion.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Stats1F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Stats6F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Vector1F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Vector2F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Vector3F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Vector4F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Vector6F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Vector10F.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/filters/LowPassFilter2p.cpp
+
+        # Geo (stubbed out)
+        #${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/geo/geo.h
+        #${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/geo/geo.c
+        
+        # Block Delay (stubbed out)
+        #${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/BlockDelay.cpp
+        #${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/BlockDelay.hpp
+
+
         
     INCLUDES
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/

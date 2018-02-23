@@ -77,7 +77,7 @@ extern "C" {
 #include <poll.h>
 #include <math.h>
 
-#include "BlockDelay.hpp"
+#include <math/BlockDelay.hpp>
 
 /************************************************************************
  ** Local Defines

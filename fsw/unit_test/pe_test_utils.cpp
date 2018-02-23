@@ -45,6 +45,8 @@
 #include "ut_cfe_sb_stubs.h"
 #include "ut_cfe_es_stubs.h"
 #include "ut_cfe_evs_stubs.h"
+#include "pe_stubs.h"
+#include "pe_block_delay_stubs.hpp"
 
 #include <time.h>
 
@@ -120,9 +122,14 @@ void PE_Test_Setup(void)
     Ut_OSAPI_Reset();
     Ut_OSFILEAPI_Reset();
 
+    /* Clear mocked return values */
+    memset(&Geo_Project_Returns, 0, sizeof(Geo_Project_Returns));
+    memset(&delay::Block_Delay_Returns, 0, sizeof(delay::Block_Delay_Returns));
+
     Ut_CFE_TBL_AddTable(PE_CONFIG_TABLE_FILENAME, (void *) &PE_ConfigTbl);
 }
 
-void PE_Test_TearDown(void) {
+void PE_Test_TearDown(void) 
+{
 
 }
