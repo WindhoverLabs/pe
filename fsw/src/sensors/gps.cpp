@@ -45,13 +45,13 @@ void PE::gpsInit()
         double gpsLon = m_GpsStats.getMean()[1];
         float gpsAlt = m_GpsStats.getMean()[2];
 
-        m_GpsTimeout = false;
+        m_GpsTimeout = FALSE;
         m_GpsStats.reset();
 
         if (!m_ReceivedGps)
         {
             /* this is the first time we have received gps */
-            m_ReceivedGps = true;
+            m_ReceivedGps = TRUE;
 
             /* note we subtract X_z which is in down directon so it is 
              * an addition
@@ -77,7 +77,7 @@ void PE::gpsInit()
                  * possible baro offset in global altitude at init
                  **/
                 m_AltOrigin = m_GpsAltOrigin;
-                m_AltOriginInitialized = true;
+                m_AltOriginInitialized = TRUE;
 
                 (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
                         "GPS initialized origin. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
@@ -277,17 +277,17 @@ void PE::gpsCorrect()
                     "GPS fault, %3g %3g %3g %3g %3g %3g",
                     double(r[0]*r[0] / S_I[0][0]),  double(r[1]*r[1] / S_I[1][1]), double(r[2]*r[2] / S_I[2][2]),
                     double(r[3]*r[3] / S_I[3][3]),  double(r[4]*r[4] / S_I[4][4]), double(r[5]*r[5] / S_I[5][5]));
-            /* TODO move to single fault bool */
-            m_GpsFault = true;
+            /* TODO move to single fault boolean */
+            m_GpsFault = TRUE;
         }
     }
     else if (m_GpsFault)
     {
-    	m_GpsFault = false;
+    	m_GpsFault = FALSE;
         (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
                 "GPS OK");
 
-        m_GpsInitialized = true;
+        m_GpsInitialized = TRUE;
     }
 
     /* kalman filter correction always for GPS */
@@ -318,7 +318,7 @@ void PE::gpsCheckTimeout()
 	{
 		if (!m_GpsTimeout)
 		{
-			m_GpsTimeout = true;
+			m_GpsTimeout = TRUE;
 			m_GpsStats.reset();
 			(void) CFE_EVS_SendEvent(PE_GPS_TIMEOUT_ERR_EID, CFE_EVS_ERROR,
 									 "GPS timeout");

@@ -231,9 +231,9 @@ public:
     uint16 m_LandCount;
 
     /* Validity */
-    bool m_XyEstValid;
-    bool m_ZEstValid;
-    bool m_TzEstValid;
+    boolean m_XyEstValid;
+    boolean m_ZEstValid;
+    boolean m_TzEstValid;
 
     /* map */
     struct map_projection_reference_s m_MapRef;
@@ -255,14 +255,14 @@ public:
 	uint64 m_TimeLastLand;
 
     /* Timeouts */
-	bool   m_BaroTimeout;
-	bool   m_GpsTimeout;
-	bool   m_LandTimeout;
+	boolean   m_BaroTimeout;
+	boolean   m_GpsTimeout;
+	boolean   m_LandTimeout;
 
     /* Faults */
-	bool   m_BaroFault;
-	bool   m_GpsFault;
-	bool   m_LandFault;
+	boolean   m_BaroFault;
+	boolean   m_GpsFault;
+	boolean   m_LandFault;
 
 	/* Reference altitudes */
 	float m_AltOrigin;
@@ -270,14 +270,14 @@ public:
 	float m_GpsAltOrigin;
 
 	/* status */
-	bool m_ReceivedGps;
-	bool m_LastArmedState;
-	bool m_EstimatorInitialized;
-	bool m_BaroInitialized;
-	bool m_GpsInitialized;
-	bool m_LandInitialized;
-	bool m_AltOriginInitialized;
-    bool m_ParamsUpdated;
+	boolean m_ReceivedGps;
+	boolean m_LastArmedState;
+	boolean m_EstimatorInitialized;
+	boolean m_BaroInitialized;
+	boolean m_GpsInitialized;
+	boolean m_LandInitialized;
+	boolean m_AltOriginInitialized;
+    boolean m_ParamsUpdated;
 
 	/* state space */
 	math::Vector10F     m_StateVec; // state vector
@@ -592,7 +592,7 @@ public:
 
 	// misc
 	//inline float agl() { return _x(X_tz) - _x(X_z); }
-	bool landed();
+	boolean landed();
 	int getDelayPeriods(float delay, uint8 *periods);
 
 	void UpdateLocalParams();
@@ -602,7 +602,7 @@ public:
 
 	math::Vector10F dynamics(const math::Vector10F &x, const math::Vector3F &u);
 
-	bool Initialized(void);
+	boolean Initialized(void);
 
 };
 

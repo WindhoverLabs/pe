@@ -28,11 +28,11 @@ void PE::baroInit()
 								 (int)m_BaroStats.getMean()[0],
 								 (int)(100 * m_BaroStats.getStdDev()[0]));
 
-		m_BaroTimeout = false;
+		m_BaroTimeout = FALSE;
 
 		if (!m_AltOriginInitialized)
 		{
-			m_AltOriginInitialized = true;
+			m_AltOriginInitialized = TRUE;
 			m_AltOrigin = m_BaroAltOrigin;
 		}
 	}
@@ -104,17 +104,17 @@ void PE::baroCorrect()
         {
             (void) CFE_EVS_SendEvent(PE_BARO_FAULT_ERR_EID, CFE_EVS_ERROR,
                     "Baro fault, r %5.2f m, beta %5.2f", r[0], beta);
-            m_BaroFault = true;
+            m_BaroFault = TRUE;
         }
 
     }
     else if (m_BaroFault)
     {
-    	m_BaroFault = false;
+    	m_BaroFault = FALSE;
         (void) CFE_EVS_SendEvent(PE_BARO_OK_INF_EID, CFE_EVS_INFORMATION,
                 "Baro OK");
 
-        m_BaroInitialized = true;
+        m_BaroInitialized = TRUE;
     }
 
 // kalman filter correction always
@@ -161,7 +161,7 @@ void PE::baroCheckTimeout()
 	{
 		if (!m_BaroTimeout)
 		{
-			m_BaroTimeout = true;
+			m_BaroTimeout = TRUE;
 			m_BaroStats.reset();
 			(void) CFE_EVS_SendEvent(PE_BARO_TIMEOUT_ERR_EID, CFE_EVS_ERROR,
 									 "Baro timeout: %llu us", Timestamp);
