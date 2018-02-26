@@ -111,7 +111,11 @@ void PE::landCorrect()
 	dx = K * r;
 
 	m_StateVec = m_StateVec + dx;
+    //OS_printf("PRE LAND\n");
+    //m_StateCov.Print();
 	m_StateCov = m_StateCov - K * C * m_StateCov;
+    //OS_printf("LAND CORRECTED\n");
+    //m_StateCov.Print();
 }
 
 void PE::landCheckTimeout()
