@@ -128,21 +128,18 @@ void PE::landCorrect()
 	//math::Matrix10F3 K;
 	//K.Zero();
 
-	if (!m_LandFault)
-	{
-		m_Land.K = m_StateCov * m_Land.C.Transpose() * m_Land.S_I;
+	m_Land.K = m_StateCov * m_Land.C.Transpose() * m_Land.S_I;
 
-		//math::Vector10F dx;
-		//dx.Zero();
-		m_Land.dx = m_Land.K * m_Land.r;
+	//math::Vector10F dx;
+	//dx.Zero();
+	m_Land.dx = m_Land.K * m_Land.r;
 
-		m_StateVec = m_StateVec + m_Land.dx;
-		//OS_printf("PRE LAND\n");
-		//m_StateCov.Print();
-		m_StateCov = m_StateCov - m_Land.K * m_Land.C * m_StateCov;
-		//OS_printf("LAND CORRECTED\n");
-		//m_StateCov.Print();
-	}
+	m_StateVec = m_StateVec + m_Land.dx;
+	//OS_printf("PRE LAND\n");
+	//m_StateCov.Print();
+	m_StateCov = m_StateCov - m_Land.K * m_Land.C * m_StateCov;
+	//OS_printf("LAND CORRECTED\n");
+	//m_StateCov.Print();
 end_of_function:
 
     CFE_ES_PerfLogExit(PE_SENSOR_LAND_PERF_ID);

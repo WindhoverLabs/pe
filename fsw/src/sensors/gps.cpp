@@ -302,27 +302,24 @@ void PE::gpsCorrect()
     //math::Matrix10F6 K;
     //K.Zero();
 
-    if (!m_GpsFault)
-    {
-		/* 10x10 * 6x10' (10x6) * 6x6 */
-		m_GPS.K = m_StateCov * m_GPS.C.Transpose() * m_GPS.S_I;
-		//	Vector<float, n_x> dx = K * r;
-		//math::Vector10F dx;
-		//dx.Zero();
-		m_GPS.dx = m_GPS.K * m_GPS.r;
+	/* 10x10 * 6x10' (10x6) * 6x6 */
+	m_GPS.K = m_StateCov * m_GPS.C.Transpose() * m_GPS.S_I;
+	//	Vector<float, n_x> dx = K * r;
+	//math::Vector10F dx;
+	//dx.Zero();
+	m_GPS.dx = m_GPS.K * m_GPS.r;
 
-		//	_x += dx;
-		/* 10F * 10F */
-		m_StateVec = m_StateVec + m_GPS.dx;
+	//	_x += dx;
+	/* 10F * 10F */
+	m_StateVec = m_StateVec + m_GPS.dx;
 
-		//	_P -= K * C * _P;
-		/* 10x10 - (10x6 * 6x10 * 10x10)*/
-		//OS_printf("PRE GPS\n");
-		//m_StateCov.Print();
-		m_StateCov = m_StateCov - m_GPS.K * m_GPS.C * m_StateCov;
-		//OS_printf("GPS\n");
-		//m_StateCov.Print();
-    }
+	//	_P -= K * C * _P;
+	/* 10x10 - (10x6 * 6x10 * 10x10)*/
+	//OS_printf("PRE GPS\n");
+	//m_StateCov.Print();
+	m_StateCov = m_StateCov - m_GPS.K * m_GPS.C * m_StateCov;
+	//OS_printf("GPS\n");
+	//m_StateCov.Print();
 end_of_function:
 
     CFE_ES_PerfLogExit(PE_SENSOR_GPS_PERF_ID);

@@ -129,30 +129,27 @@ void PE::baroCorrect()
     //math::Matrix10F1 K;
     //K.Zero();
 
-    if (!m_BaroFault)
-    {
-		/* 10x10 * 10x1 * 1x1 */
-		m_Baro.K = m_StateCov * m_Baro.C.Transpose() * m_Baro.S_I;
+	/* 10x10 * 10x1 * 1x1 */
+	m_Baro.K = m_StateCov * m_Baro.C.Transpose() * m_Baro.S_I;
 
-		/* 10x1 * 1x1 */
-		//dx = K * r;
-		//math::Matrix10F1 temp;
-		//temp.Zero();
-		m_Baro.temp = m_Baro.K * m_Baro.r;
+	/* 10x1 * 1x1 */
+	//dx = K * r;
+	//math::Matrix10F1 temp;
+	//temp.Zero();
+	m_Baro.temp = m_Baro.K * m_Baro.r;
 
-		//math::Vector10F dx;
-		//dx.Zero();
-		m_Baro.dx = m_Baro.temp.ToVector();
+	//math::Vector10F dx;
+	//dx.Zero();
+	m_Baro.dx = m_Baro.temp.ToVector();
 
-		/* 10F + 10F*/
-		m_StateVec = m_StateVec + m_Baro.dx;
-		/* 10x10 - 10x1 * 1x10 * 10x10 */
-		//OS_printf("PRE BARO\n");
-		//m_StateCov.Print();
-		m_StateCov = m_StateCov - m_Baro.K * m_Baro.C * m_StateCov;
-		//OS_printf("BARO CORRECTED\n");
-		//m_StateCov.Print();
-    }
+	/* 10F + 10F*/
+	m_StateVec = m_StateVec + m_Baro.dx;
+	/* 10x10 - 10x1 * 1x10 * 10x10 */
+	//OS_printf("PRE BARO\n");
+	//m_StateCov.Print();
+	m_StateCov = m_StateCov - m_Baro.K * m_Baro.C * m_StateCov;
+	//OS_printf("BARO CORRECTED\n");
+	//m_StateCov.Print();
 end_of_function:
 
     CFE_ES_PerfLogExit(PE_SENSOR_BARO_PERF_ID);
