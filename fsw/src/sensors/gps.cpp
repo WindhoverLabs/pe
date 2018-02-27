@@ -116,57 +116,57 @@ void PE::gpsCorrect()
     int i = 0;
 
     /* measure */
-    math::Vector6F y_global;
+    //math::Vector6F y_global;
 
-    if (gpsMeasure(y_global) != CFE_SUCCESS) 
+    if (gpsMeasure(m_GPS.y_global) != CFE_SUCCESS) 
     {
-        return; 
+        goto end_of_function; 
     }
 
     /* gps measurement in local frame */
-    double  lat = y_global[0];
-    double  lon = y_global[1];
-    float  alt = y_global[2];
-    float px = 0;
-    float py = 0;
+    m_GPS.lat = m_GPS.y_global[0];
+    m_GPS.lon = m_GPS.y_global[1];
+    m_GPS.alt = m_GPS.y_global[2];
+    m_GPS.px = 0;
+    m_GPS.py = 0;
 
-    float pz = -(alt - m_GpsAltOrigin);
-    map_projection_project(&m_MapRef, lat, lon, &px, &py);
-    math::Vector6F y;
-    y.Zero();
-    y[0] = px;
-    y[1] = py;
-    y[2] = pz;
-    y[3] = y_global[3];
-    y[4] = y_global[4];
-    y[5] = y_global[5];
+    m_GPS.pz = -(m_GPS.alt - m_GpsAltOrigin);
+    map_projection_project(&m_MapRef, m_GPS.lat, m_GPS.lon, &m_GPS.px, &m_GPS.py);
+    //math::Vector6F y;
+    //y.Zero();
+    m_GPS.y[0] = m_GPS.px;
+    m_GPS.y[1] = m_GPS.py;
+    m_GPS.y[2] = m_GPS.pz;
+    m_GPS.y[3] = m_GPS.y_global[3];
+    m_GPS.y[4] = m_GPS.y_global[4];
+    m_GPS.y[5] = m_GPS.y_global[5];
 
     /* gps measurement matrix, measures position and velocity */
     //	Matrix<float, n_y_gps, n_x> C;
     //	C.setZero();
-    math::Matrix6F10 C;
-    C.Zero();
-    C[Y_gps_x][X_x] = 1;
-    C[Y_gps_y][X_y] = 1;
-    C[Y_gps_z][X_z] = 1;
-    C[Y_gps_vx][X_vx] = 1;
-    C[Y_gps_vy][X_vy] = 1;
-    C[Y_gps_vz][X_vz] = 1;
+    //math::Matrix6F10 C;
+    //C.Zero();
+    m_GPS.C[Y_gps_x][X_x] = 1;
+    m_GPS.C[Y_gps_y][X_y] = 1;
+    m_GPS.C[Y_gps_z][X_z] = 1;
+    m_GPS.C[Y_gps_vx][X_vx] = 1;
+    m_GPS.C[Y_gps_vy][X_vy] = 1;
+    m_GPS.C[Y_gps_vz][X_vz] = 1;
 
     /* gps covariance matrix */
     //	SquareMatrix<float, n_y_gps> R;
     //	R.setZero();
-    math::Matrix6F6 R;
-    R.Zero();
+    //math::Matrix6F6 R;
+    //R.Zero();
     /* default to parameter, use gps cov if provided */
     //	float var_xy = _gps_xy_stddev.get() * _gps_xy_stddev.get();
-    float var_xy = m_Params.GPS_XY_STDDEV * m_Params.GPS_XY_STDDEV;
+    m_GPS.var_xy = m_Params.GPS_XY_STDDEV * m_Params.GPS_XY_STDDEV;
     //	float var_z = _gps_z_stddev.get() * _gps_z_stddev.get();
-    float var_z = m_Params.GPS_Z_STDDEV * m_Params.GPS_Z_STDDEV;
+    m_GPS.var_z = m_Params.GPS_Z_STDDEV * m_Params.GPS_Z_STDDEV;
     //	float var_vxy = _gps_vxy_stddev.get() * _gps_vxy_stddev.get();
-    float var_vxy = m_Params.GPS_VXY_STDDEV * m_Params.GPS_VXY_STDDEV;
+    m_GPS.var_vxy = m_Params.GPS_VXY_STDDEV * m_Params.GPS_VXY_STDDEV;
     //	float var_vz = _gps_vz_stddev.get() * _gps_vz_stddev.get();
-    float var_vz = m_Params.GPS_VZ_STDDEV * m_Params.GPS_VZ_STDDEV;
+    m_GPS.var_vz = m_Params.GPS_VZ_STDDEV * m_Params.GPS_VZ_STDDEV;
 
     /* if field is not below minimum, set it to the value provided */
     //	if (_sub_gps.get().eph > _gps_xy_stddev.get()) {
@@ -174,30 +174,30 @@ void PE::gpsCorrect()
     //	}
     if(m_VehicleGpsPositionMsg.EpH > m_Params.GPS_XY_STDDEV)
     {
-        var_xy = m_VehicleGpsPositionMsg.EpH * m_VehicleGpsPositionMsg.EpH;
+        m_GPS.var_xy = m_VehicleGpsPositionMsg.EpH * m_VehicleGpsPositionMsg.EpH;
     }
     //	if (_sub_gps.get().epv > _gps_z_stddev.get()) {
     //		var_z = _sub_gps.get().epv * _sub_gps.get().epv;
     //	}
     if (m_VehicleGpsPositionMsg.EpV > m_Params.GPS_Z_STDDEV)
     {
-        var_z = m_VehicleGpsPositionMsg.EpV * m_VehicleGpsPositionMsg.EpV;
+        m_GPS.var_z = m_VehicleGpsPositionMsg.EpV * m_VehicleGpsPositionMsg.EpV;
     }
     //	float gps_s_stddev =  _sub_gps.get().s_variance_m_s;
-    float gps_s_stddev = m_VehicleGpsPositionMsg.SVariance;
+    m_GPS.gps_s_stddev = m_VehicleGpsPositionMsg.SVariance;
     //	if (gps_s_stddev > _gps_vxy_stddev.get()) {
     //		var_vxy = gps_s_stddev * gps_s_stddev;
     //	}
-    if(gps_s_stddev > m_Params.GPS_VXY_STDDEV)
+    if(m_GPS.gps_s_stddev > m_Params.GPS_VXY_STDDEV)
     {
-        var_vxy = gps_s_stddev * gps_s_stddev;
+        m_GPS.var_vxy = m_GPS.gps_s_stddev * m_GPS.gps_s_stddev;
     }
     //	if (gps_s_stddev > _gps_vz_stddev.get()) {
     //		var_vz = gps_s_stddev * gps_s_stddev;
     //	}
-    if(gps_s_stddev > m_Params.GPS_VZ_STDDEV)
+    if(m_GPS.gps_s_stddev > m_Params.GPS_VZ_STDDEV)
     {
-        var_vz = gps_s_stddev * gps_s_stddev;
+        m_GPS.var_vz = m_GPS.gps_s_stddev * m_GPS.gps_s_stddev;
     }
 
     //	R(0, 0) = var_xy;
@@ -206,34 +206,34 @@ void PE::gpsCorrect()
     //	R(3, 3) = var_vxy;
     //	R(4, 4) = var_vxy;
     //	R(5, 5) = var_vz;
-    R[0][0] = var_xy;
-    R[1][1] = var_xy;
-    R[2][2] = var_z;
-    R[3][3] = var_vxy;
-    R[4][4] = var_vxy;
-    R[5][5] = var_vz;
+    m_GPS.R[0][0] = m_GPS.var_xy;
+    m_GPS.R[1][1] = m_GPS.var_xy;
+    m_GPS.R[2][2] = m_GPS.var_z;
+    m_GPS.R[3][3] = m_GPS.var_vxy;
+    m_GPS.R[4][4] = m_GPS.var_vxy;
+    m_GPS.R[5][5] = m_GPS.var_vz;
 
     /* get delayed x */
-    uint8 i_hist = 0;
+    m_GPS.i_hist = 0;
 
     //	if (getDelayPeriods(_gps_delay.get(), &i_hist)  < 0) { return; }
     //	Vector<float, n_x> x0 = _xDelay.get(i_hist);
-    if(getDelayPeriods(m_Params.GPS_DELAY, &i_hist) < 0)
+    if(getDelayPeriods(m_Params.GPS_DELAY, &m_GPS.i_hist) < 0)
     {
-        return;
+        goto end_of_function;
     }
     
-    math::Matrix10F1 temp;
-    temp = m_XDelay.Get(i_hist);
-    math::Vector10F x0;
+    //math::Matrix10F1 temp;
+    m_GPS.temp = m_XDelay.Get(m_GPS.i_hist);
+    //math::Vector10F x0;
 
-    x0 = temp.ToVector();
+    m_GPS.x0 = m_GPS.temp.ToVector();
     /* residual */
     //	Vector<float, n_y_gps> r = y - C * x0;
     /* 6F - 6F10 * 10x1(10F)*/
-    math::Vector6F r;
-    r.Zero();
-    r = y - C * x0;
+    //math::Vector6F r;
+    //r.Zero();
+    m_GPS.r = m_GPS.y - m_GPS.C * m_GPS.x0;
 
     //	for (int i = 0; i < 6; i ++) {
     //		_pub_innov.get().vel_pos_innov[i] = r(i);
@@ -241,43 +241,47 @@ void PE::gpsCorrect()
     //	}
     for(i = 0; i < 6; i++)
     {
-        m_Ekf2InnovationsMsg.VelPosInnov[i] = r[i];
-        m_Ekf2InnovationsMsg.VelPosInnovVar[i] = r[i];
+        m_Ekf2InnovationsMsg.VelPosInnov[i] = m_GPS.r[i];
+        m_Ekf2InnovationsMsg.VelPosInnovVar[i] = m_GPS.r[i];
     }
 
     //	Matrix<float, n_y_gps, n_y_gps> S_I = inv<float, 6>(C * _P * C.transpose() + R);
-    math::Matrix6F6 S_I;
-    S_I.Zero();
+    //math::Matrix6F6 S_I;
+    //S_I.Zero();
 
-    S_I = C * m_StateCov * C.Transpose() + R;
-    S_I = S_I.Inversed();
+    m_GPS.S_I = m_GPS.C * m_StateCov * m_GPS.C.Transpose() + m_GPS.R;
+    m_GPS.S_I = m_GPS.S_I.Inversed();
 
     /* fault detection */
     //	float beta = (r.transpose() * (S_I * r))(0, 0);
     /* 6x6 * 6x1 */
     
-    math::Matrix1F6 rTranspose;
-    rTranspose[0][0] = r[0];
-    rTranspose[0][1] = r[1];
-    rTranspose[0][2] = r[2];
-    rTranspose[0][3] = r[3];
-    rTranspose[0][4] = r[4];
-    rTranspose[0][5] = r[5];
+    //math::Matrix1F6 rTranspose;
+    m_GPS.rTranspose[0][0] = m_GPS.r[0];
+    m_GPS.rTranspose[0][1] = m_GPS.r[1];
+    m_GPS.rTranspose[0][2] = m_GPS.r[2];
+    m_GPS.rTranspose[0][3] = m_GPS.r[3];
+    m_GPS.rTranspose[0][4] = m_GPS.r[4];
+    m_GPS.rTranspose[0][5] = m_GPS.r[5];
     
-    float beta = (rTranspose * (S_I * r))[0][0];
+    m_GPS.beta = (m_GPS.rTranspose * (m_GPS.S_I * m_GPS.r))[0][0];
     /* artifically increase beta threshhold to prevent fault during 
      * landing
      **/ 
-    float beta_thresh = 1e2f;
+    m_GPS.beta_thresh = 1e2f;
 
-    if (beta / BETA_TABLE[n_y_gps] > beta_thresh) 
+    if (m_GPS.beta / BETA_TABLE[n_y_gps] > m_GPS.beta_thresh) 
     {
         if (!m_GpsFault)
         {
             (void) CFE_EVS_SendEvent(PE_GPS_FAULT_ERR_EID, CFE_EVS_ERROR,
                     "GPS fault, %3g %3g %3g %3g %3g %3g",
-                    double(r[0]*r[0] / S_I[0][0]),  double(r[1]*r[1] / S_I[1][1]), double(r[2]*r[2] / S_I[2][2]),
-                    double(r[3]*r[3] / S_I[3][3]),  double(r[4]*r[4] / S_I[4][4]), double(r[5]*r[5] / S_I[5][5]));
+                    double(m_GPS.r[0]*m_GPS.r[0] / m_GPS.S_I[0][0]),  
+                    double(m_GPS.r[1]*m_GPS.r[1] / m_GPS.S_I[1][1]), 
+                    double(m_GPS.r[2]*m_GPS.r[2] / m_GPS.S_I[2][2]),
+                    double(m_GPS.r[3]*m_GPS.r[3] / m_GPS.S_I[3][3]),  
+                    double(m_GPS.r[4]*m_GPS.r[4] / m_GPS.S_I[4][4]), 
+                    double(m_GPS.r[5]*m_GPS.r[5] / m_GPS.S_I[5][5]));
             /* TODO move to single fault boolean */
             m_GpsFault = TRUE;
         }
@@ -293,27 +297,29 @@ void PE::gpsCorrect()
 
     /* kalman filter correction always for GPS */
     //	Matrix<float, n_x, n_y_gps> K = _P * C.transpose() * S_I;
-    math::Matrix10F6 K;
-    K.Zero();
+    //math::Matrix10F6 K;
+    //K.Zero();
 
     /* 10x10 * 6x10' (10x6) * 6x6 */
-    K = m_StateCov * C.Transpose() * S_I;
+    m_GPS.K = m_StateCov * m_GPS.C.Transpose() * m_GPS.S_I;
     //	Vector<float, n_x> dx = K * r;
-    math::Vector10F dx;
-    dx.Zero();
-    dx = K * r;
+    //math::Vector10F dx;
+    //dx.Zero();
+    m_GPS.dx = m_GPS.K * m_GPS.r;
 
     //	_x += dx;
     /* 10F * 10F */
-    m_StateVec = m_StateVec + dx;
+    m_StateVec = m_StateVec + m_GPS.dx;
 
     //	_P -= K * C * _P;
     /* 10x10 - (10x6 * 6x10 * 10x10)*/
     //OS_printf("PRE GPS\n");
     //m_StateCov.Print();
-    m_StateCov = m_StateCov - K * C * m_StateCov;
+    m_StateCov = m_StateCov - m_GPS.K * m_GPS.C * m_StateCov;
     //OS_printf("GPS\n");
     //m_StateCov.Print();
+end_of_function:
+
     CFE_ES_PerfLogExit(PE_SENSOR_GPS_PERF_ID);
 }
 

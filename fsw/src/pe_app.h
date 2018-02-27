@@ -65,6 +65,7 @@ extern "C" {
 #include "math/Matrix10F3.hpp"
 #include "math/Matrix3F3.hpp"
 #include "math/Matrix1F3.hpp"
+#include "math/Matrix1F6.hpp"
 #include "math/LowPass.hpp"
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
@@ -291,6 +292,64 @@ public:
 	math::Matrix10F3    m_InputMat; // input matrix
 	math::Matrix3F3     m_InputCov; // input covariance
 	math::Matrix10F10   m_NoiseCov; // process noise covariance
+
+    struct Baro
+    {
+        math::Vector1F y;
+        math::Matrix1F10 C;
+        math::Matrix1F1 R;
+        math::Matrix1F1 S_I;
+        math::Vector1F r;
+        float beta;
+        math::Matrix10F1 K;
+        math::Matrix10F1 temp;
+        math::Vector10F dx;
+    } m_Baro;
+
+
+    struct GPS
+    {
+        math::Vector6F y_global;
+        double  lat;
+        double  lon;
+        float  alt;
+        float px;
+        float py;
+        float pz;
+        math::Vector6F y;
+        math::Matrix6F10 C;
+        math::Matrix6F6 R;
+        float var_xy;
+        float var_z;
+        float var_vxy;
+        float var_vz;
+        float gps_s_stddev;
+        uint8 i_hist;
+        math::Matrix10F1 temp;
+        math::Vector10F x0;
+        math::Vector6F r;
+        math::Matrix6F6 S_I;
+        math::Matrix1F6 rTranspose;
+        float beta;
+        float beta_thresh;
+        math::Matrix10F6 K;
+        math::Vector10F dx;
+        
+    } m_GPS;
+    
+    struct Land
+    {
+        math::Vector3F y;
+        math::Matrix3F10 C;
+        math::Matrix3F3 R;
+        math::Matrix3F3 S_I;
+        math::Vector3F r;
+        float beta;
+        float beta_thresh;
+        math::Matrix10F3 K;
+        math::Vector10F dx;
+        
+    } m_Land;
 
 	PE_Params_t m_Params;
 

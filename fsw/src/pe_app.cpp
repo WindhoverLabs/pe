@@ -335,6 +335,54 @@ void PE::InitData()
 	/* Map */
 	m_MapRef.init_done      = FALSE;
 
+    /* Sensor baro data */
+    m_Baro.y.Zero();
+    m_Baro.C.Zero();
+    m_Baro.R.Zero();
+    m_Baro.S_I.Zero();
+    m_Baro.r.Zero();
+    m_Baro.beta = 0.0f;
+    m_Baro.K.Zero();
+    m_Baro.temp.Zero();
+    m_Baro.dx.Zero();
+    
+    /* Sensor GPS data */
+    m_GPS.y_global.Zero();
+    m_GPS.lat = 0.0f;
+    m_GPS.lon = 0.0f;
+    m_GPS.px = 0.0f;
+    m_GPS.py = 0.0f;
+    m_GPS.pz = 0.0f;
+    m_GPS.y.Zero();
+    m_GPS.C.Zero();
+    m_GPS.R.Zero();
+    m_GPS.var_xy = 0.0f;
+    m_GPS.var_z = 0.0f;
+    m_GPS.var_vxy = 0.0f;
+    m_GPS.var_vz = 0.0f;
+    m_GPS.gps_s_stddev = 0.0f;
+    m_GPS.i_hist = 0;
+    m_GPS.temp.Zero();
+    m_GPS.x0.Zero();
+    m_GPS.r.Zero();
+    m_GPS.S_I.Zero();
+    m_GPS.rTranspose.Zero();
+    m_GPS.beta = 0.0f;
+    m_GPS.beta_thresh = 0.0f;
+    m_GPS.K.Zero();
+    m_GPS.dx.Zero();
+    
+    /* Sensor Land data */
+    m_Land.y.Zero();
+    m_Land.C.Zero();
+    m_Land.R.Zero();
+    m_Land.S_I.Zero();
+    m_Land.r.Zero();
+    m_Land.beta = 0.0f;
+    m_Land.beta_thresh = 0.0f;
+    m_Land.K.Zero();
+    m_Land.dx.Zero();
+
     /* Initialize delay blocks */
     m_XDelay.Initialize();
     m_TDelay.Initialize();
