@@ -609,15 +609,17 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
 
             case PX4_VEHICLE_LAND_DETECTED_MID:
                 memcpy(&m_VehicleLandDetectedMsg, MsgPtr, sizeof(m_VehicleLandDetectedMsg));
-                if(m_LandTimeout)
+                if(landed())
                 {
-                	landInit();
+					if(m_LandTimeout)
+					{
+						landInit();
+					}
+					else
+					{
+						landCorrect();
+					}
                 }
-                else
-                {
-                	landCorrect();
-                }
-
                 break;
 
             case PX4_ACTUATOR_ARMED_MID:

@@ -6,6 +6,25 @@
 #define 	REQ_LAND_INIT_COUNT (1)
 #define 	LAND_TIMEOUT   		(1000000) // 1.0 s
 
+
+boolean PE::landed()
+{
+	boolean landed = FALSE;
+	boolean disarmed_not_falling = FALSE;
+
+	if(0 == m_VehicleLandDetectedMsg.Freefall && PX4_ARMING_STATE_ARMED != m_VehicleStatusMsg.ArmingState)
+	{
+		disarmed_not_falling = TRUE;
+	}
+
+	if(m_VehicleLandDetectedMsg.Landed || disarmed_not_falling)
+	{
+		landed = TRUE;
+	}
+
+	return landed;
+}
+
 void PE::landInit()
 {
 	// measure
