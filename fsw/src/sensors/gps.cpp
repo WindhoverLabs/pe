@@ -112,6 +112,7 @@ int PE::gpsMeasure(math::Vector6F &y)
 
 void PE::gpsCorrect()
 {
+    CFE_ES_PerfLogEntry(PE_SENSOR_GPS_PERF_ID);
     int i = 0;
 
     /* measure */
@@ -313,6 +314,7 @@ void PE::gpsCorrect()
     m_StateCov = m_StateCov - K * C * m_StateCov;
     //OS_printf("GPS\n");
     //m_StateCov.Print();
+    CFE_ES_PerfLogExit(PE_SENSOR_GPS_PERF_ID);
 }
 
 

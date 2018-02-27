@@ -37,6 +37,7 @@ int PE::landMeasure(math::Vector3F &y)
 
 void PE::landCorrect()
 {
+    CFE_ES_PerfLogEntry(PE_SENSOR_LAND_PERF_ID);
 	// measure land
 	math::Vector3F y;
 	y.Zero();
@@ -116,6 +117,7 @@ void PE::landCorrect()
 	m_StateCov = m_StateCov - K * C * m_StateCov;
     //OS_printf("LAND CORRECTED\n");
     //m_StateCov.Print();
+    CFE_ES_PerfLogExit(PE_SENSOR_LAND_PERF_ID);
 }
 
 void PE::landCheckTimeout()

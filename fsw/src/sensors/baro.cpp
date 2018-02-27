@@ -52,6 +52,7 @@ int32 PE::baroMeasure(math::Vector1F &y)
 
 void PE::baroCorrect()
 {
+    CFE_ES_PerfLogEntry(PE_SENSOR_BARO_PERF_ID);
     /* measure */
     math::Vector1F y;
     y.Zero();
@@ -145,6 +146,7 @@ void PE::baroCorrect()
     m_StateCov = m_StateCov - K * C * m_StateCov;
     //OS_printf("BARO CORRECTED\n");
     //m_StateCov.Print();
+    CFE_ES_PerfLogExit(PE_SENSOR_BARO_PERF_ID);
 }
 
 

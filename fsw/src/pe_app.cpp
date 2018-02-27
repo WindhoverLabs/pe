@@ -1031,6 +1031,7 @@ void PE::CheckTimeouts()
 
 void PE::Update()
 {
+    CFE_ES_PerfLogEntry(PE_UPDATE_TASK_PERF_ID);
 	/* Update timestamps */
 	float dt = 0.0f;
 	uint64 newTimestamp = PX4LIB_GetPX4TimeUs();
@@ -1252,7 +1253,10 @@ void PE::Update()
         m_XDelay.Update(m_StateVec);
         m_Timestamp_Hist = m_Timestamp;
     }
+
+    CFE_ES_PerfLogExit(PE_UPDATE_TASK_PERF_ID);
 }
+
 
 boolean PE::Initialized(void)
 {
