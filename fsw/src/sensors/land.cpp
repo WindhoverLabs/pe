@@ -87,8 +87,11 @@ void PE::landCorrect()
 		if (!m_LandFault)
 		{
 			m_LandFault = TRUE;
-			(void) CFE_EVS_SendEvent(PE_LAND_FAULT_ERR_EID, CFE_EVS_ERROR,
-									 "Land detector fault, beta %5.2f", double(m_Land.beta));
+            if(Initialized())
+            {
+			    (void) CFE_EVS_SendEvent(PE_LAND_FAULT_ERR_EID, CFE_EVS_ERROR,
+									     "Land detector fault, beta %5.2f", double(m_Land.beta));
+            }
 		}
 
 		// abort correction

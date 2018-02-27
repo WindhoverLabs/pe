@@ -103,8 +103,11 @@ void PE::baroCorrect()
     {
         if (!m_BaroFault)
         {
-            (void) CFE_EVS_SendEvent(PE_BARO_FAULT_ERR_EID, CFE_EVS_ERROR,
-                    "Baro fault, r %5.2f m, beta %5.2f", m_Baro.r[0], m_Baro.beta);
+            if(Initialized())
+            {
+                (void) CFE_EVS_SendEvent(PE_BARO_FAULT_ERR_EID, CFE_EVS_ERROR,
+                        "Baro fault, r %5.2f m, beta %5.2f", m_Baro.r[0], m_Baro.beta);
+            }
             m_BaroFault = TRUE;
         }
 

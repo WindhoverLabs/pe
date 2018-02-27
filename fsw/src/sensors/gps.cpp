@@ -274,15 +274,17 @@ void PE::gpsCorrect()
     {
         if (!m_GpsFault)
         {
-            (void) CFE_EVS_SendEvent(PE_GPS_FAULT_ERR_EID, CFE_EVS_ERROR,
-                    "GPS fault, %3g %3g %3g %3g %3g %3g",
-                    double(m_GPS.r[0]*m_GPS.r[0] / m_GPS.S_I[0][0]),  
-                    double(m_GPS.r[1]*m_GPS.r[1] / m_GPS.S_I[1][1]), 
-                    double(m_GPS.r[2]*m_GPS.r[2] / m_GPS.S_I[2][2]),
-                    double(m_GPS.r[3]*m_GPS.r[3] / m_GPS.S_I[3][3]),  
-                    double(m_GPS.r[4]*m_GPS.r[4] / m_GPS.S_I[4][4]), 
-                    double(m_GPS.r[5]*m_GPS.r[5] / m_GPS.S_I[5][5]));
-            /* TODO move to single fault boolean */
+            if(Initialized())
+            {
+                (void) CFE_EVS_SendEvent(PE_GPS_FAULT_ERR_EID, CFE_EVS_ERROR,
+                        "GPS fault, %3g %3g %3g %3g %3g %3g",
+                        double(m_GPS.r[0]*m_GPS.r[0] / m_GPS.S_I[0][0]),  
+                        double(m_GPS.r[1]*m_GPS.r[1] / m_GPS.S_I[1][1]), 
+                        double(m_GPS.r[2]*m_GPS.r[2] / m_GPS.S_I[2][2]),
+                        double(m_GPS.r[3]*m_GPS.r[3] / m_GPS.S_I[3][3]),  
+                        double(m_GPS.r[4]*m_GPS.r[4] / m_GPS.S_I[4][4]), 
+                        double(m_GPS.r[5]*m_GPS.r[5] / m_GPS.S_I[5][5]));
+            }
             m_GpsFault = TRUE;
         }
     }
