@@ -306,7 +306,6 @@ public:
         math::Vector10F dx;
     } m_Baro;
 
-
     struct GPS
     {
         math::Vector6F y_global;
@@ -336,7 +335,7 @@ public:
         math::Vector10F dx;
         
     } m_GPS;
-    
+
     struct Land
     {
         math::Vector3F y;

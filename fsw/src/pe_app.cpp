@@ -386,7 +386,6 @@ void PE::InitData()
     /* Initialize delay blocks */
     m_XDelay.Initialize();
     m_TDelay.Initialize();
-
 }
 
 

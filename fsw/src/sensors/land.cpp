@@ -10,7 +10,7 @@ void PE::landInit()
 {
 	// measure
 	math::Vector3F y;
-	y.Zero();
+	//y.Zero();
 
 	if (landMeasure(y) != CFE_SUCCESS)
 	{
