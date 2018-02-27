@@ -588,6 +588,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
             case PE_SEND_HK_MID:
                 ProcessCmdPipe();
                 ReportHousekeeping();
+                SendEkf2InnovationsMsg();
                 break;
 
             case PX4_VEHICLE_GPS_POSITION_MID:
@@ -972,6 +973,14 @@ void PE::SendVehicleGlobalPositionMsg()
 								 "Global position message data invalid");
 	}
 }
+
+
+void PE::SendEkf2InnovationsMsg()
+{
+    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_Ekf2InnovationsMsg);
+    CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_Ekf2InnovationsMsg);
+}
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*                                                                 */

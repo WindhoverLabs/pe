@@ -625,6 +625,8 @@ private:
 	void updateStateSpaceParams();
 
 public:
+	void SendEkf2InnovationsMsg();
+
 	// predict the next state
 	void predict();
 
