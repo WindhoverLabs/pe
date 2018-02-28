@@ -250,8 +250,9 @@ void PE::gpsCorrect()
     //S_I.Zero();
 
     m_GPS.S_I = m_GPS.C * m_StateCov * m_GPS.C.Transpose() + m_GPS.R;
+    CFE_ES_PerfLogEntry(PE_INVERSE_MAT_PERF_ID);
     m_GPS.S_I = m_GPS.S_I.Inversed();
-
+    CFE_ES_PerfLogExit(PE_INVERSE_MAT_PERF_ID);
     /* fault detection */
     //	float beta = (r.transpose() * (S_I * r))(0, 0);
     /* 6x6 * 6x1 */
