@@ -349,6 +349,21 @@ public:
         math::Vector10F dx;
         
     } m_Land;
+    
+    struct Predict
+    {
+        math::Quaternion q;
+        math::Vector3F a;
+        math::Vector10F k1;
+        math::Vector10F k2;
+        math::Vector10F k3;
+        math::Vector10F k4;
+        math::Vector10F dx;
+        float bx;
+        float by;
+        float bz;
+        math::Matrix10F10 dP;
+    } m_Predict;
 
 	PE_Params_t m_Params;
 
