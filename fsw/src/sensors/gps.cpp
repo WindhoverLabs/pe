@@ -275,15 +275,17 @@ void PE::gpsCorrect()
     {
         if (!m_GpsFault)
         {
-            (void) CFE_EVS_SendEvent(PE_GPS_FAULT_ERR_EID, CFE_EVS_ERROR,
-                    "GPS fault, %3g %3g %3g %3g %3g %3g",
-                    double(m_GPS.r[0]*m_GPS.r[0] / m_GPS.S_I[0][0]),  
-                    double(m_GPS.r[1]*m_GPS.r[1] / m_GPS.S_I[1][1]), 
-                    double(m_GPS.r[2]*m_GPS.r[2] / m_GPS.S_I[2][2]),
-                    double(m_GPS.r[3]*m_GPS.r[3] / m_GPS.S_I[3][3]),  
-                    double(m_GPS.r[4]*m_GPS.r[4] / m_GPS.S_I[4][4]), 
-                    double(m_GPS.r[5]*m_GPS.r[5] / m_GPS.S_I[5][5]));
-            /* TODO move to single fault boolean */
+            if(Initialized())
+            {
+                (void) CFE_EVS_SendEvent(PE_GPS_FAULT_ERR_EID, CFE_EVS_ERROR,
+                        "GPS fault, %3g %3g %3g %3g %3g %3g",
+                        double(m_GPS.r[0]*m_GPS.r[0] / m_GPS.S_I[0][0]),  
+                        double(m_GPS.r[1]*m_GPS.r[1] / m_GPS.S_I[1][1]), 
+                        double(m_GPS.r[2]*m_GPS.r[2] / m_GPS.S_I[2][2]),
+                        double(m_GPS.r[3]*m_GPS.r[3] / m_GPS.S_I[3][3]),  
+                        double(m_GPS.r[4]*m_GPS.r[4] / m_GPS.S_I[4][4]), 
+                        double(m_GPS.r[5]*m_GPS.r[5] / m_GPS.S_I[5][5]));
+            }
             m_GpsFault = TRUE;
         }
     }
@@ -301,24 +303,24 @@ void PE::gpsCorrect()
     //math::Matrix10F6 K;
     //K.Zero();
 
-    /* 10x10 * 6x10' (10x6) * 6x6 */
-    m_GPS.K = m_StateCov * m_GPS.C.Transpose() * m_GPS.S_I;
-    //	Vector<float, n_x> dx = K * r;
-    //math::Vector10F dx;
-    //dx.Zero();
-    m_GPS.dx = m_GPS.K * m_GPS.r;
+	/* 10x10 * 6x10' (10x6) * 6x6 */
+	m_GPS.K = m_StateCov * m_GPS.C.Transpose() * m_GPS.S_I;
+	//	Vector<float, n_x> dx = K * r;
+	//math::Vector10F dx;
+	//dx.Zero();
+	m_GPS.dx = m_GPS.K * m_GPS.r;
 
-    //	_x += dx;
-    /* 10F * 10F */
-    m_StateVec = m_StateVec + m_GPS.dx;
+	//	_x += dx;
+	/* 10F * 10F */
+	m_StateVec = m_StateVec + m_GPS.dx;
 
-    //	_P -= K * C * _P;
-    /* 10x10 - (10x6 * 6x10 * 10x10)*/
-    //OS_printf("PRE GPS\n");
-    //m_StateCov.Print();
-    m_StateCov = m_StateCov - m_GPS.K * m_GPS.C * m_StateCov;
-    //OS_printf("GPS\n");
-    //m_StateCov.Print();
+	//	_P -= K * C * _P;
+	/* 10x10 - (10x6 * 6x10 * 10x10)*/
+	//OS_printf("PRE GPS\n");
+	//m_StateCov.Print();
+	m_StateCov = m_StateCov - m_GPS.K * m_GPS.C * m_StateCov;
+	//OS_printf("GPS\n");
+	//m_StateCov.Print();
 end_of_function:
 
     CFE_ES_PerfLogExit(PE_SENSOR_GPS_PERF_ID);

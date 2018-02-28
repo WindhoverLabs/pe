@@ -151,8 +151,59 @@ typedef struct
         \brief Count of failed commands */
     uint8              usCmdErrCnt; 
 
+	/** \brief Timestamp */
+	uint64 Timestamp;
+
     /** \brief Flag for if estimator is initialized */
     bool EstimatorInitialized;
+
+	/** \brief Origin altitude */
+	float AltOrigin;
+
+	/** \brief Origin altitude initialized flag*/
+	bool  AltOriginInitialized;
+
+    /** \brief Flag for if estimator is initialized */
+    bool BaroInitialized;
+
+	/** \brief Flag for baro fault */
+	bool   BaroFault;
+
+	/** \brief Flag for baro timeout */
+	bool   BaroTimeout;
+
+	/** \brief Timestamp of last baro read */
+	uint64 TimeLastBaro;
+
+	/** \brief Origin altitude of baro */
+	float BaroAltOrigin;
+
+    /** \brief Flag for if estimator is initialized */
+    bool GpsInitialized;
+
+	/** \brief Flag for GPS fault */
+	bool   GpsFault;
+
+	/** \brief Flag for GPS timeout */
+	bool   GpsTimeout;
+
+	/** \brief Timestamp of last gps read */
+	uint64 TimeLastGps;
+
+	/** \brief Origin altitude of GPS */
+	float GpsAltOrigin;
+
+    /** \brief Flag for if estimator is initialized */
+    bool LandInitialized;
+
+	/** \brief Flag for landing fault */
+	bool   LandFault;
+
+	/** \brief Flag for landing timeout */
+	bool   LandTimeout;
+
+	/** \brief Timestamp of last landing read */
+	uint64 TimeLastLand;
 
     /** \brief Flag for XY estimation validity */
     bool XyEstValid;
@@ -162,48 +213,6 @@ typedef struct
 
 	/** \brief Flag for terrain estimation validity */
 	bool TzEstValid;
-
-	/** \brief Timestamp */
-	uint64 Timestamp;
-
-	/** \brief Timestamp of last baro read */
-	uint64 TimeLastBaro;
-
-	/** \brief Timestamp of last gps read */
-	uint64 TimeLastGps;
-
-	/** \brief Timestamp of last landing read */
-	uint64 TimeLastLand;
-
-	/** \brief Flag for baro fault */
-	bool   BaroFault;
-
-	/** \brief Flag for GPS fault */
-	bool   GpsFault;
-
-	/** \brief Flag for landing fault */
-	bool   LandFault;
-
-	/** \brief Flag for baro timeout */
-	bool   BaroTimeout;
-
-	/** \brief Flag for GPS timeout */
-	bool   GpsTimeout;
-
-	/** \brief Flag for landing timeout */
-	bool   LandTimeout;
-
-	/** \brief Origin altitude */
-	float AltOrigin;
-
-	/** \brief Origin altitude initialized flag*/
-	bool  AltOriginInitialized;
-
-	/** \brief Origin altitude of baro */
-	float BaroAltOrigin;
-
-	/** \brief Origin altitude of GPS */
-	float GpsAltOrigin;
 
 } PE_HkTlm_t;
 
@@ -217,3 +226,4 @@ typedef struct
 /************************/
 /*  End of File Comment */
 /************************/
+

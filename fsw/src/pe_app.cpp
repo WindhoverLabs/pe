@@ -587,6 +587,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
             case PE_SEND_HK_MID:
                 ProcessCmdPipe();
                 ReportHousekeeping();
+                SendEkf2InnovationsMsg();
                 break;
 
             case PX4_VEHICLE_GPS_POSITION_MID:
@@ -608,15 +609,17 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
 
             case PX4_VEHICLE_LAND_DETECTED_MID:
                 memcpy(&m_VehicleLandDetectedMsg, MsgPtr, sizeof(m_VehicleLandDetectedMsg));
-                if(m_LandTimeout)
+                if(landed())
                 {
-                	landInit();
+					if(m_LandTimeout)
+					{
+						landInit();
+					}
+					else
+					{
+						landCorrect();
+					}
                 }
-                else
-                {
-                	landCorrect();
-                }
-
                 break;
 
             case PX4_ACTUATOR_ARMED_MID:
@@ -811,6 +814,10 @@ void PE::ReportHousekeeping()
 	HkTlm.AltOriginInitialized = m_AltOriginInitialized;
 	HkTlm.BaroAltOrigin = m_BaroAltOrigin;
 	HkTlm.GpsAltOrigin = m_GpsAltOrigin;
+	HkTlm.GpsInitialized = m_GpsInitialized;
+	HkTlm.BaroInitialized = m_BaroInitialized;
+	HkTlm.LandInitialized = m_LandInitialized;
+
 
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&HkTlm);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&HkTlm);
@@ -966,6 +973,14 @@ void PE::SendVehicleGlobalPositionMsg()
 	}
 }
 
+
+void PE::SendEkf2InnovationsMsg()
+{
+    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_Ekf2InnovationsMsg);
+    CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_Ekf2InnovationsMsg);
+}
+
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /*                                                                 */
 /* Verify Command Length                                           */
@@ -1085,6 +1100,17 @@ void PE::Update()
 	dt = (newTimestamp - m_Timestamp) / 1.0e6f;
 	m_Timestamp = newTimestamp;
 	CheckTimeouts();
+
+	/* Check if initialized */
+    if(!m_EstimatorInitialized &&
+			m_BaroInitialized &&
+			m_GpsInitialized &&
+			m_LandInitialized)
+	{
+		m_EstimatorInitialized = TRUE;
+		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+								 "Estimator initialized");
+	}
 
 	/* Check if params are updated */
 	if(m_ParamsUpdated)
@@ -1265,18 +1291,8 @@ void PE::Update()
 	Predict(dt);
 
 	/* Publish updated data if initialized */
-	if(m_AltOriginInitialized)
+	if(Initialized())
 	{
-		if(!m_EstimatorInitialized &&
-			m_BaroInitialized &&
-			m_GpsInitialized &&
-			m_LandInitialized)
-		{
-			m_EstimatorInitialized = TRUE;
-			(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
-									 "Estimator initialized");
-		}
-
 		SendVehicleLocalPositionMsg();
 
 		if(m_XyEstValid && (m_MapRef.init_done || m_Params.FAKE_ORIGIN))

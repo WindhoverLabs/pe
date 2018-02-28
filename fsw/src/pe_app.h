@@ -624,6 +624,8 @@ private:
 	void updateStateSpaceParams();
 
 public:
+	void SendEkf2InnovationsMsg();
+
 	// predict the next state
 	void predict();
 
@@ -644,13 +646,13 @@ public:
 	void landCorrect();
 	void landInit();
 	void landCheckTimeout();
+	boolean landed();
 
 	// timeouts
 	void CheckTimeouts();
 
 	// misc
 	//inline float agl() { return _x(X_tz) - _x(X_z); }
-	boolean landed();
 	int getDelayPeriods(float delay, uint8 *periods);
 
 	void UpdateLocalParams();

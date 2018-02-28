@@ -6,6 +6,25 @@
 #define 	REQ_LAND_INIT_COUNT (1)
 #define 	LAND_TIMEOUT   		(1000000) // 1.0 s
 
+
+boolean PE::landed()
+{
+	boolean landed = FALSE;
+	boolean disarmed_not_falling = FALSE;
+
+	if(0 == m_VehicleLandDetectedMsg.Freefall && PX4_ARMING_STATE_ARMED != m_VehicleStatusMsg.ArmingState)
+	{
+		disarmed_not_falling = TRUE;
+	}
+
+	if(m_VehicleLandDetectedMsg.Landed || disarmed_not_falling)
+	{
+		landed = TRUE;
+	}
+
+	return landed;
+}
+
 void PE::landInit()
 {
 	// measure
@@ -87,8 +106,11 @@ void PE::landCorrect()
 		if (!m_LandFault)
 		{
 			m_LandFault = TRUE;
-			(void) CFE_EVS_SendEvent(PE_LAND_FAULT_ERR_EID, CFE_EVS_ERROR,
-									 "Land detector fault, beta %5.2f", double(m_Land.beta));
+            if(Initialized())
+            {
+			    (void) CFE_EVS_SendEvent(PE_LAND_FAULT_ERR_EID, CFE_EVS_ERROR,
+									     "Land detector fault, beta %5.2f", double(m_Land.beta));
+            }
 		}
 
 		// abort correction
@@ -105,6 +127,7 @@ void PE::landCorrect()
 	// kalman filter correction always for land detector
 	//math::Matrix10F3 K;
 	//K.Zero();
+
 	m_Land.K = m_StateCov * m_Land.C.Transpose() * m_Land.S_I;
 
 	//math::Vector10F dx;
@@ -112,11 +135,11 @@ void PE::landCorrect()
 	m_Land.dx = m_Land.K * m_Land.r;
 
 	m_StateVec = m_StateVec + m_Land.dx;
-    //OS_printf("PRE LAND\n");
-    //m_StateCov.Print();
+	//OS_printf("PRE LAND\n");
+	//m_StateCov.Print();
 	m_StateCov = m_StateCov - m_Land.K * m_Land.C * m_StateCov;
-    //OS_printf("LAND CORRECTED\n");
-    //m_StateCov.Print();
+	//OS_printf("LAND CORRECTED\n");
+	//m_StateCov.Print();
 end_of_function:
 
     CFE_ES_PerfLogExit(PE_SENSOR_LAND_PERF_ID);
