@@ -1258,6 +1258,12 @@ void PE::Update()
 		/* TODO: Decide if we want to reinit sensors here. PX4 didn't */
 	}
 
+	/* Make state covariance correction if needed */
+	if(Initialized())
+	{
+		CorrectStateCov();
+	}
+
 	/* Force state covariance symmetry and reinitialize matrix if necessary */
 	boolean ReinitStateCov = FALSE;
 	for (int i = 0; i < n_x; i++)
@@ -1331,6 +1337,47 @@ void PE::Update()
     }
 
     CFE_ES_PerfLogExit(PE_UPDATE_TASK_PERF_ID);
+}
+
+void PE::CorrectStateCov()
+{
+	boolean correct = FALSE;
+	float min = 0.0f;
+	float add = 0.0001f;
+	float diag = 0.0f;
+
+	/* Check if any diagonal is negative and if so find most negative one */
+	for (int i = 0; i < n_x; i++)
+	{
+		diag = m_StateCov[i][i];
+		if(0.0f > diag)
+		{
+			OS_printf("Index negative: %i, %i: %f\n", i,i,diag);
+			if(min > diag)
+			{
+				min = m_StateCov[i][i];
+				OS_printf("min: %f\n",min);
+			}
+			correct = TRUE;
+		}
+
+	}
+
+	if(correct == TRUE)
+	{
+		OS_printf("Adding noise to diagonal elements\n");
+		min = fabs(min);
+
+		/*  */
+		if(min < .01f) // make configurable
+		{
+			add += min;
+			for (int i = 0; i < n_x; i++)
+			{
+				m_StateCov[i][i] += add;
+			}
+		}
+	}
 }
 
 
