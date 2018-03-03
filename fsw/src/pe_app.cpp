@@ -1269,8 +1269,10 @@ void PE::Update()
 				{
 					if(Initialized())
 					{
+						if(i!=9){
 						(void) CFE_EVS_SendEvent(PE_ESTIMATOR_ERR_EID, CFE_EVS_ERROR,
 												 "Reinitializing state covariance. Index (%i, %i) negative", i, j);
+						}
 					}
 					ReinitStateCov = TRUE;
 					break;
