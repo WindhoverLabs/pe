@@ -1485,7 +1485,7 @@ void PE::Predict(float dt)
 	}
 
 	/* Update state */
-	m_StateCov += m_Predict.dP;
+	m_StateCov = m_StateCov + m_Predict.dP;
 	m_XLowPass.Update(m_StateVec, dt, LOW_PASS_CUTOFF);
 }
 
