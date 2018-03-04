@@ -242,7 +242,7 @@ void PE::gpsCorrect()
     for(i = 0; i < 6; i++)
     {
         m_Ekf2InnovationsMsg.VelPosInnov[i] = m_GPS.r[i];
-        m_Ekf2InnovationsMsg.VelPosInnovVar[i] = m_GPS.r[i];
+        m_Ekf2InnovationsMsg.VelPosInnovVar[i] = m_GPS.R[i][i];
     }
 
     //	Matrix<float, n_y_gps, n_y_gps> S_I = inv<float, 6>(C * _P * C.transpose() + R);
