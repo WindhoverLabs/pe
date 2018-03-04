@@ -223,11 +223,9 @@ void PE::gpsCorrect()
         goto end_of_function;
     }
     
-    //math::Matrix10F1 temp;
-    m_GPS.temp = m_XDelay.Get(m_GPS.i_hist);
     //math::Vector10F x0;
+    m_GPS.x0 = m_XDelay.Get(m_GPS.i_hist);
 
-    m_GPS.x0 = m_GPS.temp.ToVector();
     /* residual */
     //	Vector<float, n_y_gps> r = y - C * x0;
     /* 6F - 6F10 * 10x1(10F)*/

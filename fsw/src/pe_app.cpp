@@ -362,7 +362,6 @@ void PE::InitData()
     m_GPS.var_vz = 0.0f;
     m_GPS.gps_s_stddev = 0.0f;
     m_GPS.i_hist = 0;
-    m_GPS.temp.Zero();
     m_GPS.x0.Zero();
     m_GPS.r.Zero();
     m_GPS.S_I.Zero();

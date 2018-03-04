@@ -1098,16 +1098,16 @@ void Test_PE_GPS_Correct_Nominal(void)
     Geo_Project_Returns.y = 0.0005728446f;
 
     /* Set return values for BlockDelay 10F1 return matrix */
-    delay::Block_Delay_Returns.matrixReturn[0][0] = -0.0015083672;
-    delay::Block_Delay_Returns.matrixReturn[1][0] = 0.0049203979;
-    delay::Block_Delay_Returns.matrixReturn[2][0] = -0.0228787735;
-    delay::Block_Delay_Returns.matrixReturn[3][0] = -0.0162045695;
-    delay::Block_Delay_Returns.matrixReturn[4][0] = 0.0225003846;
-    delay::Block_Delay_Returns.matrixReturn[5][0] = -0.1252005398;
-    delay::Block_Delay_Returns.matrixReturn[6][0] = 0.0000656473;
-    delay::Block_Delay_Returns.matrixReturn[7][0] = 0.0001386894;
-    delay::Block_Delay_Returns.matrixReturn[8][0] = -0.0000956892;
-    delay::Block_Delay_Returns.matrixReturn[9][0] = -0.0023971323;
+    delay::Block_Delay_Returns.vectorReturn[0] = -0.0015083672;
+    delay::Block_Delay_Returns.vectorReturn[1] = 0.0049203979;
+    delay::Block_Delay_Returns.vectorReturn[2] = -0.0228787735;
+    delay::Block_Delay_Returns.vectorReturn[3] = -0.0162045695;
+    delay::Block_Delay_Returns.vectorReturn[4] = 0.0225003846;
+    delay::Block_Delay_Returns.vectorReturn[5] = -0.1252005398;
+    delay::Block_Delay_Returns.vectorReturn[6] = 0.0000656473;
+    delay::Block_Delay_Returns.vectorReturn[7] = 0.0001386894;
+    delay::Block_Delay_Returns.vectorReturn[8] = -0.0000956892;
+    delay::Block_Delay_Returns.vectorReturn[9] = -0.0023971323;
 
     /* Set initial values for state coveriance matrix */
     oPE.m_StateCov[0][0] = 0.1167470515f;

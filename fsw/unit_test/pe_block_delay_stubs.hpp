@@ -35,14 +35,14 @@
 #define PE_BLOCK_DELAY_STUBS_H
 
 #include "cfe.h"
-#include <math/Matrix10F1.hpp>
+#include <math/Vector10F.hpp>
 
 namespace delay
 {
 
 typedef struct
 {
-    math::Matrix10F1 matrixReturn;
+    math::Vector10F vectorReturn;
     uint64 arrayReturn;
 } Block_Delay_Returns_t;
 

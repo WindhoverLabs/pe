@@ -40,17 +40,17 @@ using namespace delay;
 Block_Delay_Returns_t delay::Block_Delay_Returns;
 
 
-BlockDelay10F1LEN10::BlockDelay10F1LEN10()
+BlockDelay10FLEN10::BlockDelay10FLEN10()
 {
 };
 
 
-BlockDelay10F1LEN10::~BlockDelay10F1LEN10()
+BlockDelay10FLEN10::~BlockDelay10FLEN10()
 {
 };
 
 
-void BlockDelay10F1LEN10::Initialize(void)
+void BlockDelay10FLEN10::Initialize(void)
 {
     int i = 0;
     m_Index = 0;
@@ -65,7 +65,7 @@ void BlockDelay10F1LEN10::Initialize(void)
 }
 
 
-math::Matrix10F1 BlockDelay10F1LEN10::Update(const math::Matrix10F1 &input)
+math::Vector10F BlockDelay10FLEN10::Update(const math::Vector10F &input)
 {
     /* store current value */
     m_Storage[m_Index] = input;
@@ -100,10 +100,10 @@ math::Matrix10F1 BlockDelay10F1LEN10::Update(const math::Matrix10F1 &input)
 
 
 /* Mocked return */
-math::Matrix10F1 BlockDelay10F1LEN10::Get(uint8 delay)
+math::Vector10F BlockDelay10FLEN10::Get(uint8 delay)
 {
-    /* Return the mocked matrix */
-    return Block_Delay_Returns.matrixReturn;
+    /* Return the mocked vector */
+    return Block_Delay_Returns.vectorReturn;
 }
 
 

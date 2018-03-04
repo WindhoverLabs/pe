@@ -244,7 +244,7 @@ public:
 	LowPass m_AglLowPass;
 
 	/* delay blocks */
-    delay::BlockDelay10F1LEN10   m_XDelay;
+    delay::BlockDelay10FLEN10   m_XDelay;
     delay::BlockDelayUINT64LEN10 m_TDelay;
 
 	/* Timestamps */
@@ -324,7 +324,6 @@ public:
         float var_vz;
         float gps_s_stddev;
         uint8 i_hist;
-        math::Matrix10F1 temp;
         math::Vector10F x0;
         math::Vector6F r;
         math::Matrix6F6 S_I;
