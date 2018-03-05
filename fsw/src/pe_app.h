@@ -211,14 +211,12 @@ public:
 
     /** \brief Ingest Data */
     PX4_VehicleGpsPositionMsg_t m_VehicleGpsPositionMsg;
-    PX4_VehicleStatusMsg_t m_VehicleStatusMsg; //todo verify needed
+    PX4_VehicleStatusMsg_t m_VehicleStatusMsg;
     PX4_VehicleLandDetectedMsg_t m_VehicleLandDetectedMsg;
     PX4_ActuatorArmedMsg_t m_ActuatorArmedMsg;
     PX4_VehicleAttitudeMsg_t m_VehicleAttitudeMsg;
-    PX4_VehicleControlModeMsg_t m_VehicleControlModeMsg; //todo verify needed
     PX4_SensorCombinedMsg_t m_SensorCombinedMsg;
     PX4_VehicleAttitudeSetpointMsg_t m_VehicleAttitudeSetpointMsg;
-    PX4_ManualControlSetpointMsg_t m_ManualControlSetpointMsg; //todo verify needed
 
     /** \brief Output Data published at the end of cycle */
     PX4_VehicleLocalPositionMsg_t m_VehicleLocalPositionMsg;
@@ -226,7 +224,7 @@ public:
     PX4_VehicleGlobalPositionMsg_t m_VehicleGlobalPositionMsg;
     PX4_Ekf2InnovationsMsg_t m_Ekf2InnovationsMsg;
 
-    /* sensor stats */
+    /* Sensor stats */
     Stats1F m_BaroStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
@@ -236,15 +234,15 @@ public:
     boolean m_ZEstValid;
     boolean m_TzEstValid;
 
-    /* map */
+    /* Map */
     struct map_projection_reference_s m_MapRef;
 
-	/* low pass filter */
+	/* Low pass filter */
 	LowPassVector10F m_XLowPass;
 	LowPass m_AglLowPass;
 
-	/* delay blocks */
-    delay::BlockDelay10FLEN10   m_XDelay;
+	/* Delay blocks */
+    delay::BlockDelay10F1LEN10   m_XDelay;
     delay::BlockDelayUINT64LEN10 m_TDelay;
 
 	/* Timestamps */
@@ -270,7 +268,7 @@ public:
 	float m_BaroAltOrigin;
 	float m_GpsAltOrigin;
 
-	/* status */
+	/* Status */
 	boolean m_ReceivedGps;
 	boolean m_LastArmedState;
 	boolean m_EstimatorInitialized;
@@ -280,7 +278,7 @@ public:
 	boolean m_AltOriginInitialized;
     boolean m_ParamsUpdated;
 
-	/* state space */
+	/* State space */
 	math::Vector10F     m_StateVec; // state vector
 	math::Vector3F      m_InputVec; // input vector
 	math::Matrix10F10   m_StateCov; // state covariance matrix
@@ -293,6 +291,7 @@ public:
 	math::Matrix3F3     m_InputCov; // input covariance
 	math::Matrix10F10   m_NoiseCov; // process noise covariance
 
+	/* Sensor specific data structs */
     struct Baro
     {
         math::Vector1F y;
@@ -530,8 +529,7 @@ public:
     /** \brief Sends the VehicleLocalPositionMsg message.
      **
      **  \par Description
-     **       This function publishes the VehicleLocalPositionMsg message containing
-     **       <TODO>
+     **       This function publishes the VehicleLocalPositionMsg message
      **
      **  \par Assumptions, External Events, and Notes:
      **       None
@@ -543,8 +541,7 @@ public:
     /** \brief Sends the VehicleGlobalPositionMsg message.
      **
      **  \par Description
-     **       This function publishes the VehicleGlobalPositionMsg message containing
-     **       <TODO>
+     **       This function publishes the VehicleGlobalPositionMsg message
      **
      **  \par Assumptions, External Events, and Notes:
      **       None
@@ -596,7 +593,7 @@ private:
     **
     **  \par Description
     **       This function initializes PE's configuration tables.  This
-    **       includes <TODO>.
+    **       includes local parameters.
     **
     **  \par Assumptions, External Events, and Notes:
     **       None

@@ -52,9 +52,6 @@ int32 PE::InitEvent()
      * Note: 0 is the CFE_EVS_NO_FILTER mask and event 0 is reserved (not used) */
     memset(EventTbl, 0x00, sizeof(EventTbl));
     
-    /* TODO: Choose the events you want to filter.  CFE_EVS_MAX_EVENT_FILTERS
-     * limits the number of filters per app.  An explicit CFE_EVS_NO_FILTER 
-     * (the default) has been provided as an example. */
     EventTbl[  ind].EventID = PE_RESERVED_EID;
     EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
     EventTbl[  ind].EventID = PE_ESTIMATOR_INF_EID;
@@ -646,10 +643,6 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleAttitudeMsg, MsgPtr, sizeof(m_VehicleAttitudeMsg));
                 break;
 
-            case PX4_VEHICLE_CONTROL_MODE_MID:
-                memcpy(&m_VehicleControlModeMsg, MsgPtr, sizeof(m_VehicleControlModeMsg));
-                break;
-
             case PX4_SENSOR_COMBINED_MID:
                 memcpy(&m_SensorCombinedMsg, MsgPtr, sizeof(m_SensorCombinedMsg));
                 /* If baro is valid */
@@ -682,10 +675,6 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleAttitudeSetpointMsg, MsgPtr, sizeof(m_VehicleAttitudeSetpointMsg));
                 break;
 
-            case PX4_MANUAL_CONTROL_SETPOINT_MID:// TODO: verify needed
-                memcpy(&m_ManualControlSetpointMsg, MsgPtr, sizeof(m_ManualControlSetpointMsg));
-                break;
-
             default:
                 (void) CFE_EVS_SendEvent(PE_MSGID_ERR_EID, CFE_EVS_ERROR,
                      "Recvd invalid SCH msgId (0x%04X)", MsgId);
@@ -693,17 +682,10 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
     }
     else if (iStatus == CFE_SB_NO_MESSAGE)
     {
-        /* TODO: If there's no incoming message, you can do something here, or 
-         * nothing.  Note, this section is dead code only if the iBlocking arg
-         * is CFE_SB_PEND_FOREVER. */
         iStatus = CFE_SUCCESS;
     }
     else if (iStatus == CFE_SB_TIME_OUT)
     {
-        /* TODO: If there's no incoming message within a specified time (via the
-         * iBlocking arg, you can do something here, or nothing.  
-         * Note, this section is dead code only if the iBlocking arg
-         * is CFE_SB_PEND_FOREVER. */
         iStatus = CFE_SUCCESS;
     }
     else
@@ -891,7 +873,7 @@ void PE::SendVehicleLocalPositionMsg()
 		m_VehicleLocalPositionMsg.V_Z_Valid = m_ZEstValid;
 		m_VehicleLocalPositionMsg.X = m_XLowPass[X_x];
 		m_VehicleLocalPositionMsg.Y = m_XLowPass[X_y];
-		m_VehicleLocalPositionMsg.Z = m_XLowPass[X_z]; // todo check if this should be agl
+		m_VehicleLocalPositionMsg.Z = m_XLowPass[X_z]; // Note: This can be be updated to AGL later
 		m_VehicleLocalPositionMsg.VX = m_XLowPass[X_vx];
 		m_VehicleLocalPositionMsg.VY = m_XLowPass[X_vy];
 		m_VehicleLocalPositionMsg.VZ = m_XLowPass[X_vz];
@@ -902,7 +884,7 @@ void PE::SendVehicleLocalPositionMsg()
 		m_VehicleLocalPositionMsg.RefLat = m_MapRef.lat_rad * 180/M_PI;
 		m_VehicleLocalPositionMsg.RefLon = m_MapRef.lon_rad * 180/M_PI;
 		m_VehicleLocalPositionMsg.RefAlt = m_AltOrigin;
-		//m_VehicleLocalPositionMsg.DistBottom = ; //TODO agl low pass
+		//m_VehicleLocalPositionMsg.DistBottom = ; //TODO Populate this with AGL once ULR integrated
 		m_VehicleLocalPositionMsg.DistBottomRate = m_XLowPass[X_vz];
 		m_VehicleLocalPositionMsg.SurfaceBottomTimestamp = m_Timestamp;
 		m_VehicleLocalPositionMsg.DistBottomValid = m_ZEstValid;
@@ -1148,7 +1130,7 @@ void PE::Update()
 
 		if(m_XyEstValid)
 		{
-			if(!VxyStdDevValid && m_GpsTimeout) // TODO: Should this really be AND?
+			if(!VxyStdDevValid && m_GpsTimeout)
 			{
 				m_XyEstValid = FALSE;
 			}
@@ -1178,7 +1160,7 @@ void PE::Update()
 
 		if(m_ZEstValid)
 		{
-			if(!ZStdDevValid && m_BaroTimeout) // TODO: Should this really be AND?
+			if(!ZStdDevValid && m_BaroTimeout)
 			{
 				m_ZEstValid = FALSE;
 			}
@@ -1233,7 +1215,7 @@ void PE::Update()
 		map_projection_init(&m_MapRef,
 							m_Params.INIT_ORIGIN_LAT,
 							m_Params.INIT_ORIGIN_LON,
-							m_Timestamp); //TODO: Verify correct time
+							m_Timestamp);
 
 		(void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
 								 "GPS fake origin init. Lat: %6.2f Lon: %6.2f Alt: %5.1f m",
@@ -1258,7 +1240,6 @@ void PE::Update()
 	if (ReinitStateVec)
 	{
 		m_StateVec.Zero();
-		/* TODO: Decide if we want to reinit sensors here. PX4 didn't */
 	}
 
 	/* Force state covariance symmetry and reinitialize matrix if necessary */
