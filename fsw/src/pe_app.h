@@ -242,7 +242,7 @@ public:
 	LowPass m_AglLowPass;
 
 	/* Delay blocks */
-    delay::BlockDelay10F1LEN10   m_XDelay;
+    delay::BlockDelay10FLEN10   m_XDelay;
     delay::BlockDelayUINT64LEN10 m_TDelay;
 
 	/* Timestamps */
