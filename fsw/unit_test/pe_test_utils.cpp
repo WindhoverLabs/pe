@@ -84,9 +84,9 @@ PE_ConfigTbl_t PE_ConfigTbl =
 	//GPS_EPV_MAX
     5.0f,
 	//LAND_Z_STDDEV
-    5.0f,
+    .03f,
 	//LAND_VXY_STDDEV
-    .80f,
+    .05f,
 	//PN_P_NOISE_DENSITY
     .1f,
 	//PN_V_NOISE_DENSITY
