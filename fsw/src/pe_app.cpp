@@ -572,7 +572,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
         MsgId = CFE_SB_GetMsgId(MsgPtr);
         switch (MsgId)
         {
-        	/* Cyclic op - 250hz */
+        	/* Cyclic op - 125hz */
             case PE_WAKEUP_MID:
                 Update();
                 break;
