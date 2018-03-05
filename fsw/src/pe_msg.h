@@ -154,65 +154,65 @@ typedef struct
 	/** \brief Timestamp */
 	uint64 Timestamp;
 
-    /** \brief Flag for if estimator is initialized */
-    bool EstimatorInitialized;
+	/** \brief Timestamp of last baro read */
+	uint64 TimeLastBaro;
+
+	/** \brief Timestamp of last gps read */
+	uint64 TimeLastGps;
+
+	/** \brief Timestamp of last landing read */
+	uint64 TimeLastLand;
 
 	/** \brief Origin altitude */
 	float AltOrigin;
 
+	/** \brief Flag for if estimator is initialized */
+    boolean EstimatorInitialized;
+
 	/** \brief Origin altitude initialized flag*/
-	bool  AltOriginInitialized;
+	boolean  AltOriginInitialized;
 
     /** \brief Flag for if estimator is initialized */
-    bool BaroInitialized;
+    boolean BaroInitialized;
 
 	/** \brief Flag for baro fault */
-	bool   BaroFault;
-
-	/** \brief Flag for baro timeout */
-	bool   BaroTimeout;
-
-	/** \brief Timestamp of last baro read */
-	uint64 TimeLastBaro;
+	boolean   BaroFault;
 
 	/** \brief Origin altitude of baro */
 	float BaroAltOrigin;
 
+	/** \brief Flag for baro timeout */
+	boolean   BaroTimeout;
+
     /** \brief Flag for if estimator is initialized */
-    bool GpsInitialized;
+    boolean GpsInitialized;
 
 	/** \brief Flag for GPS fault */
-	bool   GpsFault;
+	boolean   GpsFault;
 
 	/** \brief Flag for GPS timeout */
-	bool   GpsTimeout;
-
-	/** \brief Timestamp of last gps read */
-	uint64 TimeLastGps;
+	boolean   GpsTimeout;
 
 	/** \brief Origin altitude of GPS */
 	float GpsAltOrigin;
 
     /** \brief Flag for if estimator is initialized */
-    bool LandInitialized;
+    boolean LandInitialized;
 
 	/** \brief Flag for landing fault */
-	bool   LandFault;
+	boolean   LandFault;
 
 	/** \brief Flag for landing timeout */
-	bool   LandTimeout;
-
-	/** \brief Timestamp of last landing read */
-	uint64 TimeLastLand;
+	boolean   LandTimeout;
 
     /** \brief Flag for XY estimation validity */
-    bool XyEstValid;
+    boolean XyEstValid;
 
     /** \brief Flag for Z estimation validity */
-	bool ZEstValid;
+	boolean ZEstValid;
 
 	/** \brief Flag for terrain estimation validity */
-	bool TzEstValid;
+	boolean TzEstValid;
 
 } PE_HkTlm_t;
 
