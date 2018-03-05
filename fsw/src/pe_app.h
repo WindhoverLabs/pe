@@ -672,7 +672,6 @@ public:
 	void UpdateLocalParams();
 
 	void Update();
-	void CorrectStateCov();
 	void Predict(float dt);
 
 	math::Vector10F dynamics(const math::Vector10F &x, const math::Vector3F &u);
