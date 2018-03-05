@@ -90,6 +90,7 @@ void PE::landCorrect()
 
 	if (m_Land.beta / BETA_TABLE[n_y_land] > m_Land.beta_thresh)
 	{
+        OS_printf("LD fault beta: %f\n", m_Land.beta);
 		if (!m_LandFault)
 		{
 			m_LandFault = TRUE;
@@ -99,9 +100,6 @@ void PE::landCorrect()
 									     "Land detector fault, beta %5.2f", double(m_Land.beta));
             }
 		}
-
-		/* abort correction */
-		goto end_of_function;
 	}
 	else if (m_LandFault)
 	{
