@@ -90,7 +90,6 @@ void PE::landCorrect()
 
 	if (m_Land.beta / BETA_TABLE[n_y_land] > m_Land.beta_thresh)
 	{
-        OS_printf("LD fault beta: %f\n", m_Land.beta);
 		if (!m_LandFault)
 		{
 			m_LandFault = TRUE;
