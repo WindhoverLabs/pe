@@ -623,13 +623,17 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleLandDetectedMsg, MsgPtr, sizeof(m_VehicleLandDetectedMsg));
                 if(landed())
                 {
-					if(m_LandTimeout)
+					/* Throttle rate */
+					if((m_Timestamp - m_TimeLastLand) > 1.0e6f / LAND_RATE)
 					{
-						landInit();
-					}
-					else
-					{
-						landCorrect();
+						if(m_LandTimeout)
+						{
+							landInit();
+						}
+						else
+						{
+							landCorrect();
+						}
 					}
                 }
                 break;
