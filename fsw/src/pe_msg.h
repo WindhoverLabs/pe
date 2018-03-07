@@ -169,10 +169,10 @@ typedef struct
 	/** \brief Flag for if estimator is initialized */
     boolean EstimatorInitialized;
 
-	/** \brief Origin altitude initialized flag*/
+	/** \brief Origin altitude initialized flag */
 	boolean  AltOriginInitialized;
 
-    /** \brief Flag for if estimator is initialized */
+    /** \brief Flag for if baro is initialized */
     boolean BaroInitialized;
 
 	/** \brief Flag for baro fault */
@@ -184,7 +184,7 @@ typedef struct
 	/** \brief Flag for baro timeout */
 	boolean   BaroTimeout;
 
-    /** \brief Flag for if estimator is initialized */
+    /** \brief Flag for if gps is initialized */
     boolean GpsInitialized;
 
 	/** \brief Flag for GPS fault */
@@ -196,7 +196,7 @@ typedef struct
 	/** \brief Origin altitude of GPS */
 	float GpsAltOrigin;
 
-    /** \brief Flag for if estimator is initialized */
+    /** \brief Flag for if land is initialized */
     boolean LandInitialized;
 
 	/** \brief Flag for landing fault */
