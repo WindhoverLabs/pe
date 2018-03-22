@@ -627,52 +627,332 @@ private:
 
 
 private:
+    /************************************************************************/
+    /** \brief Initialize State Covariance
+    **
+    **  \par Description
+    **       This function initializes state covariance to default values.
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void initStateCov();
 
-
+    /************************************************************************/
+    /** \brief Initialize State Space
+    **
+    **  \par Description
+    **       This function initializes state space to default values.
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void InitStateSpace();
 
-
+    /************************************************************************/
+    /** \brief Update State Space
+    **
+    **  \par Description
+    **       This function updates state space to current values.
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void updateStateSpace();
+
+    /************************************************************************/
+    /** \brief Update State Space Parameters
+    **
+    **  \par Description
+    **       This function updates correct state space indexes to parameter values
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void updateStateSpaceParams();
 
 public:
-	// predict the next state
-	void predict();
-
-	// baro
+    /************************************************************************/
+    /** \brief Baro Measure
+    **
+    **  \par Description
+    **       This function reads the current baro message
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \param [in/out]   y    A #Vector1F to store baro measurement
+    **
+	**  \returns
+    **  \retcode #CFE_SUCCESS \endcode
+    **  \endreturns
+    **
+    *************************************************************************/
 	int32  baroMeasure(math::Vector1F &y);
+
+    /************************************************************************/
+    /** \brief Baro Correct
+    **
+    **  \par Description
+    **       This function corrects the baro measurement
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void baroCorrect();
+
+    /************************************************************************/
+    /** \brief Baro Initialize
+    **
+    **  \par Description
+    **       This function initializes the baro
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void baroInit();
+
+    /************************************************************************/
+    /** \brief Check Baro Timeout
+    **
+    **  \par Description
+    **       This function checks if the baro message has timed out
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void baroCheckTimeout();
 
-	// gps
+    /************************************************************************/
+    /** \brief GPS Measure
+    **
+    **  \par Description
+    **       This function reads the current baro message
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \param [in/out]   y    A #Vector6F to store baro measurement
+    **
+	**  \returns
+    **  \retcode #CFE_SUCCESS \endcode
+    **  \endreturns
+    **
+    *************************************************************************/
 	int  gpsMeasure(math::Vector6F &y);
+
+    /************************************************************************/
+    /** \brief GPS Correct
+    **
+    **  \par Description
+    **       This function corrects the GPS measurement
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void gpsCorrect();
+
+    /************************************************************************/
+    /** \brief GPS Initialize
+    **
+    **  \par Description
+    **       This function initializes the GPS
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void gpsInit();
+
+    /************************************************************************/
+    /** \brief Check GPS Timeout
+    **
+    **  \par Description
+    **       This function checks if the GPS message has timed out
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void gpsCheckTimeout();
 
-	// land
+    /************************************************************************/
+    /** \brief Land Detector Measure
+    **
+    **  \par Description
+    **       This function reads the current land detector message
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \param [in/out]   y    A #Vector6F to store baro measurement
+    **
+	**  \returns
+    **  \retcode #CFE_SUCCESS \endcode
+    **  \endreturns
+    **
+    *************************************************************************/
 	int  landMeasure(math::Vector3F &y);
+
+    /************************************************************************/
+    /** \brief Land Detector Correct
+    **
+    **  \par Description
+    **       This function corrects the land detector measurement
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void landCorrect();
+
+    /************************************************************************/
+    /** \brief Land Detector Initialize
+    **
+    **  \par Description
+    **       This function initializes the land detector
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void landInit();
+
+    /************************************************************************/
+    /** \brief Check Land Detector Timeout
+    **
+    **  \par Description
+    **       This function checks if the land detector message has timed out
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void landCheckTimeout();
+
+    /************************************************************************/
+    /** \brief Check Landed
+    **
+    **  \par Description
+    **       This function checks if the vehicle is landed to determine whether
+    **       to integrate land parameters into prediction
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	boolean landed();
 
-	// timeouts
+    /************************************************************************/
+    /** \brief Check Timeouts
+    **
+    **  \par Description
+    **       This function calls all the sensor timeout functions.
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void CheckTimeouts();
 
-	// misc
-	//inline float agl() { return _x(X_tz) - _x(X_z); }
+    /************************************************************************/
+    /** \brief Get Delay Periods
+    **
+    **  \par Description
+    **       This function checks if data is delayed
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \returns
+    **  \retcode #CFE_SUCCESS if no delay \endcode
+    **  -1 otherwise
+    **  \endreturns
+    **
+    *************************************************************************/
 	int getDelayPeriods(float delay, uint8 *periods);
 
+    /************************************************************************/
+    /** \brief Update Local Params
+    **
+    **  \par Description
+    **       This function updates the local application struct with up to
+    **       date values from the parameter table.
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void UpdateLocalParams();
 
+    /************************************************************************/
+    /** \brief Update State
+    **
+    **  \par Description
+    **       This function is the cyclic operation. It updates the state
+    **       covariance, performs error checking, and reports data validity.
+    **       Runs at 125hz.
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
 	void Update();
+
+    /************************************************************************/
+    /** \brief Predict
+    **
+    **  \par Description
+    **       This function predicts the next state and is called in the
+    **       Update function. Utilizes rk4 algorithm described at:
+    **       https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \param [in]   dt    Delta time
+    **
+    *************************************************************************/
 	void Predict(float dt);
 
+    /************************************************************************/
+    /** \brief Dynamics
+    **
+    **  \par Description
+    **       This function performs linear algebra operations utilized by the
+    **       prediction code.
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \param [in]   x    A #Vector10F input
+    **  \param [in]   u    A #Vector3F input
+    **
+    *************************************************************************/
 	math::Vector10F dynamics(const math::Vector10F &x, const math::Vector3F &u);
 
+    /************************************************************************/
+    /** \brief Check Initialized
+    **
+    **  \par Description
+    **       This function
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \returns
+    **  TRUE if initialized. FALSE otherwise.
+    **  \endreturns
+    **
+    *************************************************************************/
 	boolean Initialized(void);
 
 };
