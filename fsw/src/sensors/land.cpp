@@ -79,9 +79,6 @@ void PE::landCorrect()
 
 	m_Land.r = m_Land.y - m_Land.C * m_StateVec;
 
-	m_Ekf2InnovationsMsg.HaglInnov = m_Land.r[Y_land_agl];
-	m_Ekf2InnovationsMsg.HaglInnovVar = m_Land.R[Y_land_agl][Y_land_agl];
-
 	/* fault detection */
 	m_Land.beta = (m_Land.r.Transpose() * (m_Land.S_I * m_Land.r));
 

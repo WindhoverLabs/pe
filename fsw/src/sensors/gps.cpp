@@ -193,12 +193,6 @@ void PE::gpsCorrect()
     /* residual */
     m_GPS.r = m_GPS.y - m_GPS.C * m_GPS.x0;
 
-    for(i = 0; i < 6; i++)
-    {
-        m_Ekf2InnovationsMsg.VelPosInnov[i] = m_GPS.r[i];
-        m_Ekf2InnovationsMsg.VelPosInnovVar[i] = m_GPS.R[i][i];
-    }
-
     m_GPS.S_I = m_GPS.C * m_StateCov * m_GPS.C.Transpose() + m_GPS.R;
     m_GPS.S_I = m_GPS.S_I.Inversed();
 

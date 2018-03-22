@@ -222,7 +222,6 @@ public:
     PX4_VehicleLocalPositionMsg_t m_VehicleLocalPositionMsg;
     PX4_EstimatorStatusMsg_t m_EstimatorStatusMsg;
     PX4_VehicleGlobalPositionMsg_t m_VehicleGlobalPositionMsg;
-    PX4_Ekf2InnovationsMsg_t m_Ekf2InnovationsMsg;
 
     /* Sensor stats */
     Stats1F m_BaroStats;
@@ -628,15 +627,16 @@ private:
 
 
 private:
-    //Vector<n_x> dynamics(const Vector<float, n_x> &x,const Vector<float, n_u> &u);
 	void initStateCov();
+
+
 	void InitStateSpace();
+
+
 	void updateStateSpace();
 	void updateStateSpaceParams();
 
 public:
-	void SendEkf2InnovationsMsg();
-
 	// predict the next state
 	void predict();
 

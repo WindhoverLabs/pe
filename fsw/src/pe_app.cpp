@@ -234,9 +234,6 @@ void PE::InitData()
     /* Vehicle global position message */
     CFE_SB_InitMsg(&m_VehicleGlobalPositionMsg,
 			PX4_VEHICLE_GLOBAL_POSITION_MID, sizeof(PX4_VehicleGlobalPositionMsg_t), TRUE);
-    /* EKF2 innovations message  */
-    CFE_SB_InitMsg(&m_Ekf2InnovationsMsg,
-			PX4_EKF2_INNOVATIONS_MID, sizeof(PX4_Ekf2InnovationsMsg_t), TRUE);
 
 	/* Set constants */
 	DELAY_MAX           = 0.5f; // seconds
@@ -580,7 +577,6 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
             case PE_SEND_HK_MID:
                 ProcessCmdPipe();
                 ReportHousekeeping();
-                SendEkf2InnovationsMsg();
                 break;
 
             case PX4_VEHICLE_GPS_POSITION_MID:
@@ -953,13 +949,6 @@ void PE::SendVehicleGlobalPositionMsg()
 		(void) CFE_EVS_SendEvent(PE_GLOBAL_POS_MSG_ERR_EID, CFE_EVS_ERROR,
 								 "Global position message data invalid");
 	}
-}
-
-
-void PE::SendEkf2InnovationsMsg()
-{
-    CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&m_Ekf2InnovationsMsg);
-    CFE_SB_SendMsg((CFE_SB_Msg_t*)&m_Ekf2InnovationsMsg);
 }
 
 
