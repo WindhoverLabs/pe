@@ -54,8 +54,10 @@ int32 PE::InitEvent()
     
     EventTbl[  ind].EventID = PE_RESERVED_EID;
     EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
-    EventTbl[  ind].EventID = PE_ESTIMATOR_INF_EID;
+    EventTbl[  ind].EventID = PE_LOCAL_ESTIMATOR_INF_EID;
     EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_GLOBAL_ESTIMATOR_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
     EventTbl[  ind].EventID = PE_ESTIMATOR_ERR_EID;
     EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
     EventTbl[  ind].EventID = PE_BARO_FAULT_ERR_EID;
@@ -288,14 +290,15 @@ void PE::InitData()
 	m_GpsAltOrigin          = 0.0f;
 
 	/* Status */
-	m_EstimatorInitialized  = FALSE;
-	m_BaroInitialized 		= FALSE;
-	m_GpsInitialized  		= FALSE;
-	m_LandInitialized  		= FALSE;
-	m_ReceivedGps           = FALSE;
-	m_LastArmedState        = FALSE;
-	m_AltOriginInitialized  = FALSE;
-    m_ParamsUpdated         = FALSE;
+	m_EstimatorLocalInitialized   = FALSE;
+	m_EstimatorGlobalInitialized  = FALSE;
+	m_BaroInitialized		      = FALSE;
+	m_GpsInitialized  			  = FALSE;
+	m_LandInitialized  			  = FALSE;
+	m_ReceivedGps           	  = FALSE;
+	m_LastArmedState        	  = FALSE;
+	m_AltOriginInitialized  	  = FALSE;
+    m_ParamsUpdated         	  = FALSE;
 
     /* Matrix/Vector Zero */
     m_RotationMat.Zero();
@@ -774,7 +777,8 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
 
 void PE::ReportHousekeeping()
 {
-	HkTlm.EstimatorInitialized = m_EstimatorInitialized;
+	HkTlm.EstimatorLocalInitialized = m_EstimatorLocalInitialized;
+	HkTlm.EstimatorGlobalInitialized = m_EstimatorGlobalInitialized;
 	HkTlm.XyEstValid = m_XyEstValid;
 	HkTlm.ZEstValid = m_ZEstValid;
 	HkTlm.TzEstValid = m_TzEstValid;
@@ -1072,15 +1076,25 @@ void PE::Update()
 	m_Timestamp = newTimestamp;
 	CheckTimeouts();
 
-	/* Check if initialized */
-    if(!m_EstimatorInitialized &&
+	/* Check if local initialized */
+    if(!m_EstimatorLocalInitialized &&
+			m_BaroInitialized &&
+			m_LandInitialized)
+	{
+    	m_EstimatorLocalInitialized = TRUE;
+		(void) CFE_EVS_SendEvent(PE_LOCAL_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+								 "Local estimation initialized");
+	}
+
+	/* Check if global initialized */
+    if(!m_EstimatorGlobalInitialized &&
 			m_BaroInitialized &&
 			m_GpsInitialized &&
 			m_LandInitialized)
 	{
-		m_EstimatorInitialized = TRUE;
-		(void) CFE_EVS_SendEvent(PE_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
-								 "Estimator initialized");
+    	m_EstimatorGlobalInitialized = TRUE;
+		(void) CFE_EVS_SendEvent(PE_GLOBAL_ESTIMATOR_INF_EID, CFE_EVS_INFORMATION,
+								 "Global estimation initialized");
 	}
 
 	/* Check if params are updated */
@@ -1293,7 +1307,7 @@ void PE::Update()
 
 boolean PE::Initialized(void)
 {
-	return m_EstimatorInitialized && m_BaroInitialized && m_GpsInitialized && m_LandInitialized;
+	return m_EstimatorLocalInitialized || m_EstimatorGlobalInitialized;
 }
 
 

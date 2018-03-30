@@ -270,7 +270,8 @@ public:
 	/* Status */
 	boolean m_ReceivedGps;
 	boolean m_LastArmedState;
-	boolean m_EstimatorInitialized;
+	boolean m_EstimatorLocalInitialized;
+	boolean m_EstimatorGlobalInitialized;
 	boolean m_BaroInitialized;
 	boolean m_GpsInitialized;
 	boolean m_LandInitialized;

@@ -251,17 +251,29 @@ typedef enum {
 	PE_CFGTBL_LOAD_ERR_EID,
 
 
-/** \brief Estimator initialized
-**  \event Estimator initialized
+/** \brief Local estimation initialized
+**  \event Local estimation initialized
 **
 **  \par Type: INFORMATION
 **
 **  \par Cause:
 **
-**  This event message is issued when the estimator has received enough data to initialize
+**  This event message is issued when the local estimation has received enough data to initialize
 **
 */
-	PE_ESTIMATOR_INF_EID,
+	PE_LOCAL_ESTIMATOR_INF_EID,
+
+/** \brief Global estimation initialized
+**  \event Global estimation initialized
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when the global estimation has received enough data to initialize
+**
+*/
+	PE_GLOBAL_ESTIMATOR_INF_EID,
 
 /** \brief Reinit state covariance. Index (%i, %i) not finite
 **  \event Reinit state covariance. Index (%i, %i) not finite

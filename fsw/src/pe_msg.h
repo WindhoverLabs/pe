@@ -166,8 +166,8 @@ typedef struct
 	/** \brief Origin altitude */
 	float AltOrigin;
 
-	/** \brief Flag for if estimator is initialized */
-    boolean EstimatorInitialized;
+	/** \brief Flag for if global estimator is initialized */
+    boolean EstimatorGlobalInitialized;
 
 	/** \brief Origin altitude initialized flag */
 	boolean  AltOriginInitialized;
@@ -213,6 +213,9 @@ typedef struct
 
 	/** \brief Flag for terrain estimation validity */
 	boolean TzEstValid;
+
+	/** \brief Flag for if local estimator is initialized */
+	boolean EstimatorLocalInitialized;
 
 } PE_HkTlm_t;
 
