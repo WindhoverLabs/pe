@@ -52,11 +52,16 @@ int32 PE::ulrMeasure(math::Vector1F &y)
 	{
 		min_dist = eps;
 	}
+	OS_printf("dist %f\n", d);
+	OS_printf("eps %f\n", eps);
+	OS_printf("min_dist %f\n", min_dist);
+	OS_printf("max_dist %f\n", max_dist);
 
 	// check for bad data
 	if (d > max_dist || d < min_dist)
 	{
 		Status = -1;
+		OS_printf("bad dist \n");
 		goto ulrMeasure_Exit_Tag;
 	}
 
