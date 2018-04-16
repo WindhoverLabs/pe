@@ -108,6 +108,10 @@ typedef struct
 
 	float  INIT_ORIGIN_LON;
 
+	float ULR_STDDEV;
+
+	float ULR_OFF_Z;
+
 } PE_ConfigTbl_t;
 
 

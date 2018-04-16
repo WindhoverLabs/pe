@@ -208,6 +208,9 @@ typedef struct
     /** \brief Flag for XY estimation validity */
     boolean XyEstValid;
 
+    /** \brief Origin altitude of ULR */
+    float m_UlrAltOrigin;
+
     /** \brief Flag for Z estimation validity */
 	boolean ZEstValid;
 
@@ -216,6 +219,16 @@ typedef struct
 
 	/** \brief Flag for if local estimator is initialized */
 	boolean EstimatorLocalInitialized;
+
+	 /** \brief Flag for if Ulr is initialized */
+    boolean UlrInitialized;
+
+	/** \brief Flag for Ulr fault */
+	boolean UlrFault;
+
+	/** \brief Flag for Ulr timeout */
+	boolean UlrTimeout;
+
 
 } PE_HkTlm_t;
 

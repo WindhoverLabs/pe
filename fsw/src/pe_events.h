@@ -400,6 +400,44 @@ typedef enum {
 */
 	PE_LAND_TIMEOUT_ERR_EID,
 
+/** \brief Ulr fault, r %5.2f m, beta %5.2f
+**  \event Ulr fault, r %5.2f m, beta %5.2f
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the ulr fails a validity check.
+**  Ulr will reinitialize after this event is broadcast.
+**
+*/
+	PE_ULR_FAULT_ERR_EID,
+
+/** \brief Ulr initialized. Mean: (%d) Std dev: (%d) cm
+**  \event Ulr initialized. Mean: (%d) Std dev: (%d) cm
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when ulr has (re)initialized successfully.
+**
+*/
+
+	PE_ULR_OK_INF_EID,
+
+/** \brief Ulr timeout
+**  \event Ulr timeout
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the ulr data times out and needs to be reset
+**
+*/
+	PE_ULR_TIMEOUT_ERR_EID,
+
 /** \brief PE - mutex creation failed (0x%08lX)
 **  \event PE - mutex creation failed (0x%08lX)
 **

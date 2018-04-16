@@ -178,6 +178,14 @@ int32 PE::InitPipe()
 					 iStatus);
             goto PE_InitPipe_Exit_Tag;
         }
+        iStatus = CFE_SB_SubscribeEx(PX4_DISTANCE_SENSOR_MID, SchPipeId, CFE_SB_Default_Qos, 1);
+        if (iStatus != CFE_SUCCESS)
+        {
+            (void) CFE_EVS_SendEvent(PE_SUBSCRIBE_ERR_EID, CFE_EVS_ERROR,
+					 "CMD Pipe failed to subscribe to PX4_DISTANCE_SENSOR_MID. (0x%08lX)",
+					 iStatus);
+            goto PE_InitPipe_Exit_Tag;
+        }
     }
     else
     {
@@ -362,6 +370,17 @@ void PE::InitData()
     m_Land.beta_thresh = 0.0f;
     m_Land.K.Zero();
     m_Land.dx.Zero();
+
+    /* Sensor ulr data */
+    m_Ulr.y.Zero();
+    m_Ulr.C.Zero();
+    m_Ulr.R.Zero();
+    m_Ulr.S_I.Zero();
+    m_Ulr.r.Zero();
+    m_Ulr.beta = 0.0f;
+    m_Ulr.K.Zero();
+    m_Ulr.temp.Zero();
+    m_Ulr.dx.Zero();
 
     /* Predict data */
     m_Predict.q.Zero();
@@ -658,6 +677,21 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 memcpy(&m_VehicleAttitudeSetpointMsg, MsgPtr, sizeof(m_VehicleAttitudeSetpointMsg));
                 break;
 
+            case PX4_DISTANCE_SENSOR_MID:
+            	OS_printf("Rcvd dist sensor msg\n");
+            	memcpy(&m_DistanceSensor, MsgPtr, sizeof(m_DistanceSensor));
+
+            	if(m_UlrTimeout)
+				{
+            		ulrInit();
+				}
+				else
+				{
+					ulrCorrect();
+				}
+
+				break;
+
             default:
                 (void) CFE_EVS_SendEvent(PE_MSGID_ERR_EID, CFE_EVS_ERROR,
                      "Recvd invalid SCH msgId (0x%04X)", MsgId);
@@ -799,7 +833,10 @@ void PE::ReportHousekeeping()
 	HkTlm.GpsInitialized = m_GpsInitialized;
 	HkTlm.BaroInitialized = m_BaroInitialized;
 	HkTlm.LandInitialized = m_LandInitialized;
-
+	HkTlm.m_UlrAltOrigin = m_UlrAltOrigin;
+	HkTlm.UlrInitialized = m_UlrInitialized;
+	HkTlm.UlrFault = m_UlrFault;
+	HkTlm.UlrTimeout = m_UlrTimeout;
 
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&HkTlm);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&HkTlm);
@@ -1063,6 +1100,7 @@ void PE::CheckTimeouts()
 	baroCheckTimeout();
 	gpsCheckTimeout();
 	landCheckTimeout();
+	ulrCheckTimeout();
 }
 
 
@@ -1450,6 +1488,8 @@ void PE::UpdateLocalParams()
 	m_Params.FAKE_ORIGIN        = ConfigTblPtr->FAKE_ORIGIN;
 	m_Params.INIT_ORIGIN_LAT    = ConfigTblPtr->INIT_ORIGIN_LAT;
 	m_Params.INIT_ORIGIN_LON    = ConfigTblPtr->INIT_ORIGIN_LON;
+	m_Params.ULR_STDDEV			= ConfigTblPtr->ULR_STDDEV;
+	m_Params.ULR_OFF_Z			= ConfigTblPtr->ULR_OFF_Z;
 
 	/* Unlock the mutex */
 	OS_MutSemGive(ConfigMutex);

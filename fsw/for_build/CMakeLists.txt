@@ -12,6 +12,7 @@ add_airliner_app_def(pe
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/baro.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/gps.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/land.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/ulr.cpp
 
     INCLUDES
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/
@@ -46,6 +47,7 @@ add_airliner_app_unit_test(pe-ut
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/baro.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/gps.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/land.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/ulr.cpp
         #${PX4LIB_LIB_SOURCES}
         # Adding lib sources individually so stubs can be used.
         # Math

@@ -117,6 +117,8 @@ typedef struct
 	int32  FAKE_ORIGIN;
 	float  INIT_ORIGIN_LAT;
 	float  INIT_ORIGIN_LON;
+	float  ULR_STDDEV;
+	float  ULR_OFF_Z;
 } PE_Params_t;
 
 enum {
@@ -143,6 +145,11 @@ enum {
 enum {
 	Y_baro_z = 0,
 	n_y_baro = 1
+};
+
+enum {
+	Y_ulr_z = 0,
+	n_y_ulr = 1
 };
 
 enum {
@@ -217,6 +224,7 @@ public:
     PX4_VehicleAttitudeMsg_t m_VehicleAttitudeMsg;
     PX4_SensorCombinedMsg_t m_SensorCombinedMsg;
     PX4_VehicleAttitudeSetpointMsg_t m_VehicleAttitudeSetpointMsg;
+    PX4_DistanceSensorMsg_t m_DistanceSensor;
 
     /** \brief Output Data published at the end of cycle */
     PX4_VehicleLocalPositionMsg_t m_VehicleLocalPositionMsg;
@@ -225,6 +233,7 @@ public:
 
     /* Sensor stats */
     Stats1F m_BaroStats;
+    Stats1F m_UlrStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
 
@@ -250,22 +259,26 @@ public:
 	uint64 m_TimestampLastBaro;
 	uint64 m_TimeLastBaro;
 	uint64 m_TimeLastGps;
+	uint64 m_TimeLastUlr;
 	uint64 m_TimeLastLand;
 
     /* Timeouts */
 	boolean   m_BaroTimeout;
 	boolean   m_GpsTimeout;
 	boolean   m_LandTimeout;
+	boolean   m_UlrTimeout;
 
     /* Faults */
 	boolean   m_BaroFault;
 	boolean   m_GpsFault;
 	boolean   m_LandFault;
+	boolean   m_UlrFault;
 
 	/* Reference altitudes */
 	float m_AltOrigin;
 	float m_BaroAltOrigin;
 	float m_GpsAltOrigin;
+	float m_UlrAltOrigin;
 
 	/* Status */
 	boolean m_ReceivedGps;
@@ -275,6 +288,7 @@ public:
 	boolean m_BaroInitialized;
 	boolean m_GpsInitialized;
 	boolean m_LandInitialized;
+	boolean m_UlrInitialized;
 	boolean m_AltOriginInitialized;
     boolean m_ParamsUpdated;
 
@@ -347,6 +361,19 @@ public:
         math::Vector10F dx;
         
     } m_Land;
+
+    struct Ulr
+    {
+        math::Vector1F y;
+        math::Matrix1F10 C;
+        math::Matrix1F1 R;
+        math::Matrix1F1 S_I;
+        math::Vector1F r;
+        float beta;
+        math::Matrix10F1 K;
+        math::Matrix10F1 temp;
+        math::Vector10F dx;
+    } m_Ulr;
     
     struct Predict
     {
@@ -851,6 +878,60 @@ public:
     **
     *************************************************************************/
 	boolean landed();
+
+    /************************************************************************/
+    /** \brief Ulr Measure
+    **
+    **  \par Description
+    **       This function reads the current ulr message
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \param [in/out]   y    A #Vector1F to store ulr measurement
+    **
+	**  \returns
+    **  \retcode #CFE_SUCCESS \endcode
+    **  \endreturns
+    **
+    *************************************************************************/
+	int32  ulrMeasure(math::Vector1F &y);
+
+    /************************************************************************/
+    /** \brief Ulr Correct
+    **
+    **  \par Description
+    **       This function corrects the ulr measurement
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
+	void ulrCorrect();
+
+    /************************************************************************/
+    /** \brief Ulr Initialize
+    **
+    **  \par Description
+    **       This function initializes the ulr
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
+	void ulrInit();
+
+    /************************************************************************/
+    /** \brief Check Ulr Timeout
+    **
+    **  \par Description
+    **       This function checks if the ulr message has timed out
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
+	void ulrCheckTimeout();
 
     /************************************************************************/
     /** \brief Check Timeouts
