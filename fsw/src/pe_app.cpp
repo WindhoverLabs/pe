@@ -678,7 +678,6 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 break;
 
             case PX4_DISTANCE_SENSOR_MID:
-            	OS_printf("Rcvd dist sensor msg\n");
             	memcpy(&m_DistanceSensor, MsgPtr, sizeof(m_DistanceSensor));
 
             	if(m_UlrTimeout)
