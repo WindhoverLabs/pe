@@ -894,7 +894,7 @@ void PE::SendVehicleLocalPositionMsg()
 		m_VehicleLocalPositionMsg.V_Z_Valid = m_ZEstValid;
 		m_VehicleLocalPositionMsg.X = m_XLowPass[X_x];
 		m_VehicleLocalPositionMsg.Y = m_XLowPass[X_y];
-		m_VehicleLocalPositionMsg.Z = m_XLowPass[X_z]; // Note: This can be be updated to AGL later
+		m_VehicleLocalPositionMsg.Z = -m_AglLowPass.m_State;
 		m_VehicleLocalPositionMsg.VX = m_XLowPass[X_vx];
 		m_VehicleLocalPositionMsg.VY = m_XLowPass[X_vy];
 		m_VehicleLocalPositionMsg.VZ = m_XLowPass[X_vz];
@@ -905,7 +905,7 @@ void PE::SendVehicleLocalPositionMsg()
 		m_VehicleLocalPositionMsg.RefLat = m_MapRef.lat_rad * 180/M_PI;
 		m_VehicleLocalPositionMsg.RefLon = m_MapRef.lon_rad * 180/M_PI;
 		m_VehicleLocalPositionMsg.RefAlt = m_AltOrigin;
-		//m_VehicleLocalPositionMsg.DistBottom = ; //TODO Populate this with AGL once ULR integrated
+		m_VehicleLocalPositionMsg.DistBottom = m_AglLowPass.m_State;
 		m_VehicleLocalPositionMsg.DistBottomRate = m_XLowPass[X_vz];
 		m_VehicleLocalPositionMsg.SurfaceBottomTimestamp = m_Timestamp;
 		m_VehicleLocalPositionMsg.DistBottomValid = m_ZEstValid;
@@ -1450,6 +1450,7 @@ void PE::Predict(float dt)
 	/* Update state */
 	m_StateCov = m_StateCov + m_Predict.dP;
 	m_XLowPass.Update(m_StateVec, dt, LOW_PASS_CUTOFF);
+	m_AglLowPass.Update(m_StateVec[X_tz] - m_StateVec[X_z], dt, LOW_PASS_CUTOFF);
 }
 
 
