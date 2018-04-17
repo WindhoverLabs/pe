@@ -275,6 +275,7 @@ void PE::InitData()
 	m_TimeLastBaro          = 0;
 	m_TimeLastGps           = 0;
 	m_TimeLastLand          = 0;
+	m_TimeLastUlr          = 0;
     m_Timestamp_Hist        = 0;
     m_TimestampLastBaro     = 0;
 
@@ -282,11 +283,13 @@ void PE::InitData()
     m_BaroTimeout           = TRUE;
     m_GpsTimeout            = TRUE;
     m_LandTimeout           = TRUE;
+    m_UlrTimeout           = TRUE;
 
     /* Faults */
     m_BaroFault             = TRUE;
     m_GpsFault              = TRUE;
     m_LandFault             = TRUE;
+    m_UlrFault             = TRUE;
 
     /* Validity */
     m_XyEstValid            = FALSE;
@@ -297,6 +300,7 @@ void PE::InitData()
 	m_AltOrigin             = 0.0f;
 	m_BaroAltOrigin         = 0.0f;
 	m_GpsAltOrigin          = 0.0f;
+	m_UlrAltOrigin          = 0.0f;
 
 	/* Status */
 	m_EstimatorLocalInitialized   = FALSE;
@@ -316,6 +320,7 @@ void PE::InitData()
     /* Stats Zero */
     m_BaroStats.reset();
     m_GpsStats.reset();
+    m_UlrStats.reset();
     
 	/* State Space */
 	m_StateVec.Zero();
@@ -840,6 +845,7 @@ void PE::ReportHousekeeping()
 	HkTlm.UlrInitialized = m_UlrInitialized;
 	HkTlm.UlrFault = m_UlrFault;
 	HkTlm.UlrTimeout = m_UlrTimeout;
+	HkTlm.TimeLastUlr = m_TimeLastUlr;
 
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&HkTlm);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&HkTlm);

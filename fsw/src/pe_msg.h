@@ -163,6 +163,9 @@ typedef struct
 	/** \brief Timestamp of last landing read */
 	uint64 TimeLastLand;
 
+	/** \brief Timestamp of last ulr read */
+	uint64 TimeLastUlr;
+
 	/** \brief Origin altitude */
 	float AltOrigin;
 
