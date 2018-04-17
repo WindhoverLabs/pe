@@ -263,6 +263,7 @@ void PE::InitData()
 	EST_STDDEV_TZ_VALID = 2.0f;
 	P_MAX               = 1.0e6f;
 	LAND_RATE           = 10.0f;
+    ULR_RATE            = 125.0f;
 	LOW_PASS_CUTOFF     = 5.0f;
 
     /* Params */
@@ -679,16 +680,19 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
 
             case PX4_DISTANCE_SENSOR_MID:
             	memcpy(&m_DistanceSensor, MsgPtr, sizeof(m_DistanceSensor));
-
-            	if(m_UlrTimeout)
+                
+                /* Throttle rate */
+				if((m_Timestamp - m_TimeLastLand) > 1.0e6f / ULR_RATE)
 				{
-            		ulrInit();
-				}
-				else
-				{
-					ulrCorrect();
-				}
-
+                	if(m_UlrTimeout)
+				    {
+                		ulrInit();
+				    }
+				    else
+				    {
+					    ulrCorrect();
+				    }
+                }
 				break;
 
             default:

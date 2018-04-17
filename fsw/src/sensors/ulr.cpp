@@ -52,16 +52,11 @@ int32 PE::ulrMeasure(math::Vector1F &y)
 	{
 		min_dist = eps;
 	}
-	OS_printf("dist %f\n", d);
-	OS_printf("eps %f\n", eps);
-	OS_printf("min_dist %f\n", min_dist);
-	OS_printf("max_dist %f\n", max_dist);
 
 	// check for bad data
 	if (d > max_dist || d < min_dist)
 	{
 		Status = -1;
-		OS_printf("bad dist \n");
 		goto ulrMeasure_Exit_Tag;
 	}
 
@@ -129,6 +124,7 @@ void PE::ulrCorrect()
                         "Ulr fault, r %5.2f m, beta %5.2f", m_Ulr.r[0], m_Ulr.beta);
             }
             m_UlrFault = TRUE;
+            goto end_of_function;
         }
 
     }
@@ -136,7 +132,7 @@ void PE::ulrCorrect()
     {
     	m_UlrFault = FALSE;
         (void) CFE_EVS_SendEvent(PE_ULR_OK_INF_EID, CFE_EVS_INFORMATION,
-                "Ulr OK");
+                "Ulr OK r %5.2f m, beta %5.2f", m_Ulr.r[0], m_Ulr.beta);
 
         m_UlrInitialized = TRUE;
     }
