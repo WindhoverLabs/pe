@@ -7,6 +7,8 @@
 /* 0.1 s */
 #define ULR_TIMEOUT          (100000)
 
+#define ULR_BETA_MAX         (700)
+
 void PE::ulrInit()
 {
     /* Measure */
@@ -43,7 +45,7 @@ int32 PE::ulrMeasure(math::Vector1F &y)
 {
 	int32 Status = CFE_SUCCESS;
 	float d = m_DistanceSensor.CurrentDistance;
-	float eps = 0.02f; // 2 cm
+	float eps = 0.05f; // 5 cm
 	float min_dist = m_DistanceSensor.MinDistance + eps;
 	float max_dist = m_DistanceSensor.MaxDistance - eps;
 
@@ -65,8 +67,8 @@ int32 PE::ulrMeasure(math::Vector1F &y)
 
 	/* Measure */
 	y.Zero();
+	m_UlrStats.update(d);
 	y[0] = (d + m_Params.ULR_OFF_Z) * cosf(m_Euler[0]) * cosf(m_Euler[1]);
-	m_UlrStats.update(y);
 	m_TimeLastUlr = m_DistanceSensor.Timestamp;
 
 ulrMeasure_Exit_Tag:
@@ -85,7 +87,7 @@ void PE::ulrCorrect()
     }
 
     /* subtract ulr origin alt */
-    m_Ulr.y[0] -= m_UlrAltOrigin;
+    //m_Ulr.y[0] -= m_UlrAltOrigin;
 
     /* measured altitude, negative down dir */
     m_Ulr.C[Y_ulr_z][X_z] = -1.0f;
@@ -114,19 +116,18 @@ void PE::ulrCorrect()
     /* fault detection 1F * 1x1 * 1F */
     m_Ulr.beta = m_Ulr.r[0] * m_Ulr.S_I[0][0] * m_Ulr.r[0];
 
-    if (m_Ulr.beta > BETA_TABLE[n_y_ulr])
+    if (m_Ulr.beta > ULR_BETA_MAX)
     {
         if (!m_UlrFault)
         {
             if(Initialized())
             {
                 (void) CFE_EVS_SendEvent(PE_ULR_FAULT_ERR_EID, CFE_EVS_ERROR,
-                        "Ulr fault, r %5.2f m, beta %5.2f", m_Ulr.r[0], m_Ulr.beta);
+                        "Ulr fault, d %5.2f m r %5.2f m, beta %5.2f", m_DistanceSensor.CurrentDistance, m_Ulr.r[0], m_Ulr.beta);
             }
             m_UlrFault = TRUE;
-            goto end_of_function;
         }
-
+        goto end_of_function;
     }
     else if (m_UlrFault)
     {

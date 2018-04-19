@@ -687,8 +687,8 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
             	memcpy(&m_DistanceSensor, MsgPtr, sizeof(m_DistanceSensor));
                 
                 /* Throttle rate */
-				if((m_Timestamp - m_TimeLastLand) > 1.0e6f / ULR_RATE)
-				{
+//				if((m_Timestamp - m_TimeLastLand) > 1.0e6f / ULR_RATE)
+//				{
                 	if(m_UlrTimeout)
 				    {
                 		ulrInit();
@@ -697,7 +697,7 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
 				    {
 					    ulrCorrect();
 				    }
-                }
+//                }
 				break;
 
             default:
