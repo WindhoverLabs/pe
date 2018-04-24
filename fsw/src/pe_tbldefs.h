@@ -108,6 +108,8 @@ typedef struct
 
 	float  INIT_ORIGIN_LON;
 
+    boolean ULR_FUSE;
+
 	float ULR_STDDEV;
 
 	float ULR_OFF_Z;

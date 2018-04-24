@@ -686,19 +686,24 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
             case PX4_DISTANCE_SENSOR_MID:
             	memcpy(&m_DistanceSensor, MsgPtr, sizeof(m_DistanceSensor));
                 
-                /* Throttle rate */
-                if(!landed())
+                /* Check if fusing distance sensor */
+                if(TRUE == m_Params.ULR_FUSE)
                 {
-				    if((m_Timestamp - m_TimeLastLand) > 1.0e6f / ULR_RATE)
-				    {
-                    	if(m_UlrTimeout)
+                    /* Don't integrate while landed */
+                    if(!landed())
+                    {
+                        /* Throttle rate */
+				        if((m_Timestamp - m_TimeLastLand) > 1.0e6f / ULR_RATE)
 				        {
-                    		ulrInit();
-				        }
-				        else
-				        {
-					        ulrCorrect();
-				        }
+                        	if(m_UlrTimeout)
+				            {
+                        		ulrInit();
+				            }
+				            else
+				            {
+					            ulrCorrect();
+				            }
+                        }
                     }
                 }
 				break;
@@ -805,6 +810,38 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
                 HkTlm.usCmdErrCnt = 0;
                 break;
 
+            case PE_FUSE_DIST_SENS_CC:
+                if(FALSE == m_Params.ULR_FUSE)
+                {
+                    m_Params.ULR_FUSE = TRUE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_DIST_INF_EID, CFE_EVS_INFORMATION,
+                                  "Fusing distance sensor into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_DIST_ERR_EID, CFE_EVS_ERROR,
+                                  "Already fusing distance sensor into estimation.");
+                }
+                break;
+
+            case PE_DISABLE_DIST_SENS_CC:
+                if(TRUE == m_Params.ULR_FUSE)
+                {
+                    m_Params.ULR_FUSE = FALSE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_DIST_INF_EID, CFE_EVS_INFORMATION,
+                                  "Disabling distance sensor fusion into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_DIST_ERR_EID, CFE_EVS_ERROR,
+                                  "Failed to disable distance sensor fusion into estimation.");
+                }
+                break;
+
             default:
                 HkTlm.usCmdErrCnt++;
                 (void) CFE_EVS_SendEvent(PE_CC_ERR_EID, CFE_EVS_ERROR,
@@ -849,6 +886,7 @@ void PE::ReportHousekeeping()
 	HkTlm.UlrFault = m_UlrFault;
 	HkTlm.UlrTimeout = m_UlrTimeout;
 	HkTlm.TimeLastUlr = m_TimeLastUlr;
+    HkTlm.UlrFused = m_Params.ULR_FUSE;
 
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&HkTlm);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&HkTlm);
@@ -1501,6 +1539,7 @@ void PE::UpdateLocalParams()
 	m_Params.FAKE_ORIGIN        = ConfigTblPtr->FAKE_ORIGIN;
 	m_Params.INIT_ORIGIN_LAT    = ConfigTblPtr->INIT_ORIGIN_LAT;
 	m_Params.INIT_ORIGIN_LON    = ConfigTblPtr->INIT_ORIGIN_LON;
+	m_Params.ULR_FUSE			= ConfigTblPtr->ULR_FUSE;
 	m_Params.ULR_STDDEV			= ConfigTblPtr->ULR_STDDEV;
 	m_Params.ULR_OFF_Z			= ConfigTblPtr->ULR_OFF_Z;
 

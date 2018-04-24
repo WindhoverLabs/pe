@@ -121,6 +121,54 @@ extern "C" {
 */
 #define PE_RESET_CC                (1)
 
+/** \pecmd Fuse Distance Sensor
+**  
+**  \par Description
+**       Fuses distance sensor
+**
+**  \par Command Structure
+**       #PE_NoArgCmd_t
+**
+**  \par Command Verification
+**       Successful execution of this command may be verified with
+**       the following telemetry:
+**       - The #PE_CMD_INF_EID debug event message will be 
+**         generated when the command is executed
+**       - The Ulr Fused HK tlm will be set to true
+** 
+**  \par Error Conditions
+**       This command may fail for the following reason(s):
+**       - Already enabled
+** 
+**  \par Criticality
+**       May impact flight performance
+*/
+#define PE_FUSE_DIST_SENS_CC                (2)
+
+/** \pecmd Disable Distance Sensor
+**  
+**  \par Description
+**       Disables distance sensor fusion
+**
+**  \par Command Structure
+**       #PE_NoArgCmd_t
+**
+**  \par Command Verification
+**       Successful execution of this command may be verified with
+**       the following telemetry:
+**       - The #PE_CMD_INF_EID debug event message will be 
+**         generated when the command is executed
+**       - The Ulr Fused HK tlm will be set to false
+** 
+**  \par Error Conditions
+**       This command may fail for the following reason(s):
+**       - Already disabled
+** 
+**  \par Criticality
+**       May impact flight performance
+*/
+#define PE_DISABLE_DIST_SENS_CC            (3)
+
 /************************************************************************
 ** Local Structure Declarations
 *************************************************************************/
@@ -232,6 +280,8 @@ typedef struct
 	/** \brief Flag for Ulr timeout */
 	boolean UlrTimeout;
 
+    /** \brief Flag for if Ulr is being integrated into estimation */
+    boolean UlrFused;
 
 } PE_HkTlm_t;
 

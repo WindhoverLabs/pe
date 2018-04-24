@@ -474,6 +474,57 @@ typedef enum {
 */
 	PE_GLOBAL_POS_MSG_ERR_EID,
 
+/** \brief Fusing distance sensor into estimation.
+**  \event Fusing distance sensor into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse distance sensor into estimator.
+**
+*/
+	PE_FUSE_DIST_INF_EID,
+
+/** \brief Already fusing distance sensor into estimation.
+**  \event Already fusing distance sensor into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse distance sensor into estimator.
+**  but we are already fusing.
+**
+*/
+	PE_FUSE_DIST_ERR_EID,
+
+/** \brief Disabling distance sensor fusion into estimation.
+**  \event Disabling distance sensor fusion into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable distance sensor fusion into estimator.
+**
+*/
+	PE_DISABLE_DIST_INF_EID,
+
+/** \brief Failed to disable distance sensor fusion into estimation.
+**  \event Failed to disable distance sensor fusion into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable distance sensor fusion into estimator
+**  but it is not already fusing.
+**
+*/
+	PE_DISABLE_DIST_ERR_EID,
+
+
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT
 } PE_EventIds_t;
