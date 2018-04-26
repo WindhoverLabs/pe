@@ -169,6 +169,150 @@ extern "C" {
 */
 #define PE_DISABLE_DIST_SENS_CC            (3)
 
+/** \pecmd Fuse GPS
+**
+**  \par Description
+**       Fuses GPS
+**
+**  \par Command Structure
+**       #PE_NoArgCmd_t
+**
+**  \par Command Verification
+**       Successful execution of this command may be verified with
+**       the following telemetry:
+**       - The #PE_CMD_INF_EID debug event message will be
+**         generated when the command is executed
+**       - The GPS Fused HK tlm will be set to true
+**
+**  \par Error Conditions
+**       This command may fail for the following reason(s):
+**       - Already enabled
+**
+**  \par Criticality
+**       May impact flight performance
+*/
+#define PE_FUSE_GPS_CC                (4)
+
+/** \pecmd Disable GPS
+**
+**  \par Description
+**       Disables GPS fusion
+**
+**  \par Command Structure
+**       #PE_NoArgCmd_t
+**
+**  \par Command Verification
+**       Successful execution of this command may be verified with
+**       the following telemetry:
+**       - The #PE_CMD_INF_EID debug event message will be
+**         generated when the command is executed
+**       - The GPS Fused HK tlm will be set to false
+**
+**  \par Error Conditions
+**       This command may fail for the following reason(s):
+**       - Already disabled
+**
+**  \par Criticality
+**       May impact flight performance
+*/
+#define PE_DISABLE_GPS_CC            (5)
+
+/** \pecmd Fuse Baro
+**
+**  \par Description
+**       Fuses Baro
+**
+**  \par Command Structure
+**       #PE_NoArgCmd_t
+**
+**  \par Command Verification
+**       Successful execution of this command may be verified with
+**       the following telemetry:
+**       - The #PE_CMD_INF_EID debug event message will be
+**         generated when the command is executed
+**       - The Baro Fused HK tlm will be set to true
+**
+**  \par Error Conditions
+**       This command may fail for the following reason(s):
+**       - Already enabled
+**
+**  \par Criticality
+**       May impact flight performance
+*/
+#define PE_FUSE_BARO_CC                (6)
+
+/** \pecmd Disable Baro
+**
+**  \par Description
+**       Disables Baro fusion
+**
+**  \par Command Structure
+**       #PE_NoArgCmd_t
+**
+**  \par Command Verification
+**       Successful execution of this command may be verified with
+**       the following telemetry:
+**       - The #PE_CMD_INF_EID debug event message will be
+**         generated when the command is executed
+**       - The Baro Fused HK tlm will be set to false
+**
+**  \par Error Conditions
+**       This command may fail for the following reason(s):
+**       - Already disabled
+**
+**  \par Criticality
+**       May impact flight performance
+*/
+#define PE_DISABLE_BARO_CC            (7)
+
+/** \pecmd Fuse Land
+**
+**  \par Description
+**       Fuses Land
+**
+**  \par Command Structure
+**       #PE_NoArgCmd_t
+**
+**  \par Command Verification
+**       Successful execution of this command may be verified with
+**       the following telemetry:
+**       - The #PE_CMD_INF_EID debug event message will be
+**         generated when the command is executed
+**       - The Land Fused HK tlm will be set to true
+**
+**  \par Error Conditions
+**       This command may fail for the following reason(s):
+**       - Already enabled
+**
+**  \par Criticality
+**       May impact flight performance
+*/
+#define PE_FUSE_LAND_CC                (8)
+
+/** \pecmd Disable Land
+**
+**  \par Description
+**       Disables Land fusion
+**
+**  \par Command Structure
+**       #PE_NoArgCmd_t
+**
+**  \par Command Verification
+**       Successful execution of this command may be verified with
+**       the following telemetry:
+**       - The #PE_CMD_INF_EID debug event message will be
+**         generated when the command is executed
+**       - The Land Fused HK tlm will be set to false
+**
+**  \par Error Conditions
+**       This command may fail for the following reason(s):
+**       - Already disabled
+**
+**  \par Criticality
+**       May impact flight performance
+*/
+#define PE_DISABLE_LAND_CC            (9)
+
 /************************************************************************
 ** Local Structure Declarations
 *************************************************************************/
@@ -282,6 +426,15 @@ typedef struct
 
     /** \brief Flag for if Ulr is being integrated into estimation */
     boolean UlrFused;
+
+    /** \brief Flag for if Gps is being integrated into estimation */
+    boolean GpsFused;
+
+    /** \brief Flag for if Baro is being integrated into estimation */
+    boolean BaroFused;
+
+    /** \brief Flag for if Land is being integrated into estimation */
+    boolean LandFused;
 
 } PE_HkTlm_t;
 

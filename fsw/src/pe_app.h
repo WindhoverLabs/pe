@@ -99,7 +99,9 @@ typedef struct
 	float  Z_PUB_THRESH;
 	float  ACCEL_XY_STDDEV;
 	float  ACCEL_Z_STDDEV;
+    boolean BARO_FUSE;
 	float  BARO_STDDEV;
+    boolean GPS_FUSE;
 	float  GPS_DELAY;
 	float  GPS_XY_STDDEV;
 	float  GPS_Z_STDDEV;
@@ -107,6 +109,7 @@ typedef struct
 	float  GPS_VZ_STDDEV;
 	float  GPS_EPH_MAX;
 	float  GPS_EPV_MAX;
+    boolean LAND_FUSE;
 	float  LAND_Z_STDDEV;
 	float  LAND_VXY_STDDEV;
 	float  PN_P_NOISE_DENSITY;

@@ -365,6 +365,7 @@ void PE::InitData()
     m_GPS.beta_thresh = 0.0f;
     m_GPS.K.Zero();
     m_GPS.dx.Zero();
+    HkTlm.GpsFused = TRUE;
     
     /* Sensor Land data */
     m_Land.y.Zero();
@@ -608,16 +609,20 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 break;
 
             case PX4_VEHICLE_GPS_POSITION_MID:
-                memcpy(&m_VehicleGpsPositionMsg, MsgPtr, sizeof(m_VehicleGpsPositionMsg));
-                if(m_GpsTimeout)
-                {
-                	gpsInit();
-                }
-                else
-                {
-                	gpsCorrect();
-                }
+				memcpy(&m_VehicleGpsPositionMsg, MsgPtr, sizeof(m_VehicleGpsPositionMsg));
 
+				/* Check if fusing distance sensor */
+                if(TRUE == m_Params.GPS_FUSE)
+                {
+					if(m_GpsTimeout)
+					{
+						gpsInit();
+					}
+					else
+					{
+						gpsCorrect();
+					}
+                }
                 break;
 
             case PX4_VEHICLE_STATUS_MID:
@@ -625,19 +630,24 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 break;
 
             case PX4_VEHICLE_LAND_DETECTED_MID:
-                memcpy(&m_VehicleLandDetectedMsg, MsgPtr, sizeof(m_VehicleLandDetectedMsg));
-                if(landed())
+				memcpy(&m_VehicleLandDetectedMsg, MsgPtr, sizeof(m_VehicleLandDetectedMsg));
+
+				/* Check if fusing land */
+                if(TRUE == m_Params.LAND_FUSE)
                 {
-					/* Throttle rate */
-					if((m_Timestamp - m_TimeLastLand) > 1.0e6f / LAND_RATE)
+					if(landed())
 					{
-						if(m_LandTimeout)
+						/* Throttle rate */
+						if((m_Timestamp - m_TimeLastLand) > 1.0e6f / LAND_RATE)
 						{
-							landInit();
-						}
-						else
-						{
-							landCorrect();
+							if(m_LandTimeout)
+							{
+								landInit();
+							}
+							else
+							{
+								landCorrect();
+							}
 						}
 					}
                 }
@@ -652,30 +662,36 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 break;
 
             case PX4_SENSOR_COMBINED_MID:
+            	/* Don't prevent memcpy - we fuse accel every cycle */
                 memcpy(&m_SensorCombinedMsg, MsgPtr, sizeof(m_SensorCombinedMsg));
-                /* If baro is valid */
-                if(m_SensorCombinedMsg.BaroTimestampRelative != PX4_RELATIVE_TIMESTAMP_INVALID)
+
+                /* Check if fusing baro */
+                if(TRUE == m_Params.BARO_FUSE)
                 {
-                    /* Get the baro timestamp from the sensor combined timestamp
-                     * (which is the gyro timestamp) plus the baro relative timestamp.
-                     * Baro relative is the difference between the gyro and baro 
-                     * when received by the sensors application. If baro is fresh.
-                     */
-                    if((m_SensorCombinedMsg.Timestamp + 
-                       m_SensorCombinedMsg.BaroTimestampRelative) 
-                       != m_TimeLastBaro)
-                    {
-                        if(m_BaroTimeout)
-                        {
-                            baroInit();
-                        }
-                        else
-                        {
-                            baroCorrect();
-                        }
-                        /* Save the last valid timestamp */
-                        m_TimeLastBaro = m_SensorCombinedMsg.Timestamp + m_SensorCombinedMsg.BaroTimestampRelative;
-                    }
+					/* If baro is valid */
+					if(m_SensorCombinedMsg.BaroTimestampRelative != PX4_RELATIVE_TIMESTAMP_INVALID)
+					{
+						/* Get the baro timestamp from the sensor combined timestamp
+						 * (which is the gyro timestamp) plus the baro relative timestamp.
+						 * Baro relative is the difference between the gyro and baro
+						 * when received by the sensors application. If baro is fresh.
+						 */
+						if((m_SensorCombinedMsg.Timestamp +
+						   m_SensorCombinedMsg.BaroTimestampRelative)
+						   != m_TimeLastBaro)
+						{
+							if(m_BaroTimeout)
+							{
+								baroInit();
+							}
+							else
+							{
+								baroCorrect();
+							}
+							/* Save the last valid timestamp */
+							m_TimeLastBaro = m_SensorCombinedMsg.Timestamp + m_SensorCombinedMsg.BaroTimestampRelative;
+						}
+					}
                 }
                 break;
 
@@ -842,6 +858,104 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
                 }
                 break;
 
+            case PE_FUSE_GPS_CC:
+                if(FALSE == m_Params.GPS_FUSE)
+                {
+                	m_Params.GPS_FUSE = TRUE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_GPS_INF_EID, CFE_EVS_INFORMATION,
+                                  "Fusing GPS into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_GPS_ERR_EID, CFE_EVS_ERROR,
+                                  "Already fusing GPS into estimation.");
+                }
+                break;
+
+            case PE_DISABLE_GPS_CC:
+                if(TRUE == m_Params.GPS_FUSE)
+                {
+                	m_Params.GPS_FUSE = FALSE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_GPS_INF_EID, CFE_EVS_INFORMATION,
+                                  "Disabling GPS fusion into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_GPS_ERR_EID, CFE_EVS_ERROR,
+                                  "Failed to disable GPS fusion into estimation.");
+                }
+                break;
+
+            case PE_FUSE_BARO_CC:
+                if(FALSE == m_Params.BARO_FUSE)
+                {
+                	m_Params.BARO_FUSE = TRUE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_BARO_INF_EID, CFE_EVS_INFORMATION,
+                                  "Fusing baro into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_BARO_ERR_EID, CFE_EVS_ERROR,
+                                  "Already fusing baro into estimation.");
+                }
+                break;
+
+            case PE_DISABLE_BARO_CC:
+                if(TRUE == m_Params.BARO_FUSE)
+                {
+                	m_Params.BARO_FUSE = FALSE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_BARO_INF_EID, CFE_EVS_INFORMATION,
+                                  "Disabling baro fusion into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_BARO_ERR_EID, CFE_EVS_ERROR,
+                                  "Failed to disable baro fusion into estimation.");
+                }
+                break;
+
+
+
+            case PE_FUSE_LAND_CC:
+                if(FALSE == m_Params.LAND_FUSE)
+                {
+                	m_Params.LAND_FUSE = TRUE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_LAND_INF_EID, CFE_EVS_INFORMATION,
+                                  "Fusing land into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_LAND_ERR_EID, CFE_EVS_ERROR,
+                                  "Already fusing land into estimation.");
+                }
+                break;
+
+            case PE_DISABLE_LAND_CC:
+                if(TRUE == m_Params.LAND_FUSE)
+                {
+                	m_Params.LAND_FUSE = FALSE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_LAND_INF_EID, CFE_EVS_INFORMATION,
+                                  "Disabling land fusion into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_LAND_ERR_EID, CFE_EVS_ERROR,
+                                  "Failed to disable land fusion into estimation.");
+                }
+                break;
+
             default:
                 HkTlm.usCmdErrCnt++;
                 (void) CFE_EVS_SendEvent(PE_CC_ERR_EID, CFE_EVS_ERROR,
@@ -887,6 +1001,9 @@ void PE::ReportHousekeeping()
 	HkTlm.UlrTimeout = m_UlrTimeout;
 	HkTlm.TimeLastUlr = m_TimeLastUlr;
     HkTlm.UlrFused = m_Params.ULR_FUSE;
+    HkTlm.GpsFused = m_Params.GPS_FUSE;
+    HkTlm.BaroFused = m_Params.BARO_FUSE;
+    HkTlm.LandFused = m_Params.LAND_FUSE;
 
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&HkTlm);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&HkTlm);
@@ -1521,7 +1638,9 @@ void PE::UpdateLocalParams()
 	m_Params.Z_PUB_THRESH       = ConfigTblPtr->Z_PUB_THRESH;
 	m_Params.ACCEL_XY_STDDEV    = ConfigTblPtr->ACCEL_XY_STDDEV;
 	m_Params.ACCEL_Z_STDDEV     = ConfigTblPtr->ACCEL_Z_STDDEV;
+	m_Params.BARO_FUSE			= ConfigTblPtr->BARO_FUSE;
 	m_Params.BARO_STDDEV        = ConfigTblPtr->BARO_STDDEV;
+	m_Params.GPS_FUSE			= ConfigTblPtr->GPS_FUSE;
 	m_Params.GPS_DELAY          = ConfigTblPtr->GPS_DELAY;
 	m_Params.GPS_XY_STDDEV      = ConfigTblPtr->GPS_XY_STDDEV;
 	m_Params.GPS_Z_STDDEV       = ConfigTblPtr->GPS_Z_STDDEV;
@@ -1529,6 +1648,7 @@ void PE::UpdateLocalParams()
 	m_Params.GPS_VZ_STDDEV      = ConfigTblPtr->GPS_VZ_STDDEV;
 	m_Params.GPS_EPH_MAX        = ConfigTblPtr->GPS_EPH_MAX;
 	m_Params.GPS_EPV_MAX        = ConfigTblPtr->GPS_EPV_MAX;
+	m_Params.LAND_FUSE			= ConfigTblPtr->LAND_FUSE;
 	m_Params.LAND_Z_STDDEV      = ConfigTblPtr->LAND_Z_STDDEV;
 	m_Params.LAND_VXY_STDDEV    = ConfigTblPtr->LAND_VXY_STDDEV;
 	m_Params.PN_P_NOISE_DENSITY = ConfigTblPtr->PN_P_NOISE_DENSITY;
