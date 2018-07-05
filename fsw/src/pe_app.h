@@ -59,16 +59,22 @@ extern "C" {
 #include "px4lib.h"
 
 #include "math/Vector1F.hpp"
+#include "math/Vector2F.hpp"
 #include "math/Vector3F.hpp"
 #include "math/Vector10F.hpp"
 #include "math/Matrix10F10.hpp"
 #include "math/Matrix10F3.hpp"
 #include "math/Matrix3F3.hpp"
 #include "math/Matrix1F3.hpp"
+#include "math/Matrix10F2.hpp"
+#include "math/Matrix2F2.hpp"
+#include "math/Matrix2F10.hpp"
+#include "math/Matrix1F2.hpp"
 #include "math/Matrix1F6.hpp"
 #include "math/LowPass.hpp"
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
+#include "math/Stats2F.hpp"
 #include "math/Stats6F.hpp"
 #include "math/Quaternion.hpp"
 #include "math/Euler.hpp"
@@ -239,6 +245,7 @@ public:
     /* Sensor stats */
     Stats1F m_BaroStats;
     Stats1F m_UlrStats;
+    Stats2F m_FlowStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
 
@@ -266,18 +273,21 @@ public:
 	uint64 m_TimeLastGps;
 	uint64 m_TimeLastUlr;
 	uint64 m_TimeLastLand;
+	uint64 m_TimeLastFlow;
 
     /* Timeouts */
 	boolean   m_BaroTimeout;
 	boolean   m_GpsTimeout;
 	boolean   m_LandTimeout;
 	boolean   m_UlrTimeout;
+	boolean   m_FlowTimeout;
 
     /* Faults */
 	boolean   m_BaroFault;
 	boolean   m_GpsFault;
 	boolean   m_LandFault;
 	boolean   m_UlrFault;
+	boolean   m_FlowFault;
 
 	/* Reference altitudes */
 	float m_AltOrigin;
@@ -294,6 +304,7 @@ public:
 	boolean m_GpsInitialized;
 	boolean m_LandInitialized;
 	boolean m_UlrInitialized;
+	boolean m_FlowInitialized;
 	boolean m_AltOriginInitialized;
     boolean m_ParamsUpdated;
 
@@ -380,6 +391,19 @@ public:
         math::Vector10F dx;
     } m_Ulr;
     
+    struct Flow
+    {
+        math::Vector2F y;
+        math::Matrix2F10 C;
+        math::Matrix2F2 R;
+        math::Matrix2F2 S_I;
+        math::Vector2F r;
+        float beta;
+        math::Matrix10F2 K;
+        math::Matrix10F2 temp;
+        math::Vector10F dx;
+    } m_Flow;
+
     struct Predict
     {
         math::Quaternion q;
@@ -937,6 +961,60 @@ public:
     **
     *************************************************************************/
 	void ulrCheckTimeout();
+	
+    /************************************************************************/
+    /** \brief Flow Measure
+    **
+    **  \par Description
+    **       This function reads the current flow message
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \param [in/out]   y    A #Vector1F to store flow measurement
+    **
+	**  \returns
+    **  \retcode #CFE_SUCCESS \endcode
+    **  \endreturns
+    **
+    *************************************************************************/
+	int32  flowMeasure(math::Vector1F &y);
+
+    /************************************************************************/
+    /** \brief Flow Correct
+    **
+    **  \par Description
+    **       This function corrects the flow measurement
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
+	void flowCorrect();
+
+    /************************************************************************/
+    /** \brief Flow Initialize
+    **
+    **  \par Description
+    **       This function initializes the flow
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
+	void flowInit();
+
+    /************************************************************************/
+    /** \brief Check Flow Timeout
+    **
+    **  \par Description
+    **       This function checks if the flow message has timed out
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
+	void flowCheckTimeout();
 
     /************************************************************************/
     /** \brief Check Timeouts
