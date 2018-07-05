@@ -179,6 +179,12 @@ enum {
 	n_y_land   = 3
 };
 
+enum {
+	Y_flow_vx = 0,
+	Y_flow_vy = 1,
+	n_y_flow = 2
+};
+
 /* Enums for other sensors would go here */
 
 
@@ -236,6 +242,7 @@ public:
     PX4_SensorCombinedMsg_t m_SensorCombinedMsg;
     PX4_VehicleAttitudeSetpointMsg_t m_VehicleAttitudeSetpointMsg;
     PX4_DistanceSensorMsg_t m_DistanceSensor;
+    PX4_OpticalFlowMsg_t m_OpticalFlowMsg;
 
     /** \brief Output Data published at the end of cycle */
     PX4_VehicleLocalPositionMsg_t m_VehicleLocalPositionMsg;
@@ -245,6 +252,7 @@ public:
     /* Sensor stats */
     Stats1F m_BaroStats;
     Stats1F m_UlrStats;
+    Stats1F m_FlowQStats;
     Stats2F m_FlowStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
@@ -978,7 +986,7 @@ public:
     **  \endreturns
     **
     *************************************************************************/
-	int32  flowMeasure(math::Vector1F &y);
+	int32  flowMeasure(math::Vector2F &y);
 
     /************************************************************************/
     /** \brief Flow Correct

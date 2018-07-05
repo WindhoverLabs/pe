@@ -186,6 +186,14 @@ int32 PE::InitPipe()
 					 iStatus);
             goto PE_InitPipe_Exit_Tag;
         }
+        iStatus = CFE_SB_SubscribeEx(PX4_OPTICAL_FLOW_MID, SchPipeId, CFE_SB_Default_Qos, 1);
+		if (iStatus != CFE_SUCCESS)
+		{
+			(void) CFE_EVS_SendEvent(PE_SUBSCRIBE_ERR_EID, CFE_EVS_ERROR,
+					 "CMD Pipe failed to subscribe to PX4_OPTICAL_FLOW_MID. (0x%08lX)",
+					 iStatus);
+			goto PE_InitPipe_Exit_Tag;
+		}
     }
     else
     {
@@ -275,21 +283,24 @@ void PE::InitData()
 	m_TimeLastBaro          = 0;
 	m_TimeLastGps           = 0;
 	m_TimeLastLand          = 0;
-	m_TimeLastUlr          = 0;
-    m_Timestamp_Hist        = 0;
+	m_TimeLastUlr           = 0;
+	m_TimeLastFlow          = 0;
+	m_Timestamp_Hist        = 0;
     m_TimestampLastBaro     = 0;
 
     /* Timeouts */
     m_BaroTimeout           = TRUE;
     m_GpsTimeout            = TRUE;
     m_LandTimeout           = TRUE;
-    m_UlrTimeout           = TRUE;
+    m_UlrTimeout            = TRUE;
+    m_FlowTimeout           = TRUE;
 
     /* Faults */
     m_BaroFault             = TRUE;
     m_GpsFault              = TRUE;
     m_LandFault             = TRUE;
-    m_UlrFault             = TRUE;
+    m_UlrFault              = TRUE;
+    m_FlowFault             = TRUE;
 
     /* Validity */
     m_XyEstValid            = FALSE;
@@ -388,6 +399,17 @@ void PE::InitData()
     m_Ulr.K.Zero();
     m_Ulr.temp.Zero();
     m_Ulr.dx.Zero();
+
+    /* Sensor flow data */
+    m_Flow.y.Zero();
+    m_Flow.C.Zero();
+    m_Flow.R.Zero();
+    m_Flow.S_I.Zero();
+    m_Flow.r.Zero();
+    m_Flow.beta = 0.0f;
+    m_Flow.K.Zero();
+    m_Flow.temp.Zero();
+    m_Flow.dx.Zero();
 
     /* Predict data */
     m_Predict.q.Zero();
