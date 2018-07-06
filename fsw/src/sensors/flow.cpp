@@ -180,7 +180,7 @@ void PE::flowCorrect()
 
 	rot_sq = m_Euler[0] * m_Euler[0] + m_Euler[1] * m_Euler[1];
 
-    /* Vector2F -  (1x10 * Vector10F) */
+    /* Vector2F -  (2x10 * Vector10F) */
     m_Flow.r = m_Flow.y - (m_Flow.C * m_StateVec);
 
     /* residual */
@@ -189,7 +189,7 @@ void PE::flowCorrect()
     m_Flow.S_I = m_Flow.S_I.Inversed();
 
     /* fault detection 1F * 1x1 * 1F */
-    m_Flow.beta = (m_Flow.r.Transpose() * (m_Flow.S_I * m_Flow.r))[0][0];
+    m_Flow.beta = (m_Flow.r.Transpose() * (m_Flow.S_I * m_Flow.r)); //todo was [0][0]
 
     if (m_Flow.beta > FLOW_BETA_MAX)
     {
@@ -220,9 +220,7 @@ void PE::flowCorrect()
 		m_Flow.K = m_StateCov * m_Flow.C.Transpose() * m_Flow.S_I;
 
 		/* 10x2 * 2x2 */
-		m_Flow.temp = m_Flow.K * m_Flow.r;
-
-		m_Flow.dx = m_Flow.temp.ToVector();
+		m_Flow.dx = m_Flow.K * m_Flow.r;
 
 		/* 10F + 10F*/
 		m_StateVec = m_StateVec + m_Flow.dx;
