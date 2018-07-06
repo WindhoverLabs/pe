@@ -1,15 +1,4 @@
 #include "../pe_app.h"
-#include <math/Matrix6F10.hpp>
-#include <math/Matrix6F6.hpp>
-#include <math/Vector6F.hpp>
-#include <math/Matrix1F6.hpp>
-
-
-/* required number of samples for sensor to initialize */
-#define REQ_GPS_INIT_COUNT  (10)
-/* 1.0 s */
-#define GPS_TIMEOUT         (1000000)
-
 
 void PE::gpsInit()
 {

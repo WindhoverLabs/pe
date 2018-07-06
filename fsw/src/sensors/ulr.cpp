@@ -1,13 +1,4 @@
 #include "../pe_app.h"
-#include <math/Matrix1F10.hpp>
-#include <math/Matrix1F1.hpp>
-
-/* required number of samples for sensor to initialize */
-#define REQ_ULR_INIT_COUNT   (100)
-/* 0.1 s */
-#define ULR_TIMEOUT          (100000)
-
-#define ULR_BETA_MAX         (700)
 
 void PE::ulrInit()
 {
@@ -21,7 +12,7 @@ void PE::ulrInit()
 	}
 
 	/* If finished */
-	if (m_UlrStats.getCount() > REQ_ULR_INIT_COUNT)
+	if (m_UlrStats.getCount() > REQ_DIST_INIT_COUNT)
 	{
 		m_UlrAltOrigin = m_UlrStats.getMean()[0];
 
@@ -116,7 +107,7 @@ void PE::ulrCorrect()
     /* fault detection 1F * 1x1 * 1F */
     m_Ulr.beta = m_Ulr.r[0] * m_Ulr.S_I[0][0] * m_Ulr.r[0];
 
-    if (m_Ulr.beta > ULR_BETA_MAX)
+    if (m_Ulr.beta > DIST_BETA_MAX)
     {
         if (!m_UlrFault)
         {
@@ -172,7 +163,7 @@ void PE::ulrCheckTimeout()
         Timestamp = m_TimeLastUlr - m_Timestamp;
     }
 
-	if (Timestamp > ULR_TIMEOUT)
+	if (Timestamp > DIST_TIMEOUT)
 	{
 		if (!m_UlrTimeout)
 		{

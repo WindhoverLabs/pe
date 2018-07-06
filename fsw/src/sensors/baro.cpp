@@ -1,11 +1,4 @@
 #include "../pe_app.h"
-#include <math/Matrix1F10.hpp>
-#include <math/Matrix1F1.hpp>
-
-/* required number of samples for sensor to initialize */
-#define REQ_BARO_INIT_COUNT   (100)
-/* 0.1 s */
-#define BARO_TIMEOUT          (100000)
 
 void PE::baroInit()
 {

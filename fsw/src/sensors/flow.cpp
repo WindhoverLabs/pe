@@ -1,16 +1,4 @@
 #include "../pe_app.h"
-#include <math/Vector2F.hpp>
-#include <math/Matrix2F10.hpp>
-#include <math/Matrix10F2.hpp>
-#include <math/Matrix2F2.hpp>
-
-/* required number of samples for sensor to initialize */
-#define REQ_FLOW_INIT_COUNT   (10)
-/* 1 s */
-#define FLOW_TIMEOUT          (1000000)
-
-#define FLOW_BETA_MAX         (700)
-#define FLOW_MIN_AGL         (0.5f) // TODO: Make param
 
 void PE::flowInit()
 {
@@ -48,6 +36,10 @@ int32 PE::flowMeasure(math::Vector2F &y)
 	math::Vector3F delta_b;
 	math::Vector3F delta_n;
 
+	y.Zero();
+	delta_b.Zero();
+	delta_n.Zero();
+
 	/* Check for sane pitch/roll */
 	if (m_Euler[0] > 0.5f || m_Euler[1] > 0.5f) {
 		Status = -1;
@@ -61,7 +53,7 @@ int32 PE::flowMeasure(math::Vector2F &y)
 	}
 
 	/* Check for AGL height */
-	if (m_AglLowPass.m_State < FLOW_MIN_AGL) {
+	if (m_AglLowPass.m_State < m_Params.FLOW_MIN_AGL) {
 		Status = -1;
 		goto flowMeasure_Exit_Tag;
 	}
@@ -196,7 +188,7 @@ void PE::flowCorrect()
     /* Fault detection 1x2 * 2x2 * 2F */
     m_Flow.beta = (m_Flow.r.Transpose() * (m_Flow.S_I * m_Flow.r)); //todo was [0][0]
 
-    if (m_Flow.beta > FLOW_BETA_MAX)
+    if (m_Flow.beta > BETA_TABLE[n_y_flow])
     {
         if (!m_FlowFault)
         {
