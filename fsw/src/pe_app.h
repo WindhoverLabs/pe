@@ -58,19 +58,25 @@ extern "C" {
 #include "px4_msgs.h"
 #include "px4lib.h"
 
+#include "math/BlockDelay.hpp"
 #include "math/Vector1F.hpp"
 #include "math/Vector2F.hpp"
 #include "math/Vector3F.hpp"
+#include "math/Vector6F.hpp"
 #include "math/Vector10F.hpp"
-#include "math/Matrix10F10.hpp"
-#include "math/Matrix10F3.hpp"
-#include "math/Matrix3F3.hpp"
+#include "math/Matrix1F1.hpp"
+#include "math/Matrix1F2.hpp"
 #include "math/Matrix1F3.hpp"
-#include "math/Matrix10F2.hpp"
+#include "math/Matrix1F6.hpp"
+#include "math/Matrix1F10.hpp"
 #include "math/Matrix2F2.hpp"
 #include "math/Matrix2F10.hpp"
-#include "math/Matrix1F2.hpp"
-#include "math/Matrix1F6.hpp"
+#include "math/Matrix3F3.hpp"
+#include "math/Matrix6F10.hpp"
+#include "math/Matrix6F6.hpp"
+#include "math/Matrix10F2.hpp"
+#include "math/Matrix10F3.hpp"
+#include "math/Matrix10F10.hpp"
 #include "math/LowPass.hpp"
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
@@ -84,7 +90,6 @@ extern "C" {
 #include <poll.h>
 #include <math.h>
 
-#include <math/BlockDelay.hpp>
 
 /************************************************************************
  ** Local Defines
@@ -134,6 +139,7 @@ typedef struct
 	float FLOW_R;
 	float FLOW_RR;
 	uint8 FLOW_QUALITY_MIN;
+	float FLOW_MIN_AGL;
 } PE_Params_t;
 
 enum {

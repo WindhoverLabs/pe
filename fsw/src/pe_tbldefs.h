@@ -130,6 +130,8 @@ typedef struct
 
 	uint8 FLOW_QUALITY_MIN;
 
+	float FLOW_MIN_AGL;
+
 } PE_ConfigTbl_t;
 
 

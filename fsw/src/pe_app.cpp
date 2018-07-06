@@ -1802,6 +1802,7 @@ void PE::UpdateLocalParams()
 	m_Params.FLOW_R				= ConfigTblPtr->FLOW_R;
 	m_Params.FLOW_RR			= ConfigTblPtr->FLOW_RR;
 	m_Params.FLOW_QUALITY_MIN	= ConfigTblPtr->FLOW_QUALITY_MIN;
+	m_Params.FLOW_MIN_AGL		= ConfigTblPtr->FLOW_MIN_AGL;
 
 	/* Unlock the mutex */
 	OS_MutSemGive(ConfigMutex);
