@@ -399,42 +399,42 @@ typedef enum {
 */
 	PE_LAND_TIMEOUT_ERR_EID = 24,
 
-/** \brief Ulr fault, r %5.2f m, beta %5.2f
-**  \event Ulr fault, r %5.2f m, beta %5.2f
+/** \brief Dist fault, r %5.2f m, beta %5.2f
+**  \event Dist fault, r %5.2f m, beta %5.2f
 **
 **  \par Type: ERROR
 **
 **  \par Cause:
 **
-**  This event message is issued when the ulr fails a validity check.
-**  Ulr will reinitialize after this event is broadcast.
+**  This event message is issued when the dist fails a validity check.
+**  Dist will reinitialize after this event is broadcast.
 **
 */
-	PE_ULR_FAULT_ERR_EID = 25,
+	PE_DIST_FAULT_ERR_EID = 25,
 
-/** \brief Ulr initialized. Mean: (%d) Std dev: (%d) cm
-**  \event Ulr initialized. Mean: (%d) Std dev: (%d) cm
+/** \brief Dist initialized. Mean: (%d) Std dev: (%d) cm
+**  \event Dist initialized. Mean: (%d) Std dev: (%d) cm
 **
 **  \par Type: INFORMATION
 **
 **  \par Cause:
 **
-**  This event message is issued when ulr has (re)initialized successfully.
+**  This event message is issued when dist has (re)initialized successfully.
 **
 */
-	PE_ULR_OK_INF_EID = 26,
+	PE_DIST_OK_INF_EID = 26,
 
-/** \brief Ulr timeout
-**  \event Ulr timeout
+/** \brief Dist timeout
+**  \event Dist timeout
 **
 **  \par Type: ERROR
 **
 **  \par Cause:
 **
-**  This event message is issued when the ulr data times out and needs to be reset
+**  This event message is issued when the dist data times out and needs to be reset
 **
 */
-	PE_ULR_TIMEOUT_ERR_EID = 27,
+	PE_DIST_TIMEOUT_ERR_EID = 27,
 
 /** \brief PE - mutex creation failed (0x%08lX)
 **  \event PE - mutex creation failed (0x%08lX)

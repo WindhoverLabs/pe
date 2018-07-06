@@ -131,9 +131,9 @@ typedef struct
 	int32  FAKE_ORIGIN;
 	float  INIT_ORIGIN_LAT;
 	float  INIT_ORIGIN_LON;
-    boolean ULR_FUSE;
-	float  ULR_STDDEV;
-	float  ULR_OFF_Z;
+    boolean DIST_FUSE;
+	float  DIST_STDDEV;
+	float  DIST_OFF_Z;
 	boolean FLOW_FUSE;
 	float FLOW_SCALE;
 	float FLOW_R;
@@ -169,8 +169,8 @@ enum {
 };
 
 enum {
-	Y_ulr_z = 0,
-	n_y_ulr = 1
+	Y_dist_z = 0,
+	n_y_dist = 1
 };
 
 enum {
@@ -220,7 +220,7 @@ public:
     uint32 	EST_STDDEV_TZ_VALID; // 2.0 m
     float 	P_MAX; // max allowed value in state covariance
     float 	LAND_RATE; // rate of land detector correction
-    float 	ULR_RATE; // rate of land detector correction
+    float 	DIST_RATE; // rate of land detector correction
     float	LOW_PASS_CUTOFF;
 
     /**\brief Scheduling Pipe ID */
@@ -262,7 +262,7 @@ public:
 
     /* Sensor stats */
     Stats1F m_BaroStats;
-    Stats1F m_UlrStats;
+    Stats1F m_DistStats;
     Stats1F m_FlowQStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
@@ -289,7 +289,7 @@ public:
 	uint64 m_TimestampLastBaro;
 	uint64 m_TimeLastBaro;
 	uint64 m_TimeLastGps;
-	uint64 m_TimeLastUlr;
+	uint64 m_TimeLastDist;
 	uint64 m_TimeLastLand;
 	uint64 m_TimeLastFlow;
 
@@ -297,21 +297,21 @@ public:
 	boolean   m_BaroTimeout;
 	boolean   m_GpsTimeout;
 	boolean   m_LandTimeout;
-	boolean   m_UlrTimeout;
+	boolean   m_DistTimeout;
 	boolean   m_FlowTimeout;
 
     /* Faults */
 	boolean   m_BaroFault;
 	boolean   m_GpsFault;
 	boolean   m_LandFault;
-	boolean   m_UlrFault;
+	boolean   m_DistFault;
 	boolean   m_FlowFault;
 
 	/* Reference altitudes */
 	float m_AltOrigin;
 	float m_BaroAltOrigin;
 	float m_GpsAltOrigin;
-	float m_UlrAltOrigin;
+	float m_DistAltOrigin;
 
 	/* Status */
 	boolean m_ReceivedGps;
@@ -321,7 +321,7 @@ public:
 	boolean m_BaroInitialized;
 	boolean m_GpsInitialized;
 	boolean m_LandInitialized;
-	boolean m_UlrInitialized;
+	boolean m_DistInitialized;
 	boolean m_FlowInitialized;
 	boolean m_AltOriginInitialized;
     boolean m_ParamsUpdated;
@@ -396,7 +396,7 @@ public:
         
     } m_Land;
 
-    struct Ulr
+    struct Dist
     {
         math::Vector1F y;
         math::Matrix1F10 C;
@@ -407,7 +407,7 @@ public:
         math::Matrix10F1 K;
         math::Matrix10F1 temp;
         math::Vector10F dx;
-    } m_Ulr;
+    } m_Dist;
     
     struct Flow
     {
@@ -927,58 +927,58 @@ public:
 	boolean landed();
 
     /************************************************************************/
-    /** \brief Ulr Measure
+    /** \brief Dist Measure
     **
     **  \par Description
-    **       This function reads the current ulr message
+    **       This function reads the current dist message
     **
     **  \par Assumptions, External Events, and Notes:
     **       None
     **
-    **  \param [in/out]   y    A #Vector1F to store ulr measurement
+    **  \param [in/out]   y    A #Vector1F to store dist measurement
     **
 	**  \returns
     **  \retcode #CFE_SUCCESS \endcode
     **  \endreturns
     **
     *************************************************************************/
-	int32  ulrMeasure(math::Vector1F &y);
+	int32  distMeasure(math::Vector1F &y);
 
     /************************************************************************/
-    /** \brief Ulr Correct
+    /** \brief Dist Correct
     **
     **  \par Description
-    **       This function corrects the ulr measurement
+    **       This function corrects the dist measurement
     **
     **  \par Assumptions, External Events, and Notes:
     **       None
     **
     *************************************************************************/
-	void ulrCorrect();
+	void distCorrect();
 
     /************************************************************************/
-    /** \brief Ulr Initialize
+    /** \brief Dist Initialize
     **
     **  \par Description
-    **       This function initializes the ulr
+    **       This function initializes the dist
     **
     **  \par Assumptions, External Events, and Notes:
     **       None
     **
     *************************************************************************/
-	void ulrInit();
+	void distInit();
 
     /************************************************************************/
-    /** \brief Check Ulr Timeout
+    /** \brief Check Dist Timeout
     **
     **  \par Description
-    **       This function checks if the ulr message has timed out
+    **       This function checks if the dist message has timed out
     **
     **  \par Assumptions, External Events, and Notes:
     **       None
     **
     *************************************************************************/
-	void ulrCheckTimeout();
+	void distCheckTimeout();
 	
     /************************************************************************/
     /** \brief Flow Measure

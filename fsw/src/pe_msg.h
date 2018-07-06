@@ -134,7 +134,7 @@ extern "C" {
 **       the following telemetry:
 **       - The #PE_CMD_INF_EID debug event message will be 
 **         generated when the command is executed
-**       - The Ulr Fused HK tlm will be set to true
+**       - The Dist Fused HK tlm will be set to true
 ** 
 **  \par Error Conditions
 **       This command may fail for the following reason(s):
@@ -158,7 +158,7 @@ extern "C" {
 **       the following telemetry:
 **       - The #PE_CMD_INF_EID debug event message will be 
 **         generated when the command is executed
-**       - The Ulr Fused HK tlm will be set to false
+**       - The Dist Fused HK tlm will be set to false
 ** 
 **  \par Error Conditions
 **       This command may fail for the following reason(s):
@@ -403,8 +403,8 @@ typedef struct
 	/** \brief Timestamp of last landing read */
 	uint64 TimeLastLand;
 
-	/** \brief Timestamp of last ulr read */
-	uint64 TimeLastUlr;
+	/** \brief Timestamp of last dist read */
+	uint64 TimeLastDist;
 
 	/** \brief Timestamp of last flow read */
 	uint64 TimeLastFlow;
@@ -454,8 +454,8 @@ typedef struct
     /** \brief Flag for XY estimation validity */
     boolean XyEstValid;
 
-    /** \brief Origin altitude of ULR */
-    float m_UlrAltOrigin;
+    /** \brief Origin altitude of DIST */
+    float m_DistAltOrigin;
 
     /** \brief Flag for Z estimation validity */
 	boolean ZEstValid;
@@ -466,17 +466,17 @@ typedef struct
 	/** \brief Flag for if local estimator is initialized */
 	boolean EstimatorLocalInitialized;
 
-	/** \brief Flag for if Ulr is initialized */
-    boolean UlrInitialized;
+	/** \brief Flag for if Dist is initialized */
+    boolean DistInitialized;
 
-	/** \brief Flag for Ulr fault */
-	boolean UlrFault;
+	/** \brief Flag for Dist fault */
+	boolean DistFault;
 
-	/** \brief Flag for Ulr timeout */
-	boolean UlrTimeout;
+	/** \brief Flag for Dist timeout */
+	boolean DistTimeout;
 
-    /** \brief Flag for if Ulr is being integrated into estimation */
-    boolean UlrFused;
+    /** \brief Flag for if Dist is being integrated into estimation */
+    boolean DistFused;
 
     /** \brief Flag for if Gps is being integrated into estimation */
     boolean GpsFused;

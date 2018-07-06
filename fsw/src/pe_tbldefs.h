@@ -114,11 +114,11 @@ typedef struct
 
 	float  INIT_ORIGIN_LON;
 
-    boolean ULR_FUSE;
+    boolean DIST_FUSE;
 
-	float ULR_STDDEV;
+	float DIST_STDDEV;
 
-	float ULR_OFF_Z;
+	float DIST_OFF_Z;
 
 	boolean FLOW_FUSE;
 
