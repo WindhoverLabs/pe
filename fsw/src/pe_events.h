@@ -745,7 +745,6 @@ typedef enum {
 **  This event message is issued when flow has (re)initialized successfully.
 **
 */
-
 	PE_FLOW_OK_INF_EID = 52,
 
 /** \brief Flow timeout

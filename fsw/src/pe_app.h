@@ -129,6 +129,11 @@ typedef struct
     boolean ULR_FUSE;
 	float  ULR_STDDEV;
 	float  ULR_OFF_Z;
+	boolean FLOW_FUSE;
+	float FLOW_SCALE;
+	float FLOW_R;
+	float FLOW_RR;
+	uint8 FLOW_QUALITY_MIN;
 } PE_Params_t;
 
 enum {
@@ -253,7 +258,6 @@ public:
     Stats1F m_BaroStats;
     Stats1F m_UlrStats;
     Stats1F m_FlowQStats;
-    Stats2F m_FlowStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
 

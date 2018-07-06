@@ -120,6 +120,16 @@ typedef struct
 
 	float ULR_OFF_Z;
 
+	boolean FLOW_FUSE;
+
+	float FLOW_SCALE;
+
+	float FLOW_R;
+
+	float FLOW_RR;
+
+	uint8 FLOW_QUALITY_MIN;
+
 } PE_ConfigTbl_t;
 
 

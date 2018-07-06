@@ -78,6 +78,64 @@ int32 PE::InitEvent()
     EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
     EventTbl[  ind].EventID = PE_LAND_TIMEOUT_ERR_EID;
     EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_ULR_FAULT_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_ULR_OK_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_ULR_TIMEOUT_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_MUTEX_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_LOCAL_POS_MSG_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_GLOBAL_POS_MSG_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_DIST_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_DIST_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_DIST_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_DIST_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_GPS_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_GPS_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_GPS_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_GPS_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_BARO_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_BARO_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_BARO_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_BARO_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_LAND_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_LAND_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_LAND_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_LAND_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_FLOW_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_FLOW_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_FLOW_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_FLOW_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FLOW_FAULT_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FLOW_OK_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FLOW_TIMEOUT_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
 
     /* Register the table with CFE */
     iStatus = CFE_EVS_Register(EventTbl, ind, CFE_EVS_BINARY_FILTER);
@@ -319,6 +377,8 @@ void PE::InitData()
 	m_BaroInitialized		      = FALSE;
 	m_GpsInitialized  			  = FALSE;
 	m_LandInitialized  			  = FALSE;
+	m_UlrInitialized			  = FALSE;
+	m_FlowInitialized			  = FALSE;
 	m_ReceivedGps           	  = FALSE;
 	m_LastArmedState        	  = FALSE;
 	m_AltOriginInitialized  	  = FALSE;
@@ -332,6 +392,7 @@ void PE::InitData()
     m_BaroStats.reset();
     m_GpsStats.reset();
     m_UlrStats.reset();
+    m_FlowQStats.reset();
     
 	/* State Space */
 	m_StateVec.Zero();
@@ -376,7 +437,6 @@ void PE::InitData()
     m_GPS.beta_thresh = 0.0f;
     m_GPS.K.Zero();
     m_GPS.dx.Zero();
-    HkTlm.GpsFused = TRUE;
     
     /* Sensor Land data */
     m_Land.y.Zero();
@@ -746,6 +806,23 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
                 }
 				break;
 
+            case PX4_OPTICAL_FLOW_MID:
+            	memcpy(&m_OpticalFlowMsg, MsgPtr, sizeof(m_OpticalFlowMsg));
+
+				/* Check if fusing distance sensor */
+				if(TRUE == m_Params.FLOW_FUSE)
+				{
+					if(m_FlowTimeout)
+					{
+						flowInit();
+					}
+					else
+					{
+						flowCorrect();
+					}
+				}
+				break;
+
             default:
                 (void) CFE_EVS_SendEvent(PE_MSGID_ERR_EID, CFE_EVS_ERROR,
                      "Recvd invalid SCH msgId (0x%04X)", MsgId);
@@ -944,8 +1021,6 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
                 }
                 break;
 
-
-
             case PE_FUSE_LAND_CC:
                 if(FALSE == m_Params.LAND_FUSE)
                 {
@@ -975,6 +1050,38 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
                     HkTlm.usCmdErrCnt++;
                     (void) CFE_EVS_SendEvent(PE_DISABLE_LAND_ERR_EID, CFE_EVS_ERROR,
                                   "Failed to disable land fusion into estimation.");
+                }
+                break;
+
+            case PE_FUSE_FLOW_CC:
+                if(FALSE == m_Params.FLOW_FUSE)
+                {
+                	m_Params.FLOW_FUSE = TRUE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_FLOW_INF_EID, CFE_EVS_INFORMATION,
+                                  "Fusing flow into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_FLOW_ERR_EID, CFE_EVS_ERROR,
+                                  "Already fusing flow into estimation.");
+                }
+                break;
+
+            case PE_DISABLE_FLOW_CC:
+                if(TRUE == m_Params.FLOW_FUSE)
+                {
+                	m_Params.FLOW_FUSE = FALSE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_FLOW_INF_EID, CFE_EVS_INFORMATION,
+                                  "Disabling flow fusion into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_FLOW_ERR_EID, CFE_EVS_ERROR,
+                                  "Failed to disable flow fusion into estimation.");
                 }
                 break;
 
@@ -1026,6 +1133,11 @@ void PE::ReportHousekeeping()
     HkTlm.GpsFused = m_Params.GPS_FUSE;
     HkTlm.BaroFused = m_Params.BARO_FUSE;
     HkTlm.LandFused = m_Params.LAND_FUSE;
+    HkTlm.FlowFused = m_Params.FLOW_FUSE;
+    HkTlm.FlowInitialized = m_FlowInitialized;
+	HkTlm.FlowFault = m_FlowFault;
+	HkTlm.FlowTimeout = m_FlowTimeout;
+	HkTlm.TimeLastFlow = m_TimeLastFlow;
 
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&HkTlm);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&HkTlm);
@@ -1097,7 +1209,7 @@ void PE::SendVehicleLocalPositionMsg()
 		m_VehicleLocalPositionMsg.DistBottom = m_AglLowPass.m_State;
 		m_VehicleLocalPositionMsg.DistBottomRate = m_XLowPass[X_vz];
 		m_VehicleLocalPositionMsg.SurfaceBottomTimestamp = m_Timestamp;
-		m_VehicleLocalPositionMsg.DistBottomValid = m_ZEstValid;
+		m_VehicleLocalPositionMsg.DistBottomValid = m_Params.ULR_FUSE;
 		m_VehicleLocalPositionMsg.EpH = eph;
 		m_VehicleLocalPositionMsg.EpV = epv;
 
@@ -1290,6 +1402,7 @@ void PE::CheckTimeouts()
 	gpsCheckTimeout();
 	landCheckTimeout();
 	ulrCheckTimeout();
+	flowCheckTimeout();
 }
 
 
@@ -1684,6 +1797,11 @@ void PE::UpdateLocalParams()
 	m_Params.ULR_FUSE			= ConfigTblPtr->ULR_FUSE;
 	m_Params.ULR_STDDEV			= ConfigTblPtr->ULR_STDDEV;
 	m_Params.ULR_OFF_Z			= ConfigTblPtr->ULR_OFF_Z;
+	m_Params.FLOW_FUSE			= ConfigTblPtr->FLOW_FUSE;
+	m_Params.FLOW_SCALE			= ConfigTblPtr->FLOW_SCALE;
+	m_Params.FLOW_R				= ConfigTblPtr->FLOW_R;
+	m_Params.FLOW_RR			= ConfigTblPtr->FLOW_RR;
+	m_Params.FLOW_QUALITY_MIN	= ConfigTblPtr->FLOW_QUALITY_MIN;
 
 	/* Unlock the mutex */
 	OS_MutSemGive(ConfigMutex);
