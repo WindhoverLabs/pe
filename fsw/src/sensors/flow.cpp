@@ -47,7 +47,7 @@ int32 PE::flowMeasure(math::Vector2F &y)
 	}
 
 	/* Check if AGL valid */
-	if (!m_Params.DIST_FUSE) {
+	if (m_DistFault) {
 		Status = -1;
 		goto flowMeasure_Exit_Tag;
 	}
