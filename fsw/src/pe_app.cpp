@@ -784,23 +784,27 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
             case PX4_DISTANCE_SENSOR_MID:
             	memcpy(&m_DistanceSensor, MsgPtr, sizeof(m_DistanceSensor));
                 
-                /* Check if fusing distance sensor */
-                if(TRUE == m_Params.DIST_FUSE)
+                /* Check that distance sensor is expected type for this platform */
+                if(m_DistanceSensor.Type == DIST_SENSOR_TYPE)
                 {
-                    /* Don't integrate while landed */
-                    if(!landed())
+                    /* Check if fusing distance sensor */
+                    if(TRUE == m_Params.DIST_FUSE)
                     {
-                        /* Throttle rate */
-				        if((m_Timestamp - m_TimeLastLand) > 1.0e6f / DIST_RATE)
-				        {
-                        	if(m_DistTimeout)
+                        /* Don't integrate while landed */
+                        if(!landed())
+                        {
+                            /* Throttle rate */
+				            if((m_Timestamp - m_TimeLastLand) > 1.0e6f / DIST_RATE)
 				            {
-                        		distInit();
-				            }
-				            else
-				            {
-					            distCorrect();
-				            }
+                            	if(m_DistTimeout)
+				                {
+                            		distInit();
+				                }
+				                else
+				                {
+					                distCorrect();
+				                }
+                            }
                         }
                     }
                 }
