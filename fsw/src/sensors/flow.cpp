@@ -67,9 +67,10 @@ int32 PE::flowMeasure(math::Vector2F &y)
 	/* Check reported quality */
 	if (m_OpticalFlowMsg.Quality < m_Params.FLOW_QUALITY_MIN) {
 		Status = -1;
+		OS_printf("Bad Flow Measure: bad quality %i\n", m_OpticalFlowMsg.Quality);
 		goto flowMeasure_Exit_Tag;
 	}
-
+	
 	/* Calculate range to center of image for flow */
 	d = m_AglLowPass.m_State * cosf(m_Euler[0]) * cosf(m_Euler[1]);
 
@@ -81,12 +82,13 @@ int32 PE::flowMeasure(math::Vector2F &y)
 
 	if (dt_flow > 0.5f || dt_flow < 1.0e-6f) {
 		Status = -1;
+		OS_printf("Bad Flow Measure: invalid dt\n");
 		goto flowMeasure_Exit_Tag;
 	}
 
 	/* Angular rotation in x, y axis */
-	gyro_x_rad = 0;
-	gyro_y_rad = 0;
+	gyro_x_rad = m_OpticalFlowMsg.GyroXRateIntegral; //TODO make this a high pass filter
+	gyro_y_rad = m_OpticalFlowMsg.GyroYRateIntegral;
 
 //	if (_fusion.get() & FUSE_FLOW_GYRO_COMP) {
 //		gyro_x_rad = _flow_gyro_x_high_pass.update(
@@ -97,7 +99,7 @@ int32 PE::flowMeasure(math::Vector2F &y)
 
 	/* Compute velocities in body frame using ground distance */
 	/* Note: Integral rates in the optical_flow msg are RH rotations about body axes */
-	delta_b[0] = float(fabs(flow_y_rad - gyro_y_rad) * d);
+	delta_b[0] = fabs(flow_y_rad - gyro_y_rad) * d;
 	delta_b[1] = -(flow_x_rad - gyro_x_rad) * d;
 	delta_b[2] = 0.0f;
 
