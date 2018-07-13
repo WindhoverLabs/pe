@@ -99,12 +99,17 @@ int32 PE::flowMeasure(math::Vector2F &y)
 
 	/* Compute velocities in body frame using ground distance */
 	/* Note: Integral rates in the optical_flow msg are RH rotations about body axes */
-	delta_b[0] = fabs(flow_y_rad - gyro_y_rad) * d;
+	delta_b[0] = +(flow_y_rad - gyro_y_rad) * d;
 	delta_b[1] = -(flow_x_rad - gyro_x_rad) * d;
 	delta_b[2] = 0.0f;
 
 	/* Rotation of flow from body to nav frame */
 	delta_n = m_RotationMat * delta_b;
+
+//    OS_printf("agl %f\n", d);
+//    OS_printf("vx %f\n", delta_n[0] / dt_flow);
+//    OS_printf("vy %f\n", delta_n[1] / dt_flow);
+//    
 
 	/* Measurement */
 	y[Y_flow_vx] = delta_n[0] / dt_flow;
@@ -124,7 +129,7 @@ void PE::flowCorrect()
     CFE_ES_PerfLogEntry(PE_SENSOR_FLOW_PERF_ID);
     const float h_min = 2.0f;
 	const float h_max = 8.0f;
-	const float v_min = 0.5f;
+	const float v_min = 0.0f;
 	const float v_max = 1.0f;
     float h = 0;
     float v = 0;
@@ -148,6 +153,8 @@ void PE::flowCorrect()
 	/* Prevent extrapolation past end of polynomial fit by bounding independent variables */
 	h = m_AglLowPass.m_State;
 	v = sqrtf(m_Flow.y * m_Flow.y); //was norm()
+    //OS_printf("v %f\n", v);
+
 
 	if (h > h_max) {
 		h = h_max;
@@ -164,16 +171,16 @@ void PE::flowCorrect()
 	if (v < v_min) {
 		v = v_min;
 	}
-
+	
 	/* Compute polynomial value */
-	flow_vxy_stddev = p[0] * h + p[1] * h * h + p[2] * v + p[3] * v * h + p[4] * v * h * h;
-
+	flow_vxy_stddev = p[0] * h + p[1] * h * h + p[2] * v + p[3] * v * h + p[4] * v * h * h + .5f;
+//OS_printf("flow_vxy_stddev %f\n", flow_vxy_stddev);
 	rotrate_sq = m_VehicleAttitudeMsg.RollSpeed * m_VehicleAttitudeMsg.RollSpeed
 			   + m_VehicleAttitudeMsg.PitchSpeed * m_VehicleAttitudeMsg.PitchSpeed
 			   + m_VehicleAttitudeMsg.YawSpeed * m_VehicleAttitudeMsg.YawSpeed;
-
+//	OS_printf("rotrate_sq %f\n", rotrate_sq);
 	rot_sq = m_Euler[0] * m_Euler[0] + m_Euler[1] * m_Euler[1];
-
+//	OS_printf("rot_sq %f\n", rot_sq);
 	m_Flow.R[Y_flow_vx][Y_flow_vx] = flow_vxy_stddev * flow_vxy_stddev +
 			m_Params.FLOW_R * m_Params.FLOW_R * rot_sq +
 			m_Params.FLOW_RR * m_Params.FLOW_RR * rotrate_sq;
