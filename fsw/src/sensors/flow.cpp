@@ -87,15 +87,8 @@ int32 PE::flowMeasure(math::Vector2F &y)
 	}
 
 	/* Angular rotation in x, y axis */
-	gyro_x_rad = m_OpticalFlowMsg.GyroXRateIntegral; //TODO make this a high pass filter
-	gyro_y_rad = m_OpticalFlowMsg.GyroYRateIntegral;
-
-//	if (_fusion.get() & FUSE_FLOW_GYRO_COMP) {
-//		gyro_x_rad = _flow_gyro_x_high_pass.update(
-//					 _sub_flow.get().gyro_x_rate_integral);
-//		gyro_y_rad = _flow_gyro_y_high_pass.update(
-//					 _sub_flow.get().gyro_y_rate_integral);
-//	}
+	gyro_x_rad = m_FlowGyroXHighPass.Update(m_OpticalFlowMsg.GyroXRateIntegral, dt_flow, FLOW_GYRO_HP_CUTOFF); //TODO: Check if dt flow is correct dt
+	gyro_y_rad = m_FlowGyroYHighPass.Update(m_OpticalFlowMsg.GyroYRateIntegral, dt_flow, FLOW_GYRO_HP_CUTOFF); //TODO: Check if dt flow is correct dt
 
 	/* Compute velocities in body frame using ground distance */
 	/* Note: Integral rates in the optical_flow msg are RH rotations about body axes */

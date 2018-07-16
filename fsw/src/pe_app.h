@@ -78,6 +78,7 @@ extern "C" {
 #include "math/Matrix10F3.hpp"
 #include "math/Matrix10F10.hpp"
 #include "math/LowPass.hpp"
+#include "math/HighPass.hpp"
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
 #include "math/Stats2F.hpp"
@@ -278,6 +279,10 @@ public:
 	/* Low pass filter */
 	LowPassVector10F m_XLowPass;
 	LowPass m_AglLowPass;
+
+	/* High pass filter */
+	HighPass m_FlowGyroXHighPass;
+	HighPass m_FlowGyroYHighPass;
 
 	/* Delay blocks */
     delay::BlockDelay10FLEN10   m_XDelay;
