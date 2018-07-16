@@ -27,12 +27,12 @@ void PE::flowInit()
 int32 PE::flowMeasure(math::Vector2F &y)
 {
 	int32 Status = CFE_SUCCESS;
-	float d = 0;
-	float flow_x_rad = 0;
-	float flow_y_rad = 0;
-	float dt_flow = 0;
-	float gyro_x_rad = 0;
-	float gyro_y_rad = 0;
+	float d = 0.0f;
+	float flow_x_rad = 0.0f;
+	float flow_y_rad = 0.0f;
+	float dt_flow = 0.0f;
+	float gyro_x_rad = 0.0f;
+	float gyro_y_rad = 0.0f;
 	math::Vector3F delta_b;
 	math::Vector3F delta_n;
 
@@ -67,7 +67,6 @@ int32 PE::flowMeasure(math::Vector2F &y)
 	/* Check reported quality */
 	if (m_OpticalFlowMsg.Quality < m_Params.FLOW_QUALITY_MIN) {
 		Status = -1;
-		OS_printf("Bad Flow Measure: bad quality %i\n", m_OpticalFlowMsg.Quality);
 		goto flowMeasure_Exit_Tag;
 	}
 	
@@ -82,13 +81,12 @@ int32 PE::flowMeasure(math::Vector2F &y)
 
 	if (dt_flow > 0.5f || dt_flow < 1.0e-6f) {
 		Status = -1;
-		OS_printf("Bad Flow Measure: invalid dt\n");
 		goto flowMeasure_Exit_Tag;
 	}
 
 	/* Angular rotation in x, y axis */
-	gyro_x_rad = m_FlowGyroXHighPass.Update(m_OpticalFlowMsg.GyroXRateIntegral, dt_flow, FLOW_GYRO_HP_CUTOFF); //TODO: Check if dt flow is correct dt
-	gyro_y_rad = m_FlowGyroYHighPass.Update(m_OpticalFlowMsg.GyroYRateIntegral, dt_flow, FLOW_GYRO_HP_CUTOFF); //TODO: Check if dt flow is correct dt
+	gyro_x_rad = m_FlowGyroXHighPass.Update(m_OpticalFlowMsg.GyroXRateIntegral, m_TimeLastFlow - m_Timestamp, FLOW_GYRO_HP_CUTOFF);
+	gyro_y_rad = m_FlowGyroYHighPass.Update(m_OpticalFlowMsg.GyroYRateIntegral, m_TimeLastFlow - m_Timestamp, FLOW_GYRO_HP_CUTOFF);
 
 	/* Compute velocities in body frame using ground distance */
 	/* Note: Integral rates in the optical_flow msg are RH rotations about body axes */
@@ -99,17 +97,11 @@ int32 PE::flowMeasure(math::Vector2F &y)
 	/* Rotation of flow from body to nav frame */
 	delta_n = m_RotationMat * delta_b;
 
-//    OS_printf("agl %f\n", d);
-//    OS_printf("vx %f\n", delta_n[0] / dt_flow);
-//    OS_printf("vy %f\n", delta_n[1] / dt_flow);
-//    
-
 	/* Measurement */
 	y[Y_flow_vx] = delta_n[0] / dt_flow;
 	y[Y_flow_vy] = delta_n[1] / dt_flow;
 
 	m_TimeLastFlow = m_Timestamp;
-	//m_FlowQStats.update(Scalarf(m_OpticalFlowMsg.Quality));
 	m_FlowQStats.update(float(m_OpticalFlowMsg.Quality));
 
 flowMeasure_Exit_Tag:
@@ -122,13 +114,13 @@ void PE::flowCorrect()
     CFE_ES_PerfLogEntry(PE_SENSOR_FLOW_PERF_ID);
     const float h_min = 2.0f;
 	const float h_max = 8.0f;
-	const float v_min = 0.0f;
+	const float v_min = 0.5f;
 	const float v_max = 1.0f;
-    float h = 0;
-    float v = 0;
-    float flow_vxy_stddev = 0;
-    float rotrate_sq = 0;
-    float rot_sq = 0;
+    float h = 0.0f;
+    float v = 0.0f;
+    float flow_vxy_stddev = 0.0f;
+    float rotrate_sq = 0.0f;
+    float rot_sq = 0.0f;
 
     /* Polynomial noise model, found using least squares fit
 	** h, h**2, v, v*h, v*h**2  */
@@ -145,9 +137,7 @@ void PE::flowCorrect()
 
 	/* Prevent extrapolation past end of polynomial fit by bounding independent variables */
 	h = m_AglLowPass.m_State;
-	v = sqrtf(m_Flow.y * m_Flow.y); //was norm()
-    //OS_printf("v %f\n", v);
-
+	v = sqrtf(m_Flow.y * m_Flow.y);
 
 	if (h > h_max) {
 		h = h_max;
@@ -166,14 +156,14 @@ void PE::flowCorrect()
 	}
 	
 	/* Compute polynomial value */
-	flow_vxy_stddev = p[0] * h + p[1] * h * h + p[2] * v + p[3] * v * h + p[4] * v * h * h + .5f;
-//OS_printf("flow_vxy_stddev %f\n", flow_vxy_stddev);
+	flow_vxy_stddev = p[0] * h + p[1] * h * h + p[2] * v + p[3] * v * h + p[4] * v * h * h; // TODO: Adding a constant to this may help performance
+
 	rotrate_sq = m_VehicleAttitudeMsg.RollSpeed * m_VehicleAttitudeMsg.RollSpeed
 			   + m_VehicleAttitudeMsg.PitchSpeed * m_VehicleAttitudeMsg.PitchSpeed
 			   + m_VehicleAttitudeMsg.YawSpeed * m_VehicleAttitudeMsg.YawSpeed;
-//	OS_printf("rotrate_sq %f\n", rotrate_sq);
+
 	rot_sq = m_Euler[0] * m_Euler[0] + m_Euler[1] * m_Euler[1];
-//	OS_printf("rot_sq %f\n", rot_sq);
+
 	m_Flow.R[Y_flow_vx][Y_flow_vx] = flow_vxy_stddev * flow_vxy_stddev +
 			m_Params.FLOW_R * m_Params.FLOW_R * rot_sq +
 			m_Params.FLOW_RR * m_Params.FLOW_RR * rotrate_sq;
@@ -188,7 +178,7 @@ void PE::flowCorrect()
     m_Flow.S_I = m_Flow.S_I.Inversed();
 
     /* Fault detection 1x2 * 2x2 * 2F */
-    m_Flow.beta = (m_Flow.r.Transpose() * (m_Flow.S_I * m_Flow.r)); //todo was [0][0]
+    m_Flow.beta = (m_Flow.r.Transpose() * (m_Flow.S_I * m_Flow.r));
 
     if (m_Flow.beta > BETA_TABLE[n_y_flow])
     {
