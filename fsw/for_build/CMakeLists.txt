@@ -60,6 +60,7 @@ add_airliner_app_unit_test(pe-ut
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Integrator.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Limits.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/LowPass.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/HighPass.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/LowPassVector10F.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix1F1.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/Matrix1F2.hpp
@@ -98,6 +99,7 @@ add_airliner_app_unit_test(pe-ut
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Integrator.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Limits.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/LowPass.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/HighPass.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/LowPassVector10F.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix1F1.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/Matrix1F2.cpp
