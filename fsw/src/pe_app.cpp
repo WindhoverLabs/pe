@@ -1155,17 +1155,22 @@ void PE::ReportHousekeeping()
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 void PE::SendVehicleLocalPositionMsg()
 {
-	float alt 			 = 0;
-	float vxy_stddev     = 0;
-	float epv 			 = 0;
-	float eph			 = 0;
-	float eph_thresh	 = 3.0f;
-	float epv_thresh     = 3.0f;
-	boolean data_valid = FALSE;
+	float alt                   = 0.0f;
+	float vxy_stddev            = 0.0f;
+	float epv                   = 0.0f;
+	float eph                   = 0.0f;
+	float eph_thresh            = 3.0f;
+	float epv_thresh            = 3.0f;
+	boolean data_valid          = FALSE;
+	boolean dist_bottom_valid   = FALSE;
 
 	vxy_stddev = sqrtf(m_StateCov[X_vx][X_vx] + m_StateCov[X_vy][X_vy]);
 	epv = sqrt(m_StateCov[X_z][X_z]);
 	eph = sqrt(m_StateCov[X_x][X_x] + m_StateCov[X_y][X_y]);
+	dist_bottom_valid = m_Params.DIST_FUSE && 
+	                    m_DistInitialized && 
+	                    !m_DistTimeout && 
+	                    !m_DistFault;
 
 	if (vxy_stddev < m_Params.VXY_PUB_THRESH)
 	{
@@ -1213,7 +1218,7 @@ void PE::SendVehicleLocalPositionMsg()
 		m_VehicleLocalPositionMsg.DistBottom = m_AglLowPass.m_State;
 		m_VehicleLocalPositionMsg.DistBottomRate = m_XLowPass[X_vz];
 		m_VehicleLocalPositionMsg.SurfaceBottomTimestamp = m_Timestamp;
-		m_VehicleLocalPositionMsg.DistBottomValid = m_Params.DIST_FUSE;
+		m_VehicleLocalPositionMsg.DistBottomValid = dist_bottom_valid;
 		m_VehicleLocalPositionMsg.EpH = eph;
 		m_VehicleLocalPositionMsg.EpV = epv;
 
