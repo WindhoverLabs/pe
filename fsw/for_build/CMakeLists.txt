@@ -7,6 +7,7 @@ add_airliner_app_def(pe
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_config_utils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_events.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_msg.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_symbols.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_tbldefs.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/pe_version.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/sensors/baro.cpp
@@ -20,6 +21,11 @@ add_airliner_app_def(pe
 
     USER_DOCS   ${CMAKE_CURRENT_SOURCE_DIR}/user_doxy.in
     DESIGN_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/detail_doxy.in
+    
+    MSG_OVERRIDES   ${CMAKE_CURRENT_SOURCE_DIR}/pe_msg_overrides.json 
+
+    COMMANDER_PLUGIN
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../cdr
 )
 
 add_airliner_app_unit_test(pe-ut
