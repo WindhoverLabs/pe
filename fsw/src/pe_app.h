@@ -58,17 +58,30 @@ extern "C" {
 #include "px4_msgs.h"
 #include "px4lib.h"
 
+#include "math/BlockDelay.hpp"
 #include "math/Vector1F.hpp"
+#include "math/Vector2F.hpp"
 #include "math/Vector3F.hpp"
+#include "math/Vector6F.hpp"
 #include "math/Vector10F.hpp"
-#include "math/Matrix10F10.hpp"
-#include "math/Matrix10F3.hpp"
-#include "math/Matrix3F3.hpp"
+#include "math/Matrix1F1.hpp"
+#include "math/Matrix1F2.hpp"
 #include "math/Matrix1F3.hpp"
 #include "math/Matrix1F6.hpp"
+#include "math/Matrix1F10.hpp"
+#include "math/Matrix2F2.hpp"
+#include "math/Matrix2F10.hpp"
+#include "math/Matrix3F3.hpp"
+#include "math/Matrix6F10.hpp"
+#include "math/Matrix6F6.hpp"
+#include "math/Matrix10F2.hpp"
+#include "math/Matrix10F3.hpp"
+#include "math/Matrix10F10.hpp"
 #include "math/LowPass.hpp"
+#include "math/HighPass.hpp"
 #include "math/LowPassVector10F.hpp"
 #include "math/Stats1F.hpp"
+#include "math/Stats2F.hpp"
 #include "math/Stats6F.hpp"
 #include "math/Quaternion.hpp"
 #include "math/Euler.hpp"
@@ -78,7 +91,6 @@ extern "C" {
 #include <poll.h>
 #include <math.h>
 
-#include <math/BlockDelay.hpp>
 
 /************************************************************************
  ** Local Defines
@@ -120,9 +132,15 @@ typedef struct
 	int32  FAKE_ORIGIN;
 	float  INIT_ORIGIN_LAT;
 	float  INIT_ORIGIN_LON;
-    boolean ULR_FUSE;
-	float  ULR_STDDEV;
-	float  ULR_OFF_Z;
+    boolean DIST_FUSE;
+	float  DIST_STDDEV;
+	float  DIST_OFF_Z;
+	boolean FLOW_FUSE;
+	float FLOW_SCALE;
+	float FLOW_R;
+	float FLOW_RR;
+	uint8 FLOW_QUALITY_MIN;
+	float FLOW_MIN_AGL;
 } PE_Params_t;
 
 enum {
@@ -152,8 +170,8 @@ enum {
 };
 
 enum {
-	Y_ulr_z = 0,
-	n_y_ulr = 1
+	Y_dist_z = 0,
+	n_y_dist = 1
 };
 
 enum {
@@ -171,6 +189,12 @@ enum {
 	Y_land_vy  = 1,
 	Y_land_agl = 2,
 	n_y_land   = 3
+};
+
+enum {
+	Y_flow_vx = 0,
+	Y_flow_vy = 1,
+	n_y_flow = 2
 };
 
 /* Enums for other sensors would go here */
@@ -197,7 +221,7 @@ public:
     uint32 	EST_STDDEV_TZ_VALID; // 2.0 m
     float 	P_MAX; // max allowed value in state covariance
     float 	LAND_RATE; // rate of land detector correction
-    float 	ULR_RATE; // rate of land detector correction
+    float 	DIST_RATE; // rate of land detector correction
     float	LOW_PASS_CUTOFF;
 
     /**\brief Scheduling Pipe ID */
@@ -230,6 +254,7 @@ public:
     PX4_SensorCombinedMsg_t m_SensorCombinedMsg;
     PX4_VehicleAttitudeSetpointMsg_t m_VehicleAttitudeSetpointMsg;
     PX4_DistanceSensorMsg_t m_DistanceSensor;
+    PX4_OpticalFlowMsg_t m_OpticalFlowMsg;
 
     /** \brief Output Data published at the end of cycle */
     PX4_VehicleLocalPositionMsg_t m_VehicleLocalPositionMsg;
@@ -238,7 +263,8 @@ public:
 
     /* Sensor stats */
     Stats1F m_BaroStats;
-    Stats1F m_UlrStats;
+    Stats1F m_DistStats;
+    Stats1F m_FlowQStats;
     Stats6F m_GpsStats;
     uint16 m_LandCount;
 
@@ -254,6 +280,10 @@ public:
 	LowPassVector10F m_XLowPass;
 	LowPass m_AglLowPass;
 
+	/* High pass filter */
+	HighPass m_FlowGyroXHighPass;
+	HighPass m_FlowGyroYHighPass;
+
 	/* Delay blocks */
     delay::BlockDelay10FLEN10   m_XDelay;
     delay::BlockDelayUINT64LEN10 m_TDelay;
@@ -264,26 +294,29 @@ public:
 	uint64 m_TimestampLastBaro;
 	uint64 m_TimeLastBaro;
 	uint64 m_TimeLastGps;
-	uint64 m_TimeLastUlr;
+	uint64 m_TimeLastDist;
 	uint64 m_TimeLastLand;
+	uint64 m_TimeLastFlow;
 
     /* Timeouts */
 	boolean   m_BaroTimeout;
 	boolean   m_GpsTimeout;
 	boolean   m_LandTimeout;
-	boolean   m_UlrTimeout;
+	boolean   m_DistTimeout;
+	boolean   m_FlowTimeout;
 
     /* Faults */
 	boolean   m_BaroFault;
 	boolean   m_GpsFault;
 	boolean   m_LandFault;
-	boolean   m_UlrFault;
+	boolean   m_DistFault;
+	boolean   m_FlowFault;
 
 	/* Reference altitudes */
 	float m_AltOrigin;
 	float m_BaroAltOrigin;
 	float m_GpsAltOrigin;
-	float m_UlrAltOrigin;
+	float m_DistAltOrigin;
 
 	/* Status */
 	boolean m_ReceivedGps;
@@ -293,7 +326,8 @@ public:
 	boolean m_BaroInitialized;
 	boolean m_GpsInitialized;
 	boolean m_LandInitialized;
-	boolean m_UlrInitialized;
+	boolean m_DistInitialized;
+	boolean m_FlowInitialized;
 	boolean m_AltOriginInitialized;
     boolean m_ParamsUpdated;
 
@@ -367,7 +401,7 @@ public:
         
     } m_Land;
 
-    struct Ulr
+    struct Dist
     {
         math::Vector1F y;
         math::Matrix1F10 C;
@@ -378,8 +412,21 @@ public:
         math::Matrix10F1 K;
         math::Matrix10F1 temp;
         math::Vector10F dx;
-    } m_Ulr;
+    } m_Dist;
     
+    struct Flow
+    {
+        math::Vector2F y;
+        math::Matrix2F10 C;
+        math::Matrix2F2 R;
+        math::Matrix2F2 S_I;
+        math::Vector2F r;
+        float beta;
+        math::Matrix10F2 K;
+        math::Matrix10F2 temp;
+        math::Vector10F dx;
+    } m_Flow;
+
     struct Predict
     {
         math::Quaternion q;
@@ -885,58 +932,112 @@ public:
 	boolean landed();
 
     /************************************************************************/
-    /** \brief Ulr Measure
+    /** \brief Dist Measure
     **
     **  \par Description
-    **       This function reads the current ulr message
+    **       This function reads the current dist message
     **
     **  \par Assumptions, External Events, and Notes:
     **       None
     **
-    **  \param [in/out]   y    A #Vector1F to store ulr measurement
+    **  \param [in/out]   y    A #Vector1F to store dist measurement
     **
 	**  \returns
     **  \retcode #CFE_SUCCESS \endcode
     **  \endreturns
     **
     *************************************************************************/
-	int32  ulrMeasure(math::Vector1F &y);
+	int32  distMeasure(math::Vector1F &y);
 
     /************************************************************************/
-    /** \brief Ulr Correct
+    /** \brief Dist Correct
     **
     **  \par Description
-    **       This function corrects the ulr measurement
+    **       This function corrects the dist measurement
     **
     **  \par Assumptions, External Events, and Notes:
     **       None
     **
     *************************************************************************/
-	void ulrCorrect();
+	void distCorrect();
 
     /************************************************************************/
-    /** \brief Ulr Initialize
+    /** \brief Dist Initialize
     **
     **  \par Description
-    **       This function initializes the ulr
+    **       This function initializes the dist
     **
     **  \par Assumptions, External Events, and Notes:
     **       None
     **
     *************************************************************************/
-	void ulrInit();
+	void distInit();
 
     /************************************************************************/
-    /** \brief Check Ulr Timeout
+    /** \brief Check Dist Timeout
     **
     **  \par Description
-    **       This function checks if the ulr message has timed out
+    **       This function checks if the dist message has timed out
     **
     **  \par Assumptions, External Events, and Notes:
     **       None
     **
     *************************************************************************/
-	void ulrCheckTimeout();
+	void distCheckTimeout();
+	
+    /************************************************************************/
+    /** \brief Flow Measure
+    **
+    **  \par Description
+    **       This function reads the current flow message
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    **  \param [in/out]   y    A #Vector1F to store flow measurement
+    **
+	**  \returns
+    **  \retcode #CFE_SUCCESS \endcode
+    **  \endreturns
+    **
+    *************************************************************************/
+	int32  flowMeasure(math::Vector2F &y);
+
+    /************************************************************************/
+    /** \brief Flow Correct
+    **
+    **  \par Description
+    **       This function corrects the flow measurement
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
+	void flowCorrect();
+
+    /************************************************************************/
+    /** \brief Flow Initialize
+    **
+    **  \par Description
+    **       This function initializes the flow
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
+	void flowInit();
+
+    /************************************************************************/
+    /** \brief Check Flow Timeout
+    **
+    **  \par Description
+    **       This function checks if the flow message has timed out
+    **
+    **  \par Assumptions, External Events, and Notes:
+    **       None
+    **
+    *************************************************************************/
+	void flowCheckTimeout();
 
     /************************************************************************/
     /** \brief Check Timeouts

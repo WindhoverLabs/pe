@@ -78,6 +78,64 @@ int32 PE::InitEvent()
     EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
     EventTbl[  ind].EventID = PE_LAND_TIMEOUT_ERR_EID;
     EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DIST_FAULT_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DIST_OK_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DIST_TIMEOUT_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_MUTEX_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_LOCAL_POS_MSG_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_GLOBAL_POS_MSG_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_DIST_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_DIST_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_DIST_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_DIST_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_GPS_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_GPS_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_GPS_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_GPS_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_BARO_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_BARO_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_BARO_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_BARO_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_LAND_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_LAND_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_LAND_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_LAND_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_FLOW_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FUSE_FLOW_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_FLOW_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_DISABLE_FLOW_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FLOW_FAULT_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FLOW_OK_INF_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
+    EventTbl[  ind].EventID = PE_FLOW_TIMEOUT_ERR_EID;
+	EventTbl[ind++].Mask    = CFE_EVS_NO_FILTER;
 
     /* Register the table with CFE */
     iStatus = CFE_EVS_Register(EventTbl, ind, CFE_EVS_BINARY_FILTER);
@@ -186,6 +244,14 @@ int32 PE::InitPipe()
 					 iStatus);
             goto PE_InitPipe_Exit_Tag;
         }
+        iStatus = CFE_SB_SubscribeEx(PX4_OPTICAL_FLOW_MID, SchPipeId, CFE_SB_Default_Qos, 1);
+		if (iStatus != CFE_SUCCESS)
+		{
+			(void) CFE_EVS_SendEvent(PE_SUBSCRIBE_ERR_EID, CFE_EVS_ERROR,
+					 "CMD Pipe failed to subscribe to PX4_OPTICAL_FLOW_MID. (0x%08lX)",
+					 iStatus);
+			goto PE_InitPipe_Exit_Tag;
+		}
     }
     else
     {
@@ -263,7 +329,7 @@ void PE::InitData()
 	EST_STDDEV_TZ_VALID = 2.0f;
 	P_MAX               = 1.0e6f;
 	LAND_RATE           = 10.0f;
-    ULR_RATE            = 125.0f;
+    DIST_RATE            = 125.0f;
 	LOW_PASS_CUTOFF     = 5.0f;
 
     /* Params */
@@ -275,21 +341,24 @@ void PE::InitData()
 	m_TimeLastBaro          = 0;
 	m_TimeLastGps           = 0;
 	m_TimeLastLand          = 0;
-	m_TimeLastUlr          = 0;
-    m_Timestamp_Hist        = 0;
+	m_TimeLastDist           = 0;
+	m_TimeLastFlow          = 0;
+	m_Timestamp_Hist        = 0;
     m_TimestampLastBaro     = 0;
 
     /* Timeouts */
     m_BaroTimeout           = TRUE;
     m_GpsTimeout            = TRUE;
     m_LandTimeout           = TRUE;
-    m_UlrTimeout           = TRUE;
+    m_DistTimeout            = TRUE;
+    m_FlowTimeout           = TRUE;
 
     /* Faults */
     m_BaroFault             = TRUE;
     m_GpsFault              = TRUE;
     m_LandFault             = TRUE;
-    m_UlrFault             = TRUE;
+    m_DistFault              = TRUE;
+    m_FlowFault             = TRUE;
 
     /* Validity */
     m_XyEstValid            = FALSE;
@@ -300,7 +369,7 @@ void PE::InitData()
 	m_AltOrigin             = 0.0f;
 	m_BaroAltOrigin         = 0.0f;
 	m_GpsAltOrigin          = 0.0f;
-	m_UlrAltOrigin          = 0.0f;
+	m_DistAltOrigin          = 0.0f;
 
 	/* Status */
 	m_EstimatorLocalInitialized   = FALSE;
@@ -308,6 +377,8 @@ void PE::InitData()
 	m_BaroInitialized		      = FALSE;
 	m_GpsInitialized  			  = FALSE;
 	m_LandInitialized  			  = FALSE;
+	m_DistInitialized			  = FALSE;
+	m_FlowInitialized			  = FALSE;
 	m_ReceivedGps           	  = FALSE;
 	m_LastArmedState        	  = FALSE;
 	m_AltOriginInitialized  	  = FALSE;
@@ -320,7 +391,8 @@ void PE::InitData()
     /* Stats Zero */
     m_BaroStats.reset();
     m_GpsStats.reset();
-    m_UlrStats.reset();
+    m_DistStats.reset();
+    m_FlowQStats.reset();
     
 	/* State Space */
 	m_StateVec.Zero();
@@ -365,7 +437,6 @@ void PE::InitData()
     m_GPS.beta_thresh = 0.0f;
     m_GPS.K.Zero();
     m_GPS.dx.Zero();
-    HkTlm.GpsFused = TRUE;
     
     /* Sensor Land data */
     m_Land.y.Zero();
@@ -378,16 +449,27 @@ void PE::InitData()
     m_Land.K.Zero();
     m_Land.dx.Zero();
 
-    /* Sensor ulr data */
-    m_Ulr.y.Zero();
-    m_Ulr.C.Zero();
-    m_Ulr.R.Zero();
-    m_Ulr.S_I.Zero();
-    m_Ulr.r.Zero();
-    m_Ulr.beta = 0.0f;
-    m_Ulr.K.Zero();
-    m_Ulr.temp.Zero();
-    m_Ulr.dx.Zero();
+    /* Sensor dist data */
+    m_Dist.y.Zero();
+    m_Dist.C.Zero();
+    m_Dist.R.Zero();
+    m_Dist.S_I.Zero();
+    m_Dist.r.Zero();
+    m_Dist.beta = 0.0f;
+    m_Dist.K.Zero();
+    m_Dist.temp.Zero();
+    m_Dist.dx.Zero();
+
+    /* Sensor flow data */
+    m_Flow.y.Zero();
+    m_Flow.C.Zero();
+    m_Flow.R.Zero();
+    m_Flow.S_I.Zero();
+    m_Flow.r.Zero();
+    m_Flow.beta = 0.0f;
+    m_Flow.K.Zero();
+    m_Flow.temp.Zero();
+    m_Flow.dx.Zero();
 
     /* Predict data */
     m_Predict.q.Zero();
@@ -702,26 +784,47 @@ int32 PE::RcvSchPipeMsg(int32 iBlocking)
             case PX4_DISTANCE_SENSOR_MID:
             	memcpy(&m_DistanceSensor, MsgPtr, sizeof(m_DistanceSensor));
                 
-                /* Check if fusing distance sensor */
-                if(TRUE == m_Params.ULR_FUSE)
+                /* Check that distance sensor is expected type for this platform */
+                if(m_DistanceSensor.Type == DIST_SENSOR_TYPE)
                 {
-                    /* Don't integrate while landed */
-                    if(!landed())
+                    /* Check if fusing distance sensor */
+                    if(TRUE == m_Params.DIST_FUSE)
                     {
-                        /* Throttle rate */
-				        if((m_Timestamp - m_TimeLastLand) > 1.0e6f / ULR_RATE)
-				        {
-                        	if(m_UlrTimeout)
+                        /* Don't integrate while landed */
+                        if(!landed())
+                        {
+                            /* Throttle rate */
+				            if((m_Timestamp - m_TimeLastLand) > 1.0e6f / DIST_RATE)
 				            {
-                        		ulrInit();
-				            }
-				            else
-				            {
-					            ulrCorrect();
-				            }
+                            	if(m_DistTimeout)
+				                {
+                            		distInit();
+				                }
+				                else
+				                {
+					                distCorrect();
+				                }
+                            }
                         }
                     }
                 }
+				break;
+
+            case PX4_OPTICAL_FLOW_MID:
+            	memcpy(&m_OpticalFlowMsg, MsgPtr, sizeof(m_OpticalFlowMsg));
+
+				/* Check if fusing distance sensor */
+				if(TRUE == m_Params.FLOW_FUSE)
+				{
+					if(m_FlowTimeout)
+					{
+						flowInit();
+					}
+					else
+					{
+						flowCorrect();
+					}
+				}
 				break;
 
             default:
@@ -827,9 +930,9 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
                 break;
 
             case PE_FUSE_DIST_SENS_CC:
-                if(FALSE == m_Params.ULR_FUSE)
+                if(FALSE == m_Params.DIST_FUSE)
                 {
-                    m_Params.ULR_FUSE = TRUE;
+                    m_Params.DIST_FUSE = TRUE;
                     HkTlm.usCmdCnt++;
                     (void) CFE_EVS_SendEvent(PE_FUSE_DIST_INF_EID, CFE_EVS_INFORMATION,
                                   "Fusing distance sensor into estimation.");
@@ -843,9 +946,9 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
                 break;
 
             case PE_DISABLE_DIST_SENS_CC:
-                if(TRUE == m_Params.ULR_FUSE)
+                if(TRUE == m_Params.DIST_FUSE)
                 {
-                    m_Params.ULR_FUSE = FALSE;
+                    m_Params.DIST_FUSE = FALSE;
                     HkTlm.usCmdCnt++;
                     (void) CFE_EVS_SendEvent(PE_DISABLE_DIST_INF_EID, CFE_EVS_INFORMATION,
                                   "Disabling distance sensor fusion into estimation.");
@@ -922,8 +1025,6 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
                 }
                 break;
 
-
-
             case PE_FUSE_LAND_CC:
                 if(FALSE == m_Params.LAND_FUSE)
                 {
@@ -953,6 +1054,38 @@ void PE::ProcessAppCmds(CFE_SB_Msg_t* MsgPtr)
                     HkTlm.usCmdErrCnt++;
                     (void) CFE_EVS_SendEvent(PE_DISABLE_LAND_ERR_EID, CFE_EVS_ERROR,
                                   "Failed to disable land fusion into estimation.");
+                }
+                break;
+
+            case PE_FUSE_FLOW_CC:
+                if(FALSE == m_Params.FLOW_FUSE)
+                {
+                	m_Params.FLOW_FUSE = TRUE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_FLOW_INF_EID, CFE_EVS_INFORMATION,
+                                  "Fusing flow into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_FUSE_FLOW_ERR_EID, CFE_EVS_ERROR,
+                                  "Already fusing flow into estimation.");
+                }
+                break;
+
+            case PE_DISABLE_FLOW_CC:
+                if(TRUE == m_Params.FLOW_FUSE)
+                {
+                	m_Params.FLOW_FUSE = FALSE;
+                    HkTlm.usCmdCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_FLOW_INF_EID, CFE_EVS_INFORMATION,
+                                  "Disabling flow fusion into estimation.");
+                }
+                else
+                {
+                    HkTlm.usCmdErrCnt++;
+                    (void) CFE_EVS_SendEvent(PE_DISABLE_FLOW_ERR_EID, CFE_EVS_ERROR,
+                                  "Failed to disable flow fusion into estimation.");
                 }
                 break;
 
@@ -995,15 +1128,20 @@ void PE::ReportHousekeeping()
 	HkTlm.GpsInitialized = m_GpsInitialized;
 	HkTlm.BaroInitialized = m_BaroInitialized;
 	HkTlm.LandInitialized = m_LandInitialized;
-	HkTlm.m_UlrAltOrigin = m_UlrAltOrigin;
-	HkTlm.UlrInitialized = m_UlrInitialized;
-	HkTlm.UlrFault = m_UlrFault;
-	HkTlm.UlrTimeout = m_UlrTimeout;
-	HkTlm.TimeLastUlr = m_TimeLastUlr;
-    HkTlm.UlrFused = m_Params.ULR_FUSE;
+	HkTlm.m_DistAltOrigin = m_DistAltOrigin;
+	HkTlm.DistInitialized = m_DistInitialized;
+	HkTlm.DistFault = m_DistFault;
+	HkTlm.DistTimeout = m_DistTimeout;
+	HkTlm.TimeLastDist = m_TimeLastDist;
+    HkTlm.DistFused = m_Params.DIST_FUSE;
     HkTlm.GpsFused = m_Params.GPS_FUSE;
     HkTlm.BaroFused = m_Params.BARO_FUSE;
     HkTlm.LandFused = m_Params.LAND_FUSE;
+    HkTlm.FlowFused = m_Params.FLOW_FUSE;
+    HkTlm.FlowInitialized = m_FlowInitialized;
+	HkTlm.FlowFault = m_FlowFault;
+	HkTlm.FlowTimeout = m_FlowTimeout;
+	HkTlm.TimeLastFlow = m_TimeLastFlow;
 
     CFE_SB_TimeStampMsg((CFE_SB_Msg_t*)&HkTlm);
     CFE_SB_SendMsg((CFE_SB_Msg_t*)&HkTlm);
@@ -1017,17 +1155,22 @@ void PE::ReportHousekeeping()
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 void PE::SendVehicleLocalPositionMsg()
 {
-	float alt 			 = 0;
-	float vxy_stddev     = 0;
-	float epv 			 = 0;
-	float eph			 = 0;
-	float eph_thresh	 = 3.0f;
-	float epv_thresh     = 3.0f;
-	boolean data_valid = FALSE;
+	float alt                   = 0.0f;
+	float vxy_stddev            = 0.0f;
+	float epv                   = 0.0f;
+	float eph                   = 0.0f;
+	float eph_thresh            = 3.0f;
+	float epv_thresh            = 3.0f;
+	boolean data_valid          = FALSE;
+	boolean dist_bottom_valid   = FALSE;
 
 	vxy_stddev = sqrtf(m_StateCov[X_vx][X_vx] + m_StateCov[X_vy][X_vy]);
 	epv = sqrt(m_StateCov[X_z][X_z]);
 	eph = sqrt(m_StateCov[X_x][X_x] + m_StateCov[X_y][X_y]);
+	dist_bottom_valid = m_Params.DIST_FUSE && 
+	                    m_DistInitialized && 
+	                    !m_DistTimeout && 
+	                    !m_DistFault;
 
 	if (vxy_stddev < m_Params.VXY_PUB_THRESH)
 	{
@@ -1075,7 +1218,7 @@ void PE::SendVehicleLocalPositionMsg()
 		m_VehicleLocalPositionMsg.DistBottom = m_AglLowPass.m_State;
 		m_VehicleLocalPositionMsg.DistBottomRate = m_XLowPass[X_vz];
 		m_VehicleLocalPositionMsg.SurfaceBottomTimestamp = m_Timestamp;
-		m_VehicleLocalPositionMsg.DistBottomValid = m_ZEstValid;
+		m_VehicleLocalPositionMsg.DistBottomValid = dist_bottom_valid;
 		m_VehicleLocalPositionMsg.EpH = eph;
 		m_VehicleLocalPositionMsg.EpV = epv;
 
@@ -1267,7 +1410,8 @@ void PE::CheckTimeouts()
 	baroCheckTimeout();
 	gpsCheckTimeout();
 	landCheckTimeout();
-	ulrCheckTimeout();
+	distCheckTimeout();
+	flowCheckTimeout();
 }
 
 
@@ -1659,9 +1803,15 @@ void PE::UpdateLocalParams()
 	m_Params.FAKE_ORIGIN        = ConfigTblPtr->FAKE_ORIGIN;
 	m_Params.INIT_ORIGIN_LAT    = ConfigTblPtr->INIT_ORIGIN_LAT;
 	m_Params.INIT_ORIGIN_LON    = ConfigTblPtr->INIT_ORIGIN_LON;
-	m_Params.ULR_FUSE			= ConfigTblPtr->ULR_FUSE;
-	m_Params.ULR_STDDEV			= ConfigTblPtr->ULR_STDDEV;
-	m_Params.ULR_OFF_Z			= ConfigTblPtr->ULR_OFF_Z;
+	m_Params.DIST_FUSE			= ConfigTblPtr->DIST_FUSE;
+	m_Params.DIST_STDDEV		= ConfigTblPtr->DIST_STDDEV;
+	m_Params.DIST_OFF_Z			= ConfigTblPtr->DIST_OFF_Z;
+	m_Params.FLOW_FUSE			= ConfigTblPtr->FLOW_FUSE;
+	m_Params.FLOW_SCALE			= ConfigTblPtr->FLOW_SCALE;
+	m_Params.FLOW_R				= ConfigTblPtr->FLOW_R;
+	m_Params.FLOW_RR			= ConfigTblPtr->FLOW_RR;
+	m_Params.FLOW_QUALITY_MIN	= ConfigTblPtr->FLOW_QUALITY_MIN;
+	m_Params.FLOW_MIN_AGL		= ConfigTblPtr->FLOW_MIN_AGL;
 
 	/* Unlock the mutex */
 	OS_MutSemGive(ConfigMutex);

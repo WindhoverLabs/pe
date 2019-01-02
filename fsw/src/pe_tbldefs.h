@@ -114,11 +114,23 @@ typedef struct
 
 	float  INIT_ORIGIN_LON;
 
-    boolean ULR_FUSE;
+    boolean DIST_FUSE;
 
-	float ULR_STDDEV;
+	float DIST_STDDEV;
 
-	float ULR_OFF_Z;
+	float DIST_OFF_Z;
+
+	boolean FLOW_FUSE;
+
+	float FLOW_SCALE;
+
+	float FLOW_R;
+
+	float FLOW_RR;
+
+	uint8 FLOW_QUALITY_MIN;
+
+	float FLOW_MIN_AGL;
 
 } PE_ConfigTbl_t;
 

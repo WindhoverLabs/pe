@@ -1,12 +1,5 @@
 #include "../pe_app.h"
 
-// required number of samples for sensor
-// to initialize
-//
-#define 	REQ_LAND_INIT_COUNT (1)
-#define 	LAND_TIMEOUT   		(1000000) // 1.0 s
-
-
 boolean PE::landed()
 {
 	boolean landed = FALSE;
