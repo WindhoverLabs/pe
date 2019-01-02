@@ -400,6 +400,44 @@ typedef enum {
 */
 	PE_LAND_TIMEOUT_ERR_EID,
 
+/** \brief Ulr fault, r %5.2f m, beta %5.2f
+**  \event Ulr fault, r %5.2f m, beta %5.2f
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the ulr fails a validity check.
+**  Ulr will reinitialize after this event is broadcast.
+**
+*/
+	PE_ULR_FAULT_ERR_EID,
+
+/** \brief Ulr initialized. Mean: (%d) Std dev: (%d) cm
+**  \event Ulr initialized. Mean: (%d) Std dev: (%d) cm
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when ulr has (re)initialized successfully.
+**
+*/
+
+	PE_ULR_OK_INF_EID,
+
+/** \brief Ulr timeout
+**  \event Ulr timeout
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the ulr data times out and needs to be reset
+**
+*/
+	PE_ULR_TIMEOUT_ERR_EID,
+
 /** \brief PE - mutex creation failed (0x%08lX)
 **  \event PE - mutex creation failed (0x%08lX)
 **
@@ -435,6 +473,207 @@ typedef enum {
 **
 */
 	PE_GLOBAL_POS_MSG_ERR_EID,
+
+/** \brief Fusing distance sensor into estimation.
+**  \event Fusing distance sensor into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse distance sensor into estimator.
+**
+*/
+	PE_FUSE_DIST_INF_EID,
+
+/** \brief Already fusing distance sensor into estimation.
+**  \event Already fusing distance sensor into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse distance sensor into estimator.
+**  but we are already fusing.
+**
+*/
+	PE_FUSE_DIST_ERR_EID,
+
+/** \brief Disabling distance sensor fusion into estimation.
+**  \event Disabling distance sensor fusion into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable distance sensor fusion into estimator.
+**
+*/
+	PE_DISABLE_DIST_INF_EID,
+
+/** \brief Failed to disable distance sensor fusion into estimation.
+**  \event Failed to disable distance sensor fusion into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable distance sensor fusion into estimator
+**  but it is not already fusing.
+**
+*/
+	PE_DISABLE_DIST_ERR_EID,
+
+/** \brief Fusing GPS into estimation.
+**  \event Fusing GPS into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse GPS into estimator.
+**
+*/
+	PE_FUSE_GPS_INF_EID,
+
+/** \brief Already fusing GPS into estimation.
+**  \event Already fusing GPS into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse GPS into estimator.
+**  but we are already fusing.
+**
+*/
+	PE_FUSE_GPS_ERR_EID,
+
+/** \brief Disabling GPS fusion into estimation.
+**  \event Disabling GPS fusion into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable GPS fusion into estimator.
+**
+*/
+	PE_DISABLE_GPS_INF_EID,
+
+/** \brief Failed to disable GPS fusion into estimation.
+**  \event Failed to disable GPS fusion into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable GPS fusion into estimator
+**  but it is not already fusing.
+**
+*/
+	PE_DISABLE_GPS_ERR_EID,
+
+/** \brief Fusing Baro into estimation.
+**  \event Fusing Baro into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse Baro into estimator.
+**
+*/
+	PE_FUSE_BARO_INF_EID,
+
+/** \brief Already fusing Baro into estimation.
+**  \event Already fusing Baro into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse Baro into estimator.
+**  but we are already fusing.
+**
+*/
+	PE_FUSE_BARO_ERR_EID,
+
+/** \brief Disabling Baro fusion into estimation.
+**  \event Disabling Baro fusion into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable Baro fusion into estimator.
+**
+*/
+	PE_DISABLE_BARO_INF_EID,
+
+/** \brief Failed to disable Baro fusion into estimation.
+**  \event Failed to disable Baro fusion into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable Baro fusion into estimator
+**  but it is not already fusing.
+**
+*/
+	PE_DISABLE_BARO_ERR_EID,
+
+/** \brief Fusing land into estimation.
+**  \event Fusing land into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse Land into estimator.
+**
+*/
+	PE_FUSE_LAND_INF_EID,
+
+/** \brief Already fusing land into estimation.
+**  \event Already fusing land into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to fuse Land into estimator.
+**  but we are already fusing.
+**
+*/
+	PE_FUSE_LAND_ERR_EID,
+
+/** \brief Disabling land fusion into estimation.
+**  \event Disabling land fusion into estimation.
+**
+**  \par Type: INFORMATION
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable Land fusion into estimator.
+**
+*/
+	PE_DISABLE_LAND_INF_EID,
+
+/** \brief Failed to disable land fusion into estimation.
+**  \event Failed to disable land fusion into estimation.
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when commanded to disable Land fusion into estimator
+**  but it is not already fusing.
+**
+*/
+	PE_DISABLE_LAND_ERR_EID,
+
 
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT

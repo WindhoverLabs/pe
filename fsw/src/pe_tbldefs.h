@@ -72,7 +72,11 @@ typedef struct
 
 	float  ACCEL_Z_STDDEV;
 
+	boolean BARO_FUSE;
+
 	float  BARO_STDDEV;
+
+	boolean GPS_FUSE;
 
 	float  GPS_DELAY;
 
@@ -87,6 +91,8 @@ typedef struct
 	float  GPS_EPH_MAX;
 
 	float  GPS_EPV_MAX;
+
+	boolean LAND_FUSE;
 
 	float  LAND_Z_STDDEV;
 
@@ -107,6 +113,12 @@ typedef struct
 	float  INIT_ORIGIN_LAT;
 
 	float  INIT_ORIGIN_LON;
+
+    boolean ULR_FUSE;
+
+	float ULR_STDDEV;
+
+	float ULR_OFF_Z;
 
 } PE_ConfigTbl_t;
 
