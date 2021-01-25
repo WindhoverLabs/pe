@@ -10,9 +10,9 @@ extern "C" {
 ** PE Mission Configuration Parameter Definitions
 */
 
-/* TODO:  Add mission configuration parameter definitions here, if necessary. */
-
 #define PE_SB_TIMEOUT         CFE_SB_PEND_FOREVER  /* Can be a value in milliseconds */
+
+#define PE_ONE_G              (9.81f)
 
 #ifdef __cplusplus
 }

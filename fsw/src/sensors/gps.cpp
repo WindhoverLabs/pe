@@ -1,3 +1,36 @@
+/****************************************************************************
+*
+*   Copyright (c) 2017 Windhover Labs, L.L.C. All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+*
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in
+*    the documentation and/or other materials provided with the
+*    distribution.
+* 3. Neither the name Windhover Labs nor the names of its
+*    contributors may be used to endorse or promote products derived
+*    from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+* COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+* OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+* AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+* ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+*
+*****************************************************************************/
+
 #include "../pe_app.h"
 
 void PE::gpsInit()
@@ -7,23 +40,22 @@ void PE::gpsInit()
     float eph = m_VehicleGpsPositionMsg.EpH;
     float epv = m_VehicleGpsPositionMsg.EpV;
     uint8 fix_type = m_VehicleGpsPositionMsg.FixType;
+    math::Vector6F y;
 
     if (nSat < 6 ||
-        eph > m_Params.GPS_EPH_MAX ||
-        epv > m_Params.GPS_EPV_MAX ||
+        eph > ConfigTblPtr->GPS_EPH_MAX ||
+        epv > ConfigTblPtr->GPS_EPV_MAX ||
         fix_type < 3)
     {
         m_GpsStats.reset();
-        return;
+        goto gpsInit_Exit_Tag;
     }
 
     /* measure */
-    math::Vector6F y;
-
     if (gpsMeasure(y) != CFE_SUCCESS) 
     {
         m_GpsStats.reset();
-        return;
+        goto gpsInit_Exit_Tag;
     }
 
     /* if finished */
@@ -78,6 +110,9 @@ void PE::gpsInit()
                     gpsLat, gpsLon, double(gpsAlt));
         }
     }
+    
+gpsInit_Exit_Tag:
+    return;
 }
 
 
@@ -136,28 +171,28 @@ void PE::gpsCorrect()
     m_GPS.C[Y_gps_vz][X_vz] = 1;
 
     /* default to parameter, use gps cov if provided */
-    m_GPS.var_xy = m_Params.GPS_XY_STDDEV * m_Params.GPS_XY_STDDEV;
-    m_GPS.var_z = m_Params.GPS_Z_STDDEV * m_Params.GPS_Z_STDDEV;
-    m_GPS.var_vxy = m_Params.GPS_VXY_STDDEV * m_Params.GPS_VXY_STDDEV;
-    m_GPS.var_vz = m_Params.GPS_VZ_STDDEV * m_Params.GPS_VZ_STDDEV;
+    m_GPS.var_xy = ConfigTblPtr->GPS_XY_STDDEV * ConfigTblPtr->GPS_XY_STDDEV;
+    m_GPS.var_z = ConfigTblPtr->GPS_Z_STDDEV * ConfigTblPtr->GPS_Z_STDDEV;
+    m_GPS.var_vxy = ConfigTblPtr->GPS_VXY_STDDEV * ConfigTblPtr->GPS_VXY_STDDEV;
+    m_GPS.var_vz = ConfigTblPtr->GPS_VZ_STDDEV * ConfigTblPtr->GPS_VZ_STDDEV;
 
     /* if field is not below minimum, set it to the value provided */
-    if(m_VehicleGpsPositionMsg.EpH > m_Params.GPS_XY_STDDEV)
+    if(m_VehicleGpsPositionMsg.EpH > ConfigTblPtr->GPS_XY_STDDEV)
     {
         m_GPS.var_xy = m_VehicleGpsPositionMsg.EpH * m_VehicleGpsPositionMsg.EpH;
     }
-    if (m_VehicleGpsPositionMsg.EpV > m_Params.GPS_Z_STDDEV)
+    if (m_VehicleGpsPositionMsg.EpV > ConfigTblPtr->GPS_Z_STDDEV)
     {
         m_GPS.var_z = m_VehicleGpsPositionMsg.EpV * m_VehicleGpsPositionMsg.EpV;
     }
 
     m_GPS.gps_s_stddev = m_VehicleGpsPositionMsg.SVariance;
-    if(m_GPS.gps_s_stddev > m_Params.GPS_VXY_STDDEV)
+    if(m_GPS.gps_s_stddev > ConfigTblPtr->GPS_VXY_STDDEV)
     {
         m_GPS.var_vxy = m_GPS.gps_s_stddev * m_GPS.gps_s_stddev;
     }
 
-    if(m_GPS.gps_s_stddev > m_Params.GPS_VZ_STDDEV)
+    if(m_GPS.gps_s_stddev > ConfigTblPtr->GPS_VZ_STDDEV)
     {
         m_GPS.var_vz = m_GPS.gps_s_stddev * m_GPS.gps_s_stddev;
     }
@@ -172,7 +207,7 @@ void PE::gpsCorrect()
     /* get delayed x */
     m_GPS.i_hist = 0;
 
-    if(getDelayPeriods(m_Params.GPS_DELAY, &m_GPS.i_hist) < 0)
+    if(getDelayPeriods(ConfigTblPtr->GPS_DELAY, &m_GPS.i_hist) < 0)
     {
         goto end_of_function;
     }
@@ -218,19 +253,22 @@ void PE::gpsCorrect()
             m_GpsFault = TRUE;
         }
     }
-    else if (m_GpsFault)
+    else
     {
-    	m_GpsFault = FALSE;
-        (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
-                "GPS OK");
+        if (m_GpsFault)
+        {
+        	m_GpsFault = FALSE;
+            (void) CFE_EVS_SendEvent(PE_GPS_OK_INF_EID, CFE_EVS_INFORMATION,
+                    "GPS OK");
 
-        m_GpsInitialized = TRUE;
+            m_GpsInitialized = TRUE;
+        }
     }
 
     /* kalman filter correction always for GPS */
 
 	/* 10x10 * 6x10' (10x6) * 6x6 */
-	m_GPS.K = m_StateCov * m_GPS.C.Transpose() * m_GPS.S_I;
+	m_GPS.K = (m_StateCov * m_GPS.C.Transpose()) * m_GPS.S_I;
 	m_GPS.dx = m_GPS.K * m_GPS.r;
 
 	/* 10F * 10F */

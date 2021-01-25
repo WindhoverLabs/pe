@@ -759,7 +759,17 @@ typedef enum {
 */
 	PE_FLOW_TIMEOUT_ERR_EID = 53,
 
-
+/** \brief <tt> 'Table validation failed for parameter (%s)' </tt>
+**  \event <tt> 'Table validation failed for parameter (%s)' </tt>
+**
+**  \par Type: ERROR
+**
+**  \par Cause:
+**
+**  This event message is issued when the PE configuration table fails to validate.
+**
+*/
+	PE_TBL_VALIDATE_ERR_EID = 54,
 
 /** \brief <tt> This is a count of all the app events and should not be used. </tt> */
 	PE_EVT_CNT

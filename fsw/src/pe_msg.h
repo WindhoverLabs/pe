@@ -499,6 +499,16 @@ typedef struct
 	/** \brief Flag for Flow timeout */
 	boolean FlowTimeout;
 
+	uint32 WakeupCount;
+    uint32 VehicleGpsPositionMsgCount;
+    uint32 VehicleStatusMsgCount;
+    uint32 VehicleLandDetectedMsgCount;
+    uint32 ActuatorArmedMsgCount;
+    uint32 VehicleAttitudeMsgCount;
+    uint32 SensorCombinedMsgCount;
+    uint32 VehicleAttitudeSetpointMsgCount;
+    uint32 DistanceSensorMsgCount;
+    uint32 OpticalFlowMsgCount;
 } PE_HkTlm_t;
 
 

@@ -47,7 +47,6 @@ extern "C" {
  *************************************************************************/
 
 #include "cfe.h"
-
 #include "pe_platform_cfg.h"
 #include "pe_mission_cfg.h"
 #include "pe_perfids.h"
@@ -57,7 +56,6 @@ extern "C" {
 #include "pe_tbldefs.h"
 #include "px4_msgs.h"
 #include "px4lib.h"
-
 #include "math/BlockDelay.hpp"
 #include "math/Vector1F.hpp"
 #include "math/Vector2F.hpp"
@@ -87,7 +85,6 @@ extern "C" {
 #include "math/Euler.hpp"
 #include "math/Dcm.hpp"
 #include "geo/geo.h"
-
 #include <poll.h>
 #include <math.h>
 
@@ -96,105 +93,79 @@ extern "C" {
  ** Local Defines
  *************************************************************************/
 
-#define PE_BETA_TABLE_SIZE	(7)
+#define PE_BETA_TABLE_SIZE    (7)
 /** \brief PE params mutex name. */
 #define PE_PARAMS_MUTEX                "PE_PARAMS_MUTEX"
+
+/** \brief Pipe depth for the data pipe
+**
+**  \par Limits:
+**       minimum of 1, max of CFE_SB_MAX_PIPE_DEPTH.
+*/
+#define PE_DATA_PIPE_DEPTH            (9)
+
+/** \brief Pipe name for the Scheduler pipe
+**
+**  \par Limits:
+**       Note, this name must fit in OS_MAX_API_NAME.
+*/
+#define PE_DATA_PIPE_NAME             ("PE_DATA_PIPE")
 
 /************************************************************************
  ** Local Structure Definitions
  *************************************************************************/
-
-typedef struct
-{
-	int32  FUSION;
-	float  VXY_PUB_THRESH;
-	float  Z_PUB_THRESH;
-	float  ACCEL_XY_STDDEV;
-	float  ACCEL_Z_STDDEV;
-    boolean BARO_FUSE;
-	float  BARO_STDDEV;
-    boolean GPS_FUSE;
-	float  GPS_DELAY;
-	float  GPS_XY_STDDEV;
-	float  GPS_Z_STDDEV;
-	float  GPS_VXY_STDDEV;
-	float  GPS_VZ_STDDEV;
-	float  GPS_EPH_MAX;
-	float  GPS_EPV_MAX;
-    boolean LAND_FUSE;
-	float  LAND_Z_STDDEV;
-	float  LAND_VXY_STDDEV;
-	float  PN_P_NOISE_DENSITY;
-	float  PN_V_NOISE_DENSITY;
-	float  PN_B_NOISE_DENSITY;
-	float  PN_T_NOISE_DENSITY;
-	float  T_MAX_GRADE;
-	int32  FAKE_ORIGIN;
-	float  INIT_ORIGIN_LAT;
-	float  INIT_ORIGIN_LON;
-    boolean DIST_FUSE;
-	float  DIST_STDDEV;
-	float  DIST_OFF_Z;
-	boolean FLOW_FUSE;
-	float FLOW_SCALE;
-	float FLOW_R;
-	float FLOW_RR;
-	uint8 FLOW_QUALITY_MIN;
-	float FLOW_MIN_AGL;
-} PE_Params_t;
-
 enum {
-	X_x  = 0,
-	X_y  = 1,
-	X_z  = 2,
-	X_vx = 3,
-	X_vy = 4,
-	X_vz = 5,
-	X_bx = 6,
-	X_by = 7,
-	X_bz = 8,
-	X_tz = 9,
-	n_x  = 10
+    X_x  = 0,
+    X_y  = 1,
+    X_z  = 2,
+    X_vx = 3,
+    X_vy = 4,
+    X_vz = 5,
+    X_bx = 6,
+    X_by = 7,
+    X_bz = 8,
+    X_tz = 9,
+    n_x  = 10
 };
 
 enum {
-	U_ax = 0,
-	U_ay = 1,
-	U_az = 2,
-	n_u  = 3
+    U_ax = 0,
+    U_ay = 1,
+    U_az = 2,
+    n_u  = 3
 };
 
 enum {
-	Y_baro_z = 0,
-	n_y_baro = 1
+    Y_baro_z = 0,
+    n_y_baro = 1
 };
 
 enum {
-	Y_dist_z = 0,
-	n_y_dist = 1
+    Y_dist_z = 0,
+    n_y_dist = 1
 };
 
 enum {
-	Y_gps_x  = 0,
-	Y_gps_y  = 1,
-	Y_gps_z  = 2,
-	Y_gps_vx = 3,
-	Y_gps_vy = 4,
-	Y_gps_vz = 5,
-	n_y_gps  = 6
+    Y_gps_x  = 0,
+    Y_gps_y  = 1,
+    Y_gps_z  = 2,
+    Y_gps_vx = 3,
+    Y_gps_vy = 4,
+    Y_gps_vz = 5,
+    n_y_gps  = 6
 };
 
 enum {
-	Y_land_vx  = 0,
-	Y_land_vy  = 1,
-	Y_land_agl = 2,
-	n_y_land   = 3
+    Y_land_vx  = 0,
+    Y_land_vy  = 1,
+    Y_land_agl = 2,
+    n_y_land   = 3
 };
 
 enum {
-	Y_flow_vx = 0,
-	Y_flow_vy = 1,
-	n_y_flow = 2
+    Y_flow_vx = 0,
+    Y_flow_vy = 1,
+    n_y_flow = 2
 };
 
 /* Enums for other sensors would go here */
@@ -210,25 +181,36 @@ public:
     ~PE();
 
     /** \brief Constants */
-    float 	DELAY_MAX = 0.5f;
-    float 	HIST_STEP;
-    float 	BIAS_MAX;
-    size_t 	HIST_LEN = 10;
-    size_t 	N_DIST_SUBS;
-    float  	BETA_TABLE[PE_BETA_TABLE_SIZE];
-    uint32 	EST_STDDEV_XY_VALID; // 2.0 m
-    uint32 	EST_STDDEV_Z_VALID; // 2.0 m
-    uint32 	EST_STDDEV_TZ_VALID; // 2.0 m
-    float 	P_MAX; // max allowed value in state covariance
-    float 	LAND_RATE; // rate of land detector correction
-    float 	DIST_RATE; // rate of land detector correction
-    float	LOW_PASS_CUTOFF;
+    const float  DELAY_MAX = 0.5f;
+    const float  HIST_STEP = 0.05f;
+    const float  BIAS_MAX = 1e-1f;
+    const size_t HIST_LEN = 10;
+    const size_t N_DIST_SUBS = 4;
+    const uint32 EST_STDDEV_XY_VALID = 2.0f;
+    const uint32 EST_STDDEV_Z_VALID = 2.0f;
+    const uint32 EST_STDDEV_TZ_VALID = 2.0f;
+    const float  P_MAX = 1.0e6;
+    const float  LAND_RATE = 10.0f;
+    const float  DIST_RATE = 125.0f;
+    const float  LOW_PASS_CUTOFF = 5.0f;
+    const float  EPH_THRESH = 3.0f;
+    const float  EPV_THRESH = 3.0f;
+    const float  BETA_TABLE[PE_BETA_TABLE_SIZE] = {0.0f,
+                                                   8.82050518214f, 
+                                                   12.094592431f, 
+                                                   13.9876612368f, 
+                                                   16.0875642296f, 
+                                                   17.8797700658f, 
+                                                   19.6465647819f};
 
     /**\brief Scheduling Pipe ID */
     CFE_SB_PipeId_t SchPipeId;
 
     /** \brief Command Pipe ID */
     CFE_SB_PipeId_t CmdPipeId;
+
+    /** \brief Data Pipe ID */
+    CFE_SB_PipeId_t DataPipeId;
 
     /* Task-related */
 
@@ -269,82 +251,89 @@ public:
     uint16 m_LandCount;
 
     /* Validity */
-    boolean m_XyEstValid;
-    boolean m_ZEstValid;
-    boolean m_TzEstValid;
+    osalbool m_XyEstValid;
+    osalbool m_ZEstValid;
+    osalbool m_TzEstValid;
 
     /* Map */
     struct map_projection_reference_s m_MapRef;
 
-	/* Low pass filter */
-	LowPassVector10F m_XLowPass;
-	LowPass m_AglLowPass;
+    /* Low pass filter */
+    LowPassVector10F m_XLowPass;
+    LowPass m_AglLowPass;
 
-	/* High pass filter */
-	HighPass m_FlowGyroXHighPass;
-	HighPass m_FlowGyroYHighPass;
+    /* High pass filter */
+    HighPass m_FlowGyroXHighPass;
+    HighPass m_FlowGyroYHighPass;
 
-	/* Delay blocks */
+    /* Delay blocks */
     delay::BlockDelay10FLEN10   m_XDelay;
     delay::BlockDelayUINT64LEN10 m_TDelay;
 
-	/* Timestamps */
-	uint64 m_Timestamp;
+    /* Timestamps */
+    uint64 m_Timestamp;
     uint64 m_Timestamp_Hist;
-	uint64 m_TimestampLastBaro;
-	uint64 m_TimeLastBaro;
-	uint64 m_TimeLastGps;
-	uint64 m_TimeLastDist;
-	uint64 m_TimeLastLand;
-	uint64 m_TimeLastFlow;
+    uint64 m_TimestampLastBaro;
+    uint64 m_TimeLastBaro;
+    uint64 m_TimeLastGps;
+    uint64 m_TimeLastDist;
+    uint64 m_TimeLastLand;
+    uint64 m_TimeLastFlow;
 
     /* Timeouts */
-	boolean   m_BaroTimeout;
-	boolean   m_GpsTimeout;
-	boolean   m_LandTimeout;
-	boolean   m_DistTimeout;
-	boolean   m_FlowTimeout;
+    osalbool   m_BaroTimeout;
+    osalbool   m_GpsTimeout;
+    osalbool   m_LandTimeout;
+    osalbool   m_DistTimeout;
+    osalbool   m_FlowTimeout;
 
     /* Faults */
-	boolean   m_BaroFault;
-	boolean   m_GpsFault;
-	boolean   m_LandFault;
-	boolean   m_DistFault;
-	boolean   m_FlowFault;
+    osalbool   m_BaroFault;
+    osalbool   m_GpsFault;
+    osalbool   m_LandFault;
+    osalbool   m_DistFault;
+    osalbool   m_FlowFault;
 
-	/* Reference altitudes */
-	float m_AltOrigin;
-	float m_BaroAltOrigin;
-	float m_GpsAltOrigin;
-	float m_DistAltOrigin;
+    /* Fuse Flags */
+    osalbool   m_BaroFuse;
+    osalbool   m_GpsFuse;
+    osalbool   m_LandFuse;
+    osalbool   m_DistFuse;
+    osalbool   m_FlowFuse;
 
-	/* Status */
-	boolean m_ReceivedGps;
-	boolean m_LastArmedState;
-	boolean m_EstimatorLocalInitialized;
-	boolean m_EstimatorGlobalInitialized;
-	boolean m_BaroInitialized;
-	boolean m_GpsInitialized;
-	boolean m_LandInitialized;
-	boolean m_DistInitialized;
-	boolean m_FlowInitialized;
-	boolean m_AltOriginInitialized;
-    boolean m_ParamsUpdated;
+    /* Reference altitudes */
+    float m_AltOrigin;
+    float m_BaroAltOrigin;
+    float m_GpsAltOrigin;
+    float m_DistAltOrigin;
 
-	/* State space */
-	math::Vector10F     m_StateVec; // state vector
-	math::Vector3F      m_InputVec; // input vector
-	math::Matrix10F10   m_StateCov; // state covariance matrix
+    /* Status */
+    osalbool m_ReceivedGps;
+    osalbool m_LastArmedState;
+    osalbool m_EstimatorLocalInitialized;
+    osalbool m_EstimatorGlobalInitialized;
+    osalbool m_BaroInitialized;
+    osalbool m_GpsInitialized;
+    osalbool m_LandInitialized;
+    osalbool m_DistInitialized;
+    osalbool m_FlowInitialized;
+    osalbool m_AltOriginInitialized;
+    osalbool m_ParamsUpdated;
 
-	math::Matrix3F3     m_RotationMat;
-	math::Vector3F      m_Euler;
+    /* State space */
+    math::Vector10F     m_StateVec; // state vector
+    math::Vector3F      m_InputVec; // input vector
+    math::Matrix10F10   m_StateCov; // state covariance matrix
 
-	math::Matrix10F10   m_DynamicsMat; // dynamics matrix
-	math::Matrix10F3    m_InputMat; // input matrix
-	math::Matrix3F3     m_InputCov; // input covariance
-	math::Matrix10F10   m_NoiseCov; // process noise covariance
+    math::Matrix3F3     m_RotationMat;
+    math::Vector3F      m_Euler;
 
-	/* Sensor specific data structs */
+    math::Matrix10F10   m_DynamicsMat; // dynamics matrix
+    math::Matrix10F3    m_InputMat; // input matrix
+    math::Matrix3F3     m_InputCov; // input covariance
+    math::Matrix10F10   m_NoiseCov; // process noise covariance
+
+    /* Sensor specific data structs */
     struct Baro
     {
         math::Vector1F y;
@@ -441,8 +430,6 @@ public:
         float bz;
         math::Matrix10F10 dP;
     } m_Predict;
-
-	PE_Params_t m_Params;
 
     /** \brief Housekeeping Telemetry for downlink */
     PE_HkTlm_t HkTlm;
@@ -577,6 +564,19 @@ public:
     void ProcessCmdPipe(void);
 
     /************************************************************************/
+    /** \brief Position Estimator Task incoming data processing
+     **
+     **  \par Description
+     **       This function processes incoming data messages subscribed
+     **       by PE application
+     **
+     **  \par Assumptions, External Events, and Notes:
+     **       None
+     **
+     *************************************************************************/
+    osalbool ProcessDataPipe(void);
+
+    /************************************************************************/
     /** \brief Position Estimator Task application commands
      **
      **  \par Description
@@ -646,7 +646,7 @@ public:
      **  \endreturns
      **
      *************************************************************************/
-    boolean VerifyCmdLength(CFE_SB_Msg_t* MsgPtr, uint16 usExpectedLen);
+    osalbool VerifyCmdLength(CFE_SB_Msg_t* MsgPtr, uint16 usExpectedLen);
 
     /************************************************************************/
     /** \brief Validate PE configuration table
@@ -717,7 +717,7 @@ private:
     **       None
     **
     *************************************************************************/
-	void initStateCov();
+    void initStateCov(void);
 
     /************************************************************************/
     /** \brief Initialize State Space
@@ -729,7 +729,7 @@ private:
     **       None
     **
     *************************************************************************/
-	void InitStateSpace();
+    void InitStateSpace(void);
 
     /************************************************************************/
     /** \brief Update State Space
@@ -741,7 +741,7 @@ private:
     **       None
     **
     *************************************************************************/
-	void updateStateSpace();
+    void updateStateSpace(void);
 
     /************************************************************************/
     /** \brief Update State Space Parameters
@@ -753,7 +753,7 @@ private:
     **       None
     **
     *************************************************************************/
-	void updateStateSpaceParams();
+    void updateStateSpaceParams(void);
 
 public:
     /************************************************************************/
@@ -767,12 +767,12 @@ public:
     **
     **  \param [in/out]   y    A #Vector1F to store baro measurement
     **
-	**  \returns
+    **  \returns
     **  \retcode #CFE_SUCCESS \endcode
     **  \endreturns
     **
     *************************************************************************/
-	int32  baroMeasure(math::Vector1F &y);
+    int32  baroMeasure(math::Vector1F &y);
 
     /************************************************************************/
     /** \brief Baro Correct
@@ -784,7 +784,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void baroCorrect();
+    void baroCorrect(void);
 
     /************************************************************************/
     /** \brief Baro Initialize
@@ -796,7 +796,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void baroInit();
+    void baroInit(void);
 
     /************************************************************************/
     /** \brief Check Baro Timeout
@@ -808,7 +808,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void baroCheckTimeout();
+    void baroCheckTimeout(void);
 
     /************************************************************************/
     /** \brief GPS Measure
@@ -821,12 +821,12 @@ public:
     **
     **  \param [in/out]   y    A #Vector6F to store baro measurement
     **
-	**  \returns
+    **  \returns
     **  \retcode #CFE_SUCCESS \endcode
     **  \endreturns
     **
     *************************************************************************/
-	int  gpsMeasure(math::Vector6F &y);
+    int  gpsMeasure(math::Vector6F &y);
 
     /************************************************************************/
     /** \brief GPS Correct
@@ -838,7 +838,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void gpsCorrect();
+    void gpsCorrect(void);
 
     /************************************************************************/
     /** \brief GPS Initialize
@@ -850,7 +850,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void gpsInit();
+    void gpsInit(void);
 
     /************************************************************************/
     /** \brief Check GPS Timeout
@@ -862,7 +862,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void gpsCheckTimeout();
+    void gpsCheckTimeout(void);
 
     /************************************************************************/
     /** \brief Land Detector Measure
@@ -875,12 +875,12 @@ public:
     **
     **  \param [in/out]   y    A #Vector6F to store baro measurement
     **
-	**  \returns
+    **  \returns
     **  \retcode #CFE_SUCCESS \endcode
     **  \endreturns
     **
     *************************************************************************/
-	int  landMeasure(math::Vector3F &y);
+    int  landMeasure(math::Vector3F &y);
 
     /************************************************************************/
     /** \brief Land Detector Correct
@@ -892,7 +892,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void landCorrect();
+    void landCorrect(void);
 
     /************************************************************************/
     /** \brief Land Detector Initialize
@@ -904,7 +904,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void landInit();
+    void landInit(void);
 
     /************************************************************************/
     /** \brief Check Land Detector Timeout
@@ -916,7 +916,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void landCheckTimeout();
+    void landCheckTimeout(void);
 
     /************************************************************************/
     /** \brief Check Landed
@@ -929,7 +929,7 @@ public:
     **       None
     **
     *************************************************************************/
-	boolean landed();
+    osalbool landed(void);
 
     /************************************************************************/
     /** \brief Dist Measure
@@ -942,12 +942,12 @@ public:
     **
     **  \param [in/out]   y    A #Vector1F to store dist measurement
     **
-	**  \returns
+    **  \returns
     **  \retcode #CFE_SUCCESS \endcode
     **  \endreturns
     **
     *************************************************************************/
-	int32  distMeasure(math::Vector1F &y);
+    int32  distMeasure(math::Vector1F &y);
 
     /************************************************************************/
     /** \brief Dist Correct
@@ -959,7 +959,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void distCorrect();
+    void distCorrect(void);
 
     /************************************************************************/
     /** \brief Dist Initialize
@@ -971,7 +971,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void distInit();
+    void distInit(void);
 
     /************************************************************************/
     /** \brief Check Dist Timeout
@@ -983,8 +983,8 @@ public:
     **       None
     **
     *************************************************************************/
-	void distCheckTimeout();
-	
+    void distCheckTimeout(void);
+    
     /************************************************************************/
     /** \brief Flow Measure
     **
@@ -996,12 +996,12 @@ public:
     **
     **  \param [in/out]   y    A #Vector1F to store flow measurement
     **
-	**  \returns
+    **  \returns
     **  \retcode #CFE_SUCCESS \endcode
     **  \endreturns
     **
     *************************************************************************/
-	int32  flowMeasure(math::Vector2F &y);
+    int32  flowMeasure(math::Vector2F &y);
 
     /************************************************************************/
     /** \brief Flow Correct
@@ -1013,7 +1013,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void flowCorrect();
+    void flowCorrect(void);
 
     /************************************************************************/
     /** \brief Flow Initialize
@@ -1025,7 +1025,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void flowInit();
+    void flowInit(void);
 
     /************************************************************************/
     /** \brief Check Flow Timeout
@@ -1037,7 +1037,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void flowCheckTimeout();
+    void flowCheckTimeout(void);
 
     /************************************************************************/
     /** \brief Check Timeouts
@@ -1049,7 +1049,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void CheckTimeouts();
+    void CheckTimeouts(void);
 
     /************************************************************************/
     /** \brief Get Delay Periods
@@ -1066,7 +1066,7 @@ public:
     **  \endreturns
     **
     *************************************************************************/
-	int getDelayPeriods(float delay, uint8 *periods);
+    int getDelayPeriods(float delay, uint8 *periods);
 
     /************************************************************************/
     /** \brief Update Local Params
@@ -1079,7 +1079,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void UpdateLocalParams();
+    void UpdateLocalParams(void);
 
     /************************************************************************/
     /** \brief Update State
@@ -1093,7 +1093,7 @@ public:
     **       None
     **
     *************************************************************************/
-	void Update();
+    void Update(void);
 
     /************************************************************************/
     /** \brief Predict
@@ -1109,7 +1109,7 @@ public:
     **  \param [in]   dt    Delta time
     **
     *************************************************************************/
-	void Predict(float dt);
+    void Predict(float dt);
 
     /************************************************************************/
     /** \brief Dynamics
@@ -1125,7 +1125,7 @@ public:
     **  \param [in]   u    A #Vector3F input
     **
     *************************************************************************/
-	math::Vector10F dynamics(const math::Vector10F &x, const math::Vector3F &u);
+    math::Vector10F dynamics(const math::Vector10F &x, const math::Vector3F &u);
 
     /************************************************************************/
     /** \brief Check Initialized
@@ -1141,7 +1141,7 @@ public:
     **  \endreturns
     **
     *************************************************************************/
-	boolean Initialized(void);
+    osalbool Initialized(void);
 
 };
 

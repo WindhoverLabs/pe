@@ -19,17 +19,18 @@ add_airliner_app_def(pe
     INCLUDES
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/
 
-    USER_DOCS   ${CMAKE_CURRENT_SOURCE_DIR}/user_doxy.in
     DESIGN_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/detail_doxy.in
     
-    MSG_OVERRIDES   ${CMAKE_CURRENT_SOURCE_DIR}/pe_msg_overrides.json 
-
-    COMMANDER_PLUGIN
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../cdr
+    REFERENCE_CONFIG
+        ${PROJECT_SOURCE_DIR}/apps/pe/fsw/mission_inc
+        ${PROJECT_SOURCE_DIR}/apps/pe/fsw/platform_inc
 )
 
 add_airliner_app_unit_test(pe-ut
     UTASSERT
+    NO_HELGRIND
+    NO_MASSIF
+
     SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/pe_app_test.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/pe_app_test.h
@@ -145,12 +146,13 @@ add_airliner_app_unit_test(pe-ut
         #${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/src/math/BlockDelay.cpp
         #${CMAKE_CURRENT_SOURCE_DIR}/../../../px4lib/fsw/public_inc/math/BlockDelay.hpp
 
-
-        
     INCLUDES
         ${CMAKE_CURRENT_SOURCE_DIR}/../src/
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/
         
     VALGRIND_SUPPRESSION_FILE
         ${CMAKE_CURRENT_SOURCE_DIR}/../unit_test/valgrind.supp
+        
+    REFERENCE_CUSTOM_SOURCE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../tables/pe_config.c
 )

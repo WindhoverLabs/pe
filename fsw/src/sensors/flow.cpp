@@ -1,3 +1,36 @@
+/****************************************************************************
+*
+*   Copyright (c) 2017 Windhover Labs, L.L.C. All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+*
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in
+*    the documentation and/or other materials provided with the
+*    distribution.
+* 3. Neither the name Windhover Labs nor the names of its
+*    contributors may be used to endorse or promote products derived
+*    from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+* COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+* OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+* AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+* ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+*
+*****************************************************************************/
+
 #include "../pe_app.h"
 
 void PE::flowInit()
@@ -53,7 +86,7 @@ int32 PE::flowMeasure(math::Vector2F &y)
 	}
 
 	/* Check for AGL height */
-	if (m_AglLowPass.m_State < m_Params.FLOW_MIN_AGL) {
+	if (m_AglLowPass.m_State < ConfigTblPtr->FLOW_MIN_AGL) {
 		Status = -1;
 		goto flowMeasure_Exit_Tag;
 	}
@@ -65,7 +98,7 @@ int32 PE::flowMeasure(math::Vector2F &y)
 	}
 
 	/* Check reported quality */
-	if (m_OpticalFlowMsg.Quality < m_Params.FLOW_QUALITY_MIN) {
+	if (m_OpticalFlowMsg.Quality < ConfigTblPtr->FLOW_QUALITY_MIN) {
 		Status = -1;
 		goto flowMeasure_Exit_Tag;
 	}
@@ -75,8 +108,8 @@ int32 PE::flowMeasure(math::Vector2F &y)
 
 	/* Optical flow in x, y axis */
 	/* Note: Consider making flow scale a state of the kalman filter */
-	flow_x_rad = m_OpticalFlowMsg.PixelFlowXIntegral * m_Params.FLOW_SCALE;
-	flow_y_rad = m_OpticalFlowMsg.PixelFlowYIntegral * m_Params.FLOW_SCALE;
+	flow_x_rad = m_OpticalFlowMsg.PixelFlowXIntegral * ConfigTblPtr->FLOW_SCALE;
+	flow_y_rad = m_OpticalFlowMsg.PixelFlowYIntegral * ConfigTblPtr->FLOW_SCALE;
 	dt_flow = m_OpticalFlowMsg.IntegrationTimespan / 1.0e6f;
 
 	if (dt_flow > 0.5f || dt_flow < 1.0e-6f) {
@@ -164,9 +197,9 @@ void PE::flowCorrect()
 
 	rot_sq = m_Euler[0] * m_Euler[0] + m_Euler[1] * m_Euler[1];
 
-	m_Flow.R[Y_flow_vx][Y_flow_vx] = flow_vxy_stddev * flow_vxy_stddev +
-			m_Params.FLOW_R * m_Params.FLOW_R * rot_sq +
-			m_Params.FLOW_RR * m_Params.FLOW_RR * rotrate_sq;
+	m_Flow.R[Y_flow_vx][Y_flow_vx] = (flow_vxy_stddev * flow_vxy_stddev) +
+			(ConfigTblPtr->FLOW_R * ConfigTblPtr->FLOW_R * rot_sq) +
+			(ConfigTblPtr->FLOW_RR * ConfigTblPtr->FLOW_RR * rotrate_sq);
 	m_Flow.R[Y_flow_vy][Y_flow_vy] = m_Flow.R[Y_flow_vx][Y_flow_vx];
 
     /* Vector2F -  (2x10 * Vector10F) */
@@ -193,20 +226,23 @@ void PE::flowCorrect()
         }
         goto end_of_function;
     }
-    else if (m_FlowFault)
+    else
     {
-    	m_FlowFault = FALSE;
-        (void) CFE_EVS_SendEvent(PE_FLOW_OK_INF_EID, CFE_EVS_INFORMATION,
-                "Flow OK, beta %5.2f", m_Flow.beta);
+        if (m_FlowFault)
+        {
+        	m_FlowFault = FALSE;
+            (void) CFE_EVS_SendEvent(PE_FLOW_OK_INF_EID, CFE_EVS_INFORMATION,
+                    "Flow OK, beta %5.2f", m_Flow.beta);
 
-        m_FlowInitialized = TRUE;
+            m_FlowInitialized = TRUE;
+        }
     }
 
     /* Kalman filter correction */
     if (!m_FlowFault)
     {
 		/* 10x10 * 10x2 * 2x2 */
-		m_Flow.K = m_StateCov * m_Flow.C.Transpose() * m_Flow.S_I;
+		m_Flow.K = (m_StateCov * m_Flow.C.Transpose()) * m_Flow.S_I;
 
 		/* 10x2 * 2x2 */
 		m_Flow.dx = m_Flow.K * m_Flow.r;

@@ -5,10 +5,10 @@
 extern "C" {
 #endif
 
-#define PE_HK_TLM_MID    0x0000
-#define PE_SEND_HK_MID   0x0000
-#define PE_WAKEUP_MID       0x0000
-#define PE_CMD_MID       0x0000
+#define PE_HK_TLM_MID                               0x0c79
+#define PE_SEND_HK_MID                              0x1c7a
+#define PE_WAKEUP_MID                               0x1c7b
+#define PE_CMD_MID                                  0x1c7c
 
 #ifdef __cplusplus
 }

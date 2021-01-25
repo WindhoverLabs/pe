@@ -50,72 +50,84 @@
 
 #include <time.h>
 
+extern PE_ConfigTbl_t PE_ConfigTbl;
+
 /*
  * Config table for testing
  */
 /* Default ULR config table data */
-PE_ConfigTbl_t PE_ConfigTbl =
-{
-	/* TODO:  Define table. */
-    //FUSION
-    145,
-	//VXY_PUB_THRESH
-    .3f,
-	//Z_PUB_THRESH
-    1.0f,
-	//ACCEL_XY_STDDEV
-    .012f,
-	//ACCEL_Z_STDDEV
-    .02f,
-	//BARO_FUSE
-    1,
-	//BARO_STDDEV
-    3.0f,
-	//GPS_FUSE
-    1,
-	//GPS_DELAY
-    .29f,
-	//GPS_XY_STDDEV
-    1.0f,
-	//GPS_Z_STDDEV
-    3.0f,
-	//GPS_VXY_STDDEV
-    .25f,
-	//GPS_VZ_STDDEV
-    .25f,
-	//GPS_EPH_MAX
-    3.0f,
-	//GPS_EPV_MAX
-    5.0f,
-	//LAND_FUSE
-    1,
-	//LAND_Z_STDDEV
-    .03f,
-	//LAND_VXY_STDDEV
-    .05f,
-	//PN_P_NOISE_DENSITY
-    .1f,
-	//PN_V_NOISE_DENSITY
-    .1f,
-	//PN_B_NOISE_DENSITY
-    .001f,
-	//PN_T_NOISE_DENSITY
-    .001f,
-	//T_MAX_GRADE
-    1.0f,
-	//FAKE_ORIGIN
-    0,
-	//INIT_ORIGIN_LAT
-    29.562144f,
-	//INIT_ORIGIN_LON
-    -95.144554,
-    //ULR_FUSE
-    TRUE,
-    //ULR_STDDEV
-    .05f,
-    //ULR_OFF_Z
-    0.0f
-};
+//PE_ConfigTbl_t PE_ConfigTbl =
+//{
+//	/* TODO:  Define table. */
+//	//VXY_PUB_THRESH
+//    .3f,
+//	//Z_PUB_THRESH
+//    1.0f,
+//	//ACCEL_XY_STDDEV
+//	.012f,
+//	//ACCEL_Z_STDDEV
+//    .02f,
+//	//BARO_FUSE
+//    1,
+//	//BARO_STDDEV
+//    3.0f,
+//	//GPS_FUSE
+//    1,
+//	//GPS_DELAY
+//    .29f,
+//	//GPS_XY_STDDEV
+//    1.0f,
+//	//GPS_Z_STDDEV
+//    3.0f,
+//	//GPS_VXY_STDDEV
+//    .25f,
+//	//GPS_VZ_STDDEV
+//    .25f,
+//	//GPS_EPH_MAX
+//    3.0f,
+//	//GPS_EPV_MAX
+//    5.0f,
+//	//LAND_FUSE
+//    1,
+//	//LAND_Z_STDDEV
+//    .03f,
+//	//LAND_VXY_STDDEV
+//    .05f,
+//	//PN_P_NOISE_DENSITY
+//    .1f,
+//	//PN_V_NOISE_DENSITY
+//    .1f,
+//	//PN_B_NOISE_DENSITY
+//    .001f,
+//	//PN_T_NOISE_DENSITY
+//    .001f,
+//	//T_MAX_GRADE
+//	0.0f,
+//	//FAKE_ORIGIN
+//    0,
+//	//INIT_ORIGIN_LAT
+//    29.562144f,
+//	//INIT_ORIGIN_LON
+//    -95.144554,
+//    //DIST_FUSE
+//    TRUE,
+//    //DIST_STDDEV
+//    .05f,
+//    //DIST_OFF_Z
+//    0.0f,
+//    //FLOW_FUSE
+//    0,
+//    //FLOW_SCALE
+//	1.3f,
+//    //FLOW_R
+//	7.0f,
+//    //FLOW_RR
+//	7.0f,
+//    //FLOW_QUALITY_MIN
+//	150,
+//    //FLOW_MIN_AGL
+//	0.5f
+//};
 
 /*
  * Function Definitions
